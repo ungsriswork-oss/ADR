@@ -1,267 +1,294 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom'; // เพิ่ม import นี้
 import {
   Activity,
-  Calendar,
-  Thermometer,
   AlertTriangle,
   Pill,
   Droplet,
   Trash2,
-  Plus,
-  PlayCircle,
-  RotateCcw,
   CheckCircle,
-  FileText,
-  Clock,
-  Info,
-  AlertCircle,
-  ChevronDown,
-  ChevronUp,
-  Save,
   Edit3,
-  Printer,
 } from 'lucide-react';
 
 /* -------------------------------------------------------------------------- */
-/* SUB-COMPONENTS */
+/* 1. TIMELINE COMPONENT */
 /* -------------------------------------------------------------------------- */
 
-const SmartTimeline = ({ drugs, labs, onsetDate }) => {
-  const criticalDates = useMemo(() => {
+const RevisedTimeline = ({ drugs, labs, onsetDate }) => {
+  const safeDrugs = Array.isArray(drugs) ? drugs : [];
+  const safeLabs = Array.isArray(labs) ? labs : [];
+
+  const timelineData = useMemo(() => {
     const rawDates = [
       onsetDate,
-      ...drugs.map((d) => d.startDate),
-      ...drugs.map((d) => d.endDate || d.startDate),
-      ...labs.map((l) => l.date),
+      ...safeDrugs.map((d) => d.startDate),
+      ...safeDrugs.map((d) => d.endDate || d.startDate),
+      ...safeLabs.map((l) => l.date),
     ]
-      .filter(Boolean)
+      .filter((d) => d && !isNaN(new Date(d).getTime()))
       .map((d) => new Date(d).getTime());
 
+    // Add buffer
     if (onsetDate && !isNaN(new Date(onsetDate).getTime())) {
       const o = new Date(onsetDate).getTime();
       rawDates.push(o - 86400000 * 2);
       rawDates.push(o + 86400000 * 2);
     }
 
-    return [...new Set(rawDates)].sort((a, b) => a - b);
-  }, [drugs, labs, onsetDate]);
+    const uniquePoints = [...new Set(rawDates)].sort((a, b) => a - b);
 
-  // Handle empty state inside the component render to avoid hooks issues
-  const isEmpty = criticalDates.length === 0;
+    // Filter interesting dates for labeling
+    const interestingDates = new Set(
+      [
+        onsetDate,
+        ...safeDrugs.map((d) => d.startDate),
+        ...safeDrugs.map((d) => d.endDate),
+        ...safeLabs.map((l) => l.date),
+      ]
+        .filter((d) => d)
+        .map((d) => new Date(d).getTime())
+    );
 
-  const { timeMap, totalVisualDuration } = useMemo(() => {
-    let map = [];
-    let currentVisualPos = 0;
-    const MAX_GAP_VISUAL = 86400000 * 2;
+    const totalPoints = uniquePoints.length;
+    const safeTotal = totalPoints > 1 ? totalPoints - 1 : 1;
 
-    if (criticalDates.length > 0) {
-      map.push({ real: criticalDates[0], visual: 0 });
-      for (let i = 1; i < criticalDates.length; i++) {
-        const prev = criticalDates[i - 1];
-        const curr = criticalDates[i];
-        const realDiff = curr - prev;
-        const visualStep = Math.min(realDiff, MAX_GAP_VISUAL);
-        currentVisualPos += visualStep;
-        map.push({ real: curr, visual: currentVisualPos });
-      }
-    }
-    return { timeMap: map, totalVisualDuration: currentVisualPos || 1 };
-  }, [criticalDates]);
+    return {
+      points: uniquePoints,
+      interestingDates,
+      totalPoints,
+      getPos: (dateStr) => {
+        if (!dateStr) return -10;
+        const t = new Date(dateStr).getTime();
+        const index = uniquePoints.indexOf(t);
+        if (index === -1) {
+          let closestIdx = 0;
+          for (let i = 0; i < uniquePoints.length; i++) {
+            if (uniquePoints[i] > t) {
+              closestIdx = i;
+              break;
+            }
+            closestIdx = i;
+          }
+          return (closestIdx / safeTotal) * 100;
+        }
+        return (index / safeTotal) * 100;
+      },
+    };
+  }, [safeDrugs, safeLabs, onsetDate]);
 
-  const getSmartPos = (dateStr) => {
-    if (!dateStr || isNaN(new Date(dateStr).getTime())) return -10;
-    const target = new Date(dateStr).getTime();
-
-    const idx = timeMap.findIndex((t) => t.real >= target);
-    if (idx === -1) return 100;
-    if (idx === 0) return 0;
-
-    const p2 = timeMap[idx];
-    const p1 = timeMap[idx - 1];
-    if (p2.real === p1.real) return (p1.visual / totalVisualDuration) * 100;
-    const ratio = (target - p1.real) / (p2.real - p1.real);
-    const visualVal = p1.visual + ratio * (p2.visual - p1.visual);
-
-    return (visualVal / totalVisualDuration) * 100;
-  };
-
-  const axisTicks = timeMap.filter(
-    (_, i) => i === 0 || i === timeMap.length - 1 || i % 3 === 0
-  );
-
-  const groupedDrugs = useMemo(() => {
-    return drugs.reduce((acc, drug) => {
-      if (!acc[drug.name]) acc[drug.name] = [];
-      acc[drug.name].push(drug);
-      return acc;
-    }, {});
-  }, [drugs]);
-
-  const onsetPos = getSmartPos(onsetDate);
-
-  // Dynamic Height Calculation
-  const drugRows = Object.keys(groupedDrugs).length;
-  // Base height 300px + 50px per drug row to prevent overlap
-  const chartHeight = Math.max(300, 250 + drugRows * 50);
-
-  if (isEmpty)
+  if (timelineData.points.length === 0)
     return (
       <div className="h-[150px] flex items-center justify-center text-slate-400 border-2 border-dashed rounded-xl bg-slate-50 mt-6">
         Add drug or lab data to see timeline
       </div>
     );
 
+  const groupedDrugs = safeDrugs.reduce((acc, drug) => {
+    if (!acc[drug.name]) acc[drug.name] = [];
+    acc[drug.name].push(drug);
+    return acc;
+  }, {});
+
   return (
     <div className="bg-white p-6 rounded-xl shadow-lg border border-slate-200 mb-8 font-sans animate-fade-in-up mt-8">
       <div className="flex items-center gap-2 mb-4 text-slate-800 font-bold border-b border-slate-100 pb-3">
         <Activity className="w-6 h-6 text-purple-600" />
-        <h3 className="text-lg">Smart Clinical Timeline (Focus View)</h3>
+        <h3 className="text-lg">Clinical Timeline (Focus View)</h3>
       </div>
 
-      <div
-        className="relative w-full select-none pr-4 pt-12 transition-all duration-300"
-        style={{ height: `${chartHeight}px` }}
-      >
-        <div className="absolute inset-0 pointer-events-none top-8">
-          {onsetDate && !isNaN(new Date(onsetDate).getTime()) && (
-            <div
-              className="absolute top-0 bottom-12 border-l-2 border-red-500 border-dashed z-0 flex flex-col items-center opacity-80"
-              style={{ left: `${onsetPos}%` }}
-            >
-              <div className="bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow-md absolute -top-8 whitespace-nowrap z-20">
-                ONSET{' '}
-                {new Date(onsetDate).toLocaleDateString('en-GB', {
-                  day: 'numeric',
-                  month: 'short',
-                })}
-              </div>
-            </div>
-          )}
+      <div className="relative w-full pb-8 overflow-visible">
+        {/* Grid Background */}
+        <div className="absolute inset-0 pl-[150px] pointer-events-none z-0">
+          <div className="relative w-full h-full">
+            {timelineData.points.map((t, i) => {
+              const pct =
+                (i /
+                  (timelineData.totalPoints > 1
+                    ? timelineData.totalPoints - 1
+                    : 1)) *
+                100;
+              const isInteresting = timelineData.interestingDates.has(t);
+              return (
+                <div
+                  key={i}
+                  className="absolute top-0 bottom-0 border-l border-slate-100"
+                  style={{ left: `${pct}%` }}
+                >
+                  {isInteresting && (
+                    <div className="absolute -bottom-6 -translate-x-1/2 text-[10px] font-bold text-slate-500 whitespace-nowrap bg-white/80 px-1 rounded">
+                      {new Date(t).toLocaleDateString('en-GB', {
+                        day: 'numeric',
+                        month: 'short',
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        <div className="mb-8 space-y-8 relative z-10">
-          {Object.entries(groupedDrugs).map(([name, segments], i) => (
-            <div
-              key={i}
-              className="relative h-5 w-full flex items-center group"
-            >
-              <div className="absolute left-0 w-[15%] text-right pr-4 text-xs font-bold text-slate-700 truncate">
-                {name}
+        <div className="relative z-10 space-y-4">
+          {/* --- SECTION 1: DRUGS & ONSET (Clipped Onset Line) --- */}
+          <div className="relative border-b border-slate-200 pb-4">
+            {/* ONSET LINE */}
+            {onsetDate && !isNaN(new Date(onsetDate).getTime()) && (
+              <div className="absolute inset-y-0 left-[150px] right-0 pointer-events-none z-20 overflow-visible">
+                <div
+                  className="absolute top-0 bottom-0 w-0.5 bg-red-500 border-l border-dashed border-red-500 opacity-80"
+                  style={{ left: `${timelineData.getPos(onsetDate)}%` }}
+                >
+                  <div className="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm absolute -top-4 left-0 -translate-x-1/2 whitespace-nowrap z-50">
+                    ONSET
+                  </div>
+                </div>
               </div>
-              <div className="absolute left-[15%] right-0 h-full flex items-center">
-                {segments.map((seg, idx) => {
-                  const start = getSmartPos(seg.startDate);
-                  const end = seg.endDate ? getSmartPos(seg.endDate) : 100;
-                  const width = Math.max(end - start, 0.5);
+            )}
+
+            <div className="flex h-6 items-end pb-1 border-b border-slate-100 mb-2">
+              <div className="w-[150px] shrink-0 font-bold text-xs text-right pr-4 text-slate-400">
+                DRUG
+              </div>
+              <div className="flex-1"></div>
+            </div>
+            {Object.entries(groupedDrugs).map(([name, segments], i) => (
+              <div
+                key={i}
+                className="flex h-8 items-center group hover:bg-slate-50 rounded relative z-10"
+              >
+                <div
+                  className="w-[150px] shrink-0 pr-4 text-right text-xs font-bold text-slate-700 truncate"
+                  title={name}
+                >
+                  {name}
+                </div>
+                <div className="flex-1 relative h-full">
+                  {segments.map((seg, idx) => {
+                    const start = timelineData.getPos(seg.startDate);
+                    const end = seg.endDate
+                      ? timelineData.getPos(seg.endDate)
+                      : 100;
+                    const width = Math.max(end - start, 0.5);
+                    return (
+                      <div
+                        key={idx}
+                        className="absolute h-2 bg-slate-500 rounded-full opacity-80 top-3"
+                        style={{ left: `${start}%`, width: `${width}%` }}
+                      >
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-slate-600 rounded-full -ml-1"></div>
+                        {seg.endDate && (
+                          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-slate-600 rounded-full -mr-1"></div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* --- SECTION 2: LABS --- */}
+          <div className="pt-2">
+            <div className="flex h-6 items-end pb-1 mb-2">
+              <div className="w-[150px] shrink-0 font-bold text-xs text-right pr-4 text-slate-400">
+                CLINICAL DATA
+              </div>
+              <div className="flex-1"></div>
+            </div>
+            <div className="flex h-8 items-center">
+              <div className="w-[150px] shrink-0 pr-4 text-right text-xs font-bold text-orange-500 uppercase">
+                Temp
+              </div>
+              <div className="flex-1 relative h-full">
+                {safeLabs.map((lab, i) => {
+                  const pos = timelineData.getPos(lab.date);
                   return (
                     <div
-                      key={idx}
-                      className="absolute h-1.5 bg-slate-400 rounded-full opacity-80"
-                      style={{ left: `${start}%`, width: `${width}%` }}
+                      key={i}
+                      className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 text-[9px] font-bold px-1.5 py-0.5 rounded border shadow-sm bg-white z-10 ${
+                        parseFloat(lab.temp) >= 38.5
+                          ? 'text-red-600 border-red-200'
+                          : 'text-slate-600 border-slate-200'
+                      }`}
+                      style={{ left: `${pos}%` }}
                     >
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-slate-600 border border-white rounded-full -ml-1"></div>
-                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-slate-600 border border-white rounded-full -mr-1"></div>
+                      {lab.temp}
                     </div>
                   );
                 })}
               </div>
             </div>
-          ))}
-        </div>
-
-        <div className="space-y-12 mt-12 border-t border-slate-100 pt-8 relative z-10">
-          <div className="relative h-6 w-full flex items-center">
-            <div className="absolute left-0 w-[15%] text-right pr-4 text-xs font-bold text-orange-500 uppercase">
-              Temp
+            <div className="flex h-8 items-center">
+              <div className="w-[150px] shrink-0 pr-4 text-right text-xs font-bold text-purple-600 uppercase">
+                Eosin
+              </div>
+              <div className="flex-1 relative h-full">
+                {safeLabs.map((lab, i) => {
+                  const pos = timelineData.getPos(lab.date);
+                  return (
+                    <div
+                      key={i}
+                      className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 text-[9px] font-bold px-1.5 py-0.5 rounded border shadow-sm bg-white z-10 ${
+                        parseFloat(lab.eosin) >= 700
+                          ? 'text-purple-700 border-purple-200'
+                          : 'text-slate-600 border-slate-200'
+                      }`}
+                      style={{ left: `${pos}%` }}
+                    >
+                      {lab.eosin}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-            <div className="absolute left-[15%] right-0 h-full">
-              {labs.map((lab, i) => (
-                <div
-                  key={i}
-                  className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 text-[10px] font-bold px-1.5 py-0.5 rounded border shadow-sm bg-white z-20 ${
-                    parseFloat(lab.temp) >= 38.5
-                      ? 'text-red-600 border-red-200'
-                      : 'text-slate-600 border-slate-200'
-                  }`}
-                  style={{ left: `${getSmartPos(lab.date)}%` }}
-                >
-                  {lab.temp}
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="relative h-6 w-full flex items-center">
-            <div className="absolute left-0 w-[15%] text-right pr-4 text-xs font-bold text-purple-600 uppercase">
-              Eosin
-            </div>
-            <div className="absolute left-[15%] right-0 h-full">
-              {labs.map((lab, i) => (
-                <div
-                  key={i}
-                  className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 text-[10px] font-bold px-1.5 py-0.5 rounded border shadow-sm bg-white z-20 ${
-                    parseFloat(lab.eosin) >= 700
-                      ? 'text-purple-700 border-purple-200'
-                      : 'text-slate-600 border-slate-200'
-                  }`}
-                  style={{ left: `${getSmartPos(lab.date)}%` }}
-                >
-                  {lab.eosin}
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="relative h-6 w-full flex items-center">
-            <div className="absolute left-0 w-[15%] text-right pr-4 text-xs font-bold text-blue-500 uppercase">
-              ALT
-            </div>
-            <div className="absolute left-[15%] right-0 h-full">
-              {labs
-                .filter((l) => l.alt)
-                .map((lab, i) => (
-                  <div
-                    key={i}
-                    className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 min-w-[24px] h-6 px-1 flex items-center justify-center text-[9px] font-bold rounded-full border shadow-sm bg-white z-20 ${
-                      parseFloat(lab.alt) > 100
-                        ? 'text-blue-700 border-blue-300'
-                        : 'text-blue-600 border-blue-200'
-                    }`}
-                    style={{ left: `${getSmartPos(lab.date)}%` }}
-                  >
-                    {lab.alt}
-                  </div>
-                ))}
+            <div className="flex h-8 items-center">
+              <div className="w-[150px] shrink-0 pr-4 text-right text-xs font-bold text-blue-500 uppercase">
+                ALT
+              </div>
+              <div className="flex-1 relative h-full">
+                {safeLabs
+                  .filter((l) => l.alt)
+                  .map((lab, i) => {
+                    const pos = timelineData.getPos(lab.date);
+                    return (
+                      <div
+                        key={i}
+                        className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 min-w-[24px] px-1 text-center text-[9px] font-bold rounded border shadow-sm bg-white z-10 ${
+                          parseFloat(lab.alt) > 100
+                            ? 'text-blue-700 border-blue-300'
+                            : 'text-blue-600 border-slate-200'
+                        }`}
+                        style={{ left: `${pos}%` }}
+                      >
+                        {lab.alt}
+                      </div>
+                    );
+                  })}
+              </div>
             </div>
           </div>
-        </div>
-
-        <div className="absolute bottom-0 left-[15%] right-0 h-8 border-t border-slate-300 pt-3">
-          {axisTicks.map((tick, i) => (
-            <div
-              key={i}
-              className="absolute top-2 transform -translate-x-1/2 text-[10px] text-slate-500 font-mono font-bold"
-              style={{ left: `${(tick.visual / totalVisualDuration) * 100}%` }}
-            >
-              {new Date(tick.real).toLocaleDateString('en-GB', {
-                day: 'numeric',
-                month: 'numeric',
-              })}
-            </div>
-          ))}
         </div>
       </div>
     </div>
   );
 };
 
+/* -------------------------------------------------------------------------- */
+/* 2. DRUG ANALYSIS COMPONENT */
+/* -------------------------------------------------------------------------- */
+
 const DrugAnalysisSection = ({ drugs, onsetDate, labs }) => {
+  const safeDrugs = Array.isArray(drugs) ? drugs : [];
+  const safeLabs = Array.isArray(labs) ? labs : [];
+
   const groupedDrugs = useMemo(() => {
     const groups = {};
-    drugs.forEach((d) => {
+    safeDrugs.forEach((d) => {
       if (!groups[d.name]) groups[d.name] = [];
       groups[d.name].push(d);
     });
     return groups;
-  }, [drugs]);
+  }, [safeDrugs]);
 
   if (Object.keys(groupedDrugs).length === 0) return null;
 
@@ -283,7 +310,7 @@ const DrugAnalysisSection = ({ drugs, onsetDate, labs }) => {
             name={name}
             segments={segments}
             onsetDate={onsetDate}
-            labs={labs}
+            labs={safeLabs}
           />
         ))}
       </div>
@@ -404,19 +431,21 @@ const ScoreBadge = ({ score }) => {
 };
 
 /* -------------------------------------------------------------------------- */
-/* MAIN COMPONENT */
+/* 3. MAIN DRESS ASSESSMENT COMPONENT */
 /* -------------------------------------------------------------------------- */
 
-const DressAssessment = () => {
+const DressAssessment = (props) => {
+  const location = useLocation(); // ✅ Access router state to detect Saved Case
+
+  const drugs = props.drugList || [];
+  const setDrugs = props.setDrugList || (() => {});
+  const labs = props.labEntries || [];
+  const setLabs = props.setLabEntries || (() => {});
+  const onsetDate = props.symptomDate || '';
+  const setOnsetDate = props.setSymptomDate || (() => {});
+
   const [analyzed, setAnalyzed] = useState(false);
-  const resultsRef = useRef(null);
-
-  // --- STATE ---
-  const [onsetDate, setOnsetDate] = useState('');
-  const [drugs, setDrugs] = useState([]);
-  const [labs, setLabs] = useState([]);
   const [pharmacistNote, setPharmacistNote] = useState('');
-
   const [clinical, setClinical] = useState({
     fever: false,
     enlargedNodes: false,
@@ -440,40 +469,54 @@ const DressAssessment = () => {
     startDate: '',
     endDate: '',
   });
+  const resultsRef = useRef(null);
+  const hasAutoShownRef = useRef(false); // Track if we've already auto-shown
 
-  const organOptions = [
-    { id: 'liver', label: 'Liver', detail: 'ALT > 2N' },
-    { id: 'kidney', label: 'Kidney', detail: 'Cr > 1.5N' },
-    { id: 'lung', label: 'Lung', detail: 'Pneumonitis' },
-    { id: 'heart', label: 'Heart', detail: 'Myocarditis' },
-    { id: 'muscle', label: 'Muscle', detail: 'CPK > 2N' },
-    { id: 'pancreas', label: 'Pancreas', detail: 'Amylase > 2N' },
-  ];
+  // --- 1. LOAD LOCAL DATA ---
+  useEffect(() => {
+    const src = props.initialData?.savedData || props.initialData || {};
+    if (Object.keys(src).length > 0) {
+      if (src.clinical) setClinical(src.clinical);
+      if (src.pharmacistNote) setPharmacistNote(src.pharmacistNote);
+    }
+  }, []);
 
-  const handleOrganToggle = (organId) => {
-    setClinical((prev) => {
-      const current = prev.selectedOrgans;
-      const updated = current.includes(organId)
-        ? current.filter((id) => id !== organId)
-        : [...current, organId];
-      return { ...prev, selectedOrgans: updated };
-    });
-  };
+  // --- 2. AUTO-SHOW SAVED CASE LOGIC ---
+  useEffect(() => {
+    // Check if we are in "Saved Case Mode" (via Router state)
+    const isSavedCase = !!location.state?.caseData;
 
+    // Only auto-show if:
+    // 1. It IS a saved case
+    // 2. We haven't auto-shown yet (prevent re-showing on edits)
+    // 3. We actually have data to show
+    if (isSavedCase && !hasAutoShownRef.current) {
+      if (drugs.length > 0 || labs.length > 0) {
+        setAnalyzed(true);
+        hasAutoShownRef.current = true;
+        setTimeout(() => {
+          resultsRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    }
+  }, [drugs, labs, location.state]);
+
+  // --- 3. CALCULATE SCORE ---
   const calculateScore = useMemo(() => {
     let breakdown = [];
     let total = 0;
+    const safeLabs = Array.isArray(labs) ? labs : [];
 
-    // 1. Fever
-    const maxTemp = Math.max(0, ...labs.map((l) => parseFloat(l.temp) || 0));
+    const maxTemp = Math.max(
+      0,
+      ...safeLabs.map((l) => parseFloat(l.temp) || 0)
+    );
     let feverScore = -1;
     let feverDetail = 'Absent (-1)';
-
     if (clinical.fever || maxTemp >= 38.5) {
       feverScore = 0;
       feverDetail = 'Present (0)';
     }
-
     breakdown.push({
       label: 'Fever ≥ 38.5°C',
       detail: feverDetail,
@@ -481,7 +524,6 @@ const DressAssessment = () => {
     });
     total += feverScore;
 
-    // 2. Nodes
     const nodeScore = clinical.enlargedNodes ? 1 : 0;
     breakdown.push({
       label: 'Lymph Nodes',
@@ -490,8 +532,10 @@ const DressAssessment = () => {
     });
     total += nodeScore;
 
-    // 3. Eosinophils
-    const maxEosin = Math.max(0, ...labs.map((l) => parseFloat(l.eosin) || 0));
+    const maxEosin = Math.max(
+      0,
+      ...safeLabs.map((l) => parseFloat(l.eosin) || 0)
+    );
     let eosinScore = 0;
     let eosinTxt = '<700';
     if (maxEosin >= 1500) {
@@ -508,7 +552,6 @@ const DressAssessment = () => {
     });
     total += eosinScore;
 
-    // 4. Lymph
     const lymphScore = clinical.atypicalLymph ? 1 : 0;
     breakdown.push({
       label: 'Atypical Lymph',
@@ -517,7 +560,6 @@ const DressAssessment = () => {
     });
     total += lymphScore;
 
-    // 5. Skin
     let skinScore = 0;
     let skinDetail = 'No rash';
     if (clinical.rashPresent) {
@@ -534,7 +576,6 @@ const DressAssessment = () => {
     });
     total += skinScore;
 
-    // 6. Organs
     const organCount = clinical.selectedOrgans.length;
     let organScore = 0;
     if (organCount >= 2) organScore = 2;
@@ -546,7 +587,6 @@ const DressAssessment = () => {
     });
     total += organScore;
 
-    // 7. Resolution
     let resScore = -1;
     let resDetail = '< 15 days (-1)';
     if (clinical.resolutionDays) {
@@ -556,7 +596,6 @@ const DressAssessment = () => {
     breakdown.push({ label: 'Resolution', detail: resDetail, score: resScore });
     total += resScore;
 
-    // 8. Exclusion
     const exclScore = clinical.exclusions ? 1 : 0;
     breakdown.push({
       label: 'Exclusion Criteria Met',
@@ -591,6 +630,33 @@ const DressAssessment = () => {
     return { total, breakdown, interpretation, color, bg, border };
   }, [clinical, labs]);
 
+  // --- 4. SYNC TO PARENT (BREAK LOOP) ---
+  const lastResultRef = useRef(null);
+  useEffect(() => {
+    if (props.onAnalysisComplete) {
+      const newResult = {
+        type: 'RegiSCAR',
+        score: calculateScore.total,
+        interpretation: calculateScore.interpretation,
+        rawData: { drugs, labs, onsetDate, clinical, pharmacistNote },
+      };
+      if (JSON.stringify(newResult) !== JSON.stringify(lastResultRef.current)) {
+        lastResultRef.current = newResult;
+        setTimeout(() => {
+          props.onAnalysisComplete(newResult);
+        }, 0);
+      }
+    }
+  }, [drugs, labs, onsetDate, clinical, pharmacistNote, calculateScore]);
+
+  // --- HANDLERS ---
+  const handleAnalyze = () => {
+    setAnalyzed(true);
+    setTimeout(() => {
+      resultsRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  };
+
   const addDrug = () => {
     if (
       newDrug.name &&
@@ -599,55 +665,77 @@ const DressAssessment = () => {
     ) {
       setDrugs([...drugs, { ...newDrug, id: Date.now() }]);
       setNewDrug({ name: '', startDate: '', endDate: '' });
+      setAnalyzed(false); // Reset
     }
   };
-  const removeDrug = (id) => setDrugs(drugs.filter((d) => d.id !== id));
+  const removeDrug = (id) => {
+    setDrugs(drugs.filter((d) => d.id !== id));
+    setAnalyzed(false); // Reset
+  };
 
   const addLab = () => {
     if (newLab.date && !isNaN(new Date(newLab.date).getTime())) {
       const existingIdx = labs.findIndex((l) => l.date === newLab.date);
-      if (existingIdx > -1) {
-        const updatedLabs = [...labs];
+      let updatedLabs =
+        existingIdx > -1 ? [...labs] : [...labs, { ...newLab, id: Date.now() }];
+      if (existingIdx > -1)
         updatedLabs[existingIdx] = {
           ...newLab,
           id: updatedLabs[existingIdx].id,
         };
-        setLabs(
-          updatedLabs.sort((a, b) => new Date(a.date) - new Date(b.date))
-        );
-      } else {
-        setLabs(
-          [...labs, { ...newLab, id: Date.now() }].sort(
-            (a, b) => new Date(a.date) - new Date(b.date)
-          )
-        );
-      }
+      updatedLabs.sort((a, b) => new Date(a.date) - new Date(b.date));
+      setLabs(updatedLabs);
       setNewLab({ date: '', temp: '', eosin: '', alt: '' });
+      setAnalyzed(false); // Reset
     }
   };
-  const removeLab = (id) => setLabs(labs.filter((l) => l.id !== id));
-
-  const handleSaveData = () => {
-    alert('Data Saved Successfully! (Simulation)');
+  const removeLab = (id) => {
+    setLabs(labs.filter((l) => l.id !== id));
+    setAnalyzed(false); // Reset
   };
 
-  const handleAnalyze = () => {
-    setAnalyzed(true);
-    setTimeout(() => {
-      resultsRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
+  const organOptions = [
+    { id: 'liver', label: 'Liver', detail: 'ALT > 2N' },
+    { id: 'kidney', label: 'Kidney', detail: 'Cr > 1.5N' },
+    { id: 'lung', label: 'Lung', detail: 'Pneumonitis' },
+    { id: 'heart', label: 'Heart', detail: 'Myocarditis' },
+    { id: 'muscle', label: 'Muscle', detail: 'CPK > 2N' },
+    { id: 'pancreas', label: 'Pancreas', detail: 'Amylase > 2N' },
+  ];
+
+  const handleOrganToggle = (organId) => {
+    setClinical((prev) => {
+      const updated = prev.selectedOrgans.includes(organId)
+        ? prev.selectedOrgans.filter((id) => id !== organId)
+        : [...prev.selectedOrgans, organId];
+      return { ...prev, selectedOrgans: updated };
+    });
+    setAnalyzed(false);
+  };
+
+  const handleClinicalChange = (key, value) => {
+    setClinical({ ...clinical, [key]: value });
+    setAnalyzed(false);
+  };
+
+  const handleRashFeature = (feature) => {
+    setClinical((prev) => ({
+      ...prev,
+      rashFeatures: prev.rashFeatures.includes(feature)
+        ? prev.rashFeatures.filter((x) => x !== feature)
+        : [...prev.rashFeatures, feature],
+    }));
+    setAnalyzed(false);
   };
 
   return (
     <div className="max-w-[1600px] mx-auto p-6 bg-slate-50 min-h-screen font-sans text-slate-800">
-      {/* 3 ROWS STACKED LAYOUT */}
       <div className="space-y-8">
         {/* ROW 1: DRUGS */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
           <h3 className="text-base font-bold text-purple-700 uppercase mb-4 flex items-center gap-2 border-b border-purple-50 pb-3">
             <Pill className="w-5 h-5" /> 1. Suspected Drugs & Onset
           </h3>
-
           <div className="flex flex-col lg:flex-row gap-4 mb-4">
             <div className="flex-1 bg-slate-50 p-3 rounded border border-slate-200">
               <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">
@@ -657,7 +745,10 @@ const DressAssessment = () => {
                 type="date"
                 className="w-full border-slate-300 rounded p-2 font-bold text-red-600 border text-sm"
                 value={onsetDate}
-                onChange={(e) => setOnsetDate(e.target.value)}
+                onChange={(e) => {
+                  setOnsetDate(e.target.value);
+                  setAnalyzed(false);
+                }}
               />
             </div>
             <div className="flex-[3] bg-purple-50 p-3 rounded-lg border border-purple-100 flex flex-col md:flex-row gap-2 items-end">
@@ -708,7 +799,6 @@ const DressAssessment = () => {
               </button>
             </div>
           </div>
-
           <div className="h-[200px] overflow-y-auto border border-dashed border-slate-200 rounded-lg p-1 bg-slate-50/50 custom-scrollbar">
             {drugs.length === 0 ? (
               <div className="h-full flex items-center justify-center text-slate-400 text-sm">
@@ -747,7 +837,6 @@ const DressAssessment = () => {
           <h3 className="text-base font-bold text-purple-700 uppercase mb-4 flex items-center gap-2 border-b border-purple-50 pb-3">
             <Droplet className="w-5 h-5" /> 2. Clinical Data Points
           </h3>
-
           <div className="bg-purple-50 p-3 rounded-lg border border-purple-100 mb-4 flex flex-col md:flex-row gap-4 items-end">
             <div className="w-full md:w-[200px]">
               <label className="text-xs font-bold text-purple-700 uppercase mb-1 block">
@@ -811,7 +900,6 @@ const DressAssessment = () => {
               + Add / Update
             </button>
           </div>
-
           <div className="h-[200px] overflow-y-auto border border-dashed border-slate-200 rounded-lg p-1 bg-slate-50/50 custom-scrollbar">
             {labs.length === 0 ? (
               <div className="h-full flex items-center justify-center text-slate-400 text-sm">
@@ -876,7 +964,6 @@ const DressAssessment = () => {
             (RegiSCAR)
           </h3>
           <div className="grid grid-cols-12 gap-6">
-            {/* 1. General */}
             <div className="col-span-12 md:col-span-3 space-y-4">
               <div className="font-bold text-sm text-slate-900 border-b pb-1 mb-2">
                 General Criteria
@@ -887,7 +974,7 @@ const DressAssessment = () => {
                   className="w-4 h-4 accent-purple-600"
                   checked={clinical.fever}
                   onChange={(e) =>
-                    setClinical({ ...clinical, fever: e.target.checked })
+                    handleClinicalChange('fever', e.target.checked)
                   }
                 />
                 <span className="text-sm font-bold text-slate-700">
@@ -900,15 +987,12 @@ const DressAssessment = () => {
                   className="w-4 h-4 accent-purple-600"
                   checked={clinical.enlargedNodes}
                   onChange={(e) =>
-                    setClinical({
-                      ...clinical,
-                      enlargedNodes: e.target.checked,
-                    })
+                    handleClinicalChange('enlargedNodes', e.target.checked)
                   }
                 />
                 <div>
                   <span className="text-sm block">Lymph Nodes (+1)</span>
-                  <span className="text-xs text-slate-400">>1cm, ≥2 sites</span>
+                  <span className="text-xs text-slate-400">{">"}1cm, ≥2 sites</span>
                 </div>
               </label>
               <label className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
@@ -917,17 +1001,12 @@ const DressAssessment = () => {
                   className="w-4 h-4 accent-purple-600"
                   checked={clinical.atypicalLymph}
                   onChange={(e) =>
-                    setClinical({
-                      ...clinical,
-                      atypicalLymph: e.target.checked,
-                    })
+                    handleClinicalChange('atypicalLymph', e.target.checked)
                   }
                 />
                 <span className="text-sm">Atypical Lymphocytes (+1)</span>
               </label>
             </div>
-
-            {/* 2. Skin */}
             <div className="col-span-12 md:col-span-5 space-y-4 border-x border-slate-50 px-4">
               <div className="font-bold text-sm text-slate-900 border-b pb-1 mb-2">
                 Skin (Need 2 feats for +1)
@@ -939,10 +1018,7 @@ const DressAssessment = () => {
                     className="w-4 h-4 accent-purple-600"
                     checked={clinical.rashPresent}
                     onChange={(e) =>
-                      setClinical({
-                        ...clinical,
-                        rashPresent: e.target.checked,
-                      })
+                      handleClinicalChange('rashPresent', e.target.checked)
                     }
                   />
                   <span className="text-sm font-bold">Rash Present</span>
@@ -954,11 +1030,11 @@ const DressAssessment = () => {
                       className="w-3.5 h-3.5 accent-purple-600"
                       checked={clinical.rashBSA}
                       onChange={(e) =>
-                        setClinical({ ...clinical, rashBSA: e.target.checked })
+                        handleClinicalChange('rashBSA', e.target.checked)
                       }
                     />
                     <span className="text-xs text-purple-800 font-bold">
-                      > 50% BSA (+1)
+                      {">"} 50% BSA (+1)
                     </span>
                   </label>
                 )}
@@ -975,14 +1051,7 @@ const DressAssessment = () => {
                           type="checkbox"
                           className="accent-purple-600"
                           checked={clinical.rashFeatures.includes(f)}
-                          onChange={() => {
-                            setClinical((prev) => ({
-                              ...prev,
-                              rashFeatures: prev.rashFeatures.includes(f)
-                                ? prev.rashFeatures.filter((x) => x !== f)
-                                : [...prev.rashFeatures, f],
-                            }));
-                          }}
+                          onChange={() => handleRashFeature(f)}
                         />{' '}
                         {f}
                       </label>
@@ -991,8 +1060,6 @@ const DressAssessment = () => {
                 </div>
               )}
             </div>
-
-            {/* 3. Organs */}
             <div className="col-span-12 md:col-span-4 space-y-2">
               <div className="font-bold text-sm text-slate-900 border-b pb-1 mb-2">
                 Organs (1 pt / ≥2 pts)
@@ -1028,14 +1095,11 @@ const DressAssessment = () => {
                       className="w-4 h-4 accent-purple-600"
                       checked={clinical.resolutionDays}
                       onChange={(e) =>
-                        setClinical({
-                          ...clinical,
-                          resolutionDays: e.target.checked,
-                        })
+                        handleClinicalChange('resolutionDays', e.target.checked)
                       }
                     />
                     <span className="text-sm font-bold text-slate-700">
-                      Resolution > 15 Days
+                      Resolution {'>'} 15 Days
                     </span>
                   </label>
                 </div>
@@ -1045,7 +1109,7 @@ const DressAssessment = () => {
                     className="accent-purple-600 w-4 h-4 mr-2"
                     checked={clinical.exclusions}
                     onChange={(e) =>
-                      setClinical({ ...clinical, exclusions: e.target.checked })
+                      handleClinicalChange('exclusions', e.target.checked)
                     }
                   />
                   <div className="flex flex-col">
@@ -1061,94 +1125,96 @@ const DressAssessment = () => {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* --- ANALYZE BUTTON --- */}
-      <button
-        onClick={handleAnalyze}
-        className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-4 rounded-xl shadow-lg mb-6 hover:shadow-xl hover:scale-[1.01] transition-all text-lg flex items-center justify-center gap-2 mt-8"
-      >
-        <PlayCircle className="w-6 h-6" /> Analyze Case
-      </button>
+        {/* --- ANALYZE BUTTON (Renamed & No Icon) --- */}
+        <button
+          onClick={handleAnalyze}
+          className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-4 rounded-xl shadow-lg mb-6 hover:shadow-xl hover:scale-[1.01] transition-all text-lg flex items-center justify-center gap-2 mt-8"
+        >
+          Analyze
+        </button>
 
-      {/* --- PHARMACIST NOTE --- */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8">
-        <div className="flex items-center gap-2 mb-4 text-slate-800 font-bold border-b border-slate-100 pb-2">
-          <Edit3 className="w-5 h-5 text-purple-600" />
-          <h3>Pharmacist Note</h3>
+        {/* --- PHARMACIST NOTE --- */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mt-8 mb-8">
+          <div className="flex items-center gap-2 mb-4 text-slate-800 font-bold border-b border-slate-100 pb-2">
+            <Edit3 className="w-5 h-5 text-purple-600" />
+            <h3>Pharmacist Note</h3>
+          </div>
+          <textarea
+            className="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-purple-200 focus:border-purple-400 outline-none h-24 resize-none"
+            placeholder="Enter clinical observations, drug interactions, or recommendations..."
+            value={pharmacistNote}
+            onChange={(e) => setPharmacistNote(e.target.value)}
+          ></textarea>
         </div>
-        <textarea
-          className="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-purple-200 focus:border-purple-400 outline-none h-24 resize-none"
-          placeholder="Enter clinical observations, drug interactions, or recommendations..."
-          value={pharmacistNote}
-          onChange={(e) => setPharmacistNote(e.target.value)}
-        ></textarea>
-      </div>
 
-      {/* --- BOTTOM ROW: ANALYSIS & SCORE --- */}
-      {analyzed && (
-        <div ref={resultsRef} className="animate-fade-in-up space-y-8">
-          {/* SCORE (Wide Row) */}
-          <div className="bg-white p-6 rounded-xl shadow-lg border border-purple-100">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-              <div
-                className={`p-6 text-center rounded-xl ${calculateScore.bg} border ${calculateScore.border} min-w-[250px]`}
-              >
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
-                  RegiSCAR Final Score
-                </h3>
-                <div className="flex items-baseline justify-center gap-2">
+        {/* --- RESULTS (Hidden until analyzed) --- */}
+        {analyzed && (
+          <div ref={resultsRef} className="animate-fade-in-up space-y-8 pb-12">
+            {/* SCORE */}
+            <div className="bg-white p-6 rounded-xl shadow-lg border border-purple-100">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                <div
+                  className={`p-6 text-center rounded-xl ${calculateScore.bg} border ${calculateScore.border} min-w-[250px]`}
+                >
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                    RegiSCAR Final Score
+                  </h3>
+                  <div className="flex items-baseline justify-center gap-2">
+                    <span
+                      className={`text-6xl font-black ${calculateScore.color} leading-none`}
+                    >
+                      {calculateScore.total}
+                    </span>
+                  </div>
                   <span
-                    className={`text-6xl font-black ${calculateScore.color} leading-none`}
+                    className={`inline-block px-4 py-1 mt-2 rounded-full text-sm font-bold bg-white border shadow-sm ${
+                      calculateScore.color
+                    } border-${calculateScore.color.split('-')[1]}-200`}
                   >
-                    {calculateScore.total}
+                    {calculateScore.interpretation}
                   </span>
                 </div>
-                <span
-                  className={`inline-block px-4 py-1 mt-2 rounded-full text-sm font-bold bg-white border shadow-sm ${
-                    calculateScore.color
-                  } border-${calculateScore.color.split('-')[1]}-200`}
-                >
-                  {calculateScore.interpretation}
-                </span>
-              </div>
-
-              <div className="flex-1 w-full">
-                <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">
-                  Score Breakdown
-                </h4>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {calculateScore.breakdown.map((item, i) => (
-                    <div
-                      key={i}
-                      className="flex justify-between items-center p-2 border border-slate-100 rounded bg-slate-50/50"
-                    >
-                      <div>
-                        <span className="font-bold text-xs text-slate-700 block">
-                          {item.label}
-                        </span>
-                        {item.detail && (
-                          <span className="text-[10px] text-slate-400">
-                            {item.detail}
+                <div className="flex-1 w-full">
+                  <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">
+                    Score Breakdown
+                  </h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {calculateScore.breakdown.map((item, i) => (
+                      <div
+                        key={i}
+                        className="flex justify-between items-center p-2 border border-slate-100 rounded bg-slate-50/50"
+                      >
+                        <div>
+                          <span className="font-bold text-xs text-slate-700 block">
+                            {item.label}
                           </span>
-                        )}
+                          {item.detail && (
+                            <span className="text-[10px] text-slate-400">
+                              {item.detail}
+                            </span>
+                          )}
+                        </div>
+                        <ScoreBadge score={item.score} />
                       </div>
-                      <ScoreBadge score={item.score} />
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <SmartTimeline drugs={drugs} labs={labs} onsetDate={onsetDate} />
-          <DrugAnalysisSection
-            drugs={drugs}
-            onsetDate={onsetDate}
-            labs={labs}
-          />
-        </div>
-      )}
+            {/* TIMELINE */}
+            <RevisedTimeline drugs={drugs} labs={labs} onsetDate={onsetDate} />
+
+            {/* DRUG ANALYSIS */}
+            <DrugAnalysisSection
+              drugs={drugs}
+              onsetDate={onsetDate}
+              labs={labs}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 };

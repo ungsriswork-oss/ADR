@@ -274,6 +274,15 @@ const AssessmentForm = () => {
               setDrugList={setDrugList}
               symptomDate={symptomDate}
               setSymptomDate={setSymptomDate}
+              // Pass initial data correctly
+              initialData={{
+                savedData: {
+                  drugs: drugList,
+                  labs: labEntries,
+                  onsetDate: symptomDate,
+                  pharmacistNote,
+                },
+              }}
             />
           )}
           {type === 'agep' && (
@@ -339,6 +348,7 @@ const AssessmentForm = () => {
           )}
         </div>
 
+        {/* --- FOOTER BUTTONS --- */}
         <div className="mt-8 flex justify-end gap-3 print:hidden">
           <button
             onClick={() => navigate('/')}
@@ -347,7 +357,18 @@ const AssessmentForm = () => {
             Cancel
           </button>
 
-          {!['dili', 'sjs', 'rash'].includes(type) && (
+          {/* ❌ ซ่อนปุ่ม Analyze ในทุก Type ที่เรามี (DILI, SJS, RASH, DRESS, AGEP, HEME, ELECTRO)
+            เพราะหน้าจอเหล่านั้นจัดการ Analyze เอง หรือเป็น Auto-calculate หมดแล้ว 
+          */}
+          {![
+            'dili',
+            'sjs',
+            'rash',
+            'dress',
+            'agep',
+            'heme',
+            'electro',
+          ].includes(type) && (
             <button
               onClick={() => setAnalyzeCount((c) => c + 1)}
               className={`px-6 py-2 rounded-lg bg-${theme}-500 hover:bg-${theme}-600 text-white shadow-sm transition`}
