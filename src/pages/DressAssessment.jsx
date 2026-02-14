@@ -8,17 +8,129 @@ import {
   Trash2,
   CheckCircle,
   Edit3,
+  Award, // เพิ่มไอคอนสำหรับ Top 3
 } from 'lucide-react';
 
 /* -------------------------------------------------------------------------- */
-/* 1. TIMELINE COMPONENT (Improved Layout & Style) */
+/* 1. HELPER: RISK CALCULATION LOGIC (New Addition) */
+/* -------------------------------------------------------------------------- */
+const calculateDrugRisk = (drugGroup, onsetDate, labs) => {
+  // Use the earliest start date for the group
+  const sortedSegments = [...drugGroup].sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+  const firstExposure = sortedSegments[0];
+  
+  if (!onsetDate || !firstExposure.startDate) {
+    return { score: -1, level: 'Unknown', text: 'No Data', color: 'bg-slate-100 border-slate-200' };
+  }
+
+  const start = new Date(firstExposure.startDate);
+  const onset = new Date(onsetDate);
+  const diffTime = Math.ceil((onset - start) / (1000 * 60 * 60 * 24));
+
+  // 1. Check Tolerance (If lab improved while drug was ACTIVE)
+  let toleranceFound = false;
+  if (labs && labs.length > 0) {
+    const recoveryLabs = labs.filter((l) => new Date(l.date) > onset);
+    if (recoveryLabs.length > 0) {
+      const lastLab = recoveryLabs[recoveryLabs.length - 1];
+      // Simple criteria for improvement
+      const isImproved = parseFloat(lastLab.temp || 37) < 37.5 && parseFloat(lastLab.eosin || 0) < 500 && parseFloat(lastLab.alt || 0) < 50;
+      
+      if (isImproved) {
+        const labDate = new Date(lastLab.date);
+        // Check if drug was active during this improved lab
+        const activeAtLab = sortedSegments.some((seg) => {
+          const s = new Date(seg.startDate);
+          const e = seg.endDate ? new Date(seg.endDate) : new Date(); // If no end date, assume ongoing
+          return labDate >= s && labDate <= e;
+        });
+        if (activeAtLab) toleranceFound = true;
+      }
+    }
+  }
+
+  if (toleranceFound) {
+    return { score: 0, level: 'Unlikely', text: 'Tolerated (Improved on drug)', color: 'bg-emerald-50 border-emerald-200 text-emerald-800' };
+  }
+
+  // 2. Latency Logic for DRESS (Typical 2-8 weeks)
+  if (diffTime >= 14 && diffTime <= 60) {
+    return { score: 10, level: 'High', text: 'High Risk (2-8 wks)', color: 'bg-rose-50 border-rose-200 text-rose-800' };
+  } else if (diffTime > 5 && diffTime < 14) {
+    return { score: 5, level: 'Medium', text: 'Possible (Early)', color: 'bg-orange-50 border-orange-200 text-orange-800' };
+  } else if (diffTime > 60) {
+    return { score: 2, level: 'Low', text: 'Low Risk (>60 days)', color: 'bg-yellow-50 border-yellow-200 text-yellow-800' };
+  } else {
+    return { score: 1, level: 'Very Low', text: 'Unlikely (<5 days)', color: 'bg-slate-50 border-slate-200 text-slate-600' };
+  }
+};
+
+/* -------------------------------------------------------------------------- */
+/* 2. TOP 3 SUSPECTS COMPONENT */
+/* -------------------------------------------------------------------------- */
+const TopSuspects = ({ drugs, labs, onsetDate }) => {
+  const safeDrugs = Array.isArray(drugs) ? drugs : [];
+  
+  const rankedDrugs = useMemo(() => {
+    const groups = {};
+    safeDrugs.forEach(d => {
+      if(!groups[d.name]) groups[d.name] = [];
+      groups[d.name].push(d);
+    });
+
+    const analyzed = Object.entries(groups).map(([name, segments]) => {
+      const risk = calculateDrugRisk(segments, onsetDate, labs);
+      const start = new Date(segments[0].startDate);
+      const onset = new Date(onsetDate);
+      const latency = !isNaN(start) && !isNaN(onset) ? Math.ceil((onset - start)/(1000*60*60*24)) : '?';
+      return { name, segments, risk, latency };
+    });
+
+    // Sort by Score (Desc) -> Latency
+    return analyzed.sort((a, b) => b.risk.score - a.risk.score).slice(0, 3);
+  }, [safeDrugs, labs, onsetDate]);
+
+  if (rankedDrugs.length === 0) return null;
+
+  return (
+    <div className="bg-gradient-to-br from-white to-slate-50 p-6 rounded-xl shadow-lg border border-slate-200 mb-8 animate-fade-in-up">
+      <div className="flex items-center gap-3 mb-4 border-b border-slate-200 pb-3">
+        <Award className="w-6 h-6 text-orange-500" />
+        <h3 className="text-lg font-bold text-slate-800">Top 3 Suspected Drugs</h3>
+      </div>
+      <div className="space-y-3">
+        {rankedDrugs.map((item, index) => (
+          <div key={item.name} className={`flex items-center justify-between p-3 rounded-lg border ${item.risk.color} bg-white/80 shadow-sm`}>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 border font-bold text-slate-600 shadow-sm">
+                #{index + 1}
+              </div>
+              <div>
+                <div className="font-bold text-slate-800">{item.name}</div>
+                <div className="text-xs text-slate-500">Latency: {item.latency} days</div>
+              </div>
+            </div>
+            <div className="text-right">
+              <span className={`inline-block px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${item.risk.color.replace('border', 'text').replace('bg', 'bg-opacity-20')}`}>
+                {item.risk.level}
+              </span>
+              <div className="text-[10px] text-slate-400 mt-0.5">{item.risk.text}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+/* -------------------------------------------------------------------------- */
+/* 3. TIMELINE COMPONENT (Improved Layout & Style) */
 /* -------------------------------------------------------------------------- */
 
 const RevisedTimeline = ({ drugs, labs, onsetDate }) => {
   const safeDrugs = Array.isArray(drugs) ? drugs : [];
   const safeLabs = Array.isArray(labs) ? labs : [];
 
-  // Configuration for Layout (Wider labels to prevent overlap)
   const LABEL_WIDTH_CLASS = "w-[220px]"; 
   const LEFT_OFFSET_CLASS = "left-[220px]";
   const PADDING_LEFT_CLASS = "pl-[220px]";
@@ -33,7 +145,6 @@ const RevisedTimeline = ({ drugs, labs, onsetDate }) => {
       .filter((d) => d && !isNaN(new Date(d).getTime()))
       .map((d) => new Date(d).getTime());
     
-    // Add buffer
     if (onsetDate && !isNaN(new Date(onsetDate).getTime())) {
       const o = new Date(onsetDate).getTime();
       rawDates.push(o - 86400000 * 2);
@@ -42,7 +153,6 @@ const RevisedTimeline = ({ drugs, labs, onsetDate }) => {
 
     const uniquePoints = [...new Set(rawDates)].sort((a, b) => a - b);
     
-    // Filter interesting dates for labeling
     const interestingDates = new Set([
         onsetDate,
         ...safeDrugs.map(d => d.startDate),
@@ -95,7 +205,6 @@ const RevisedTimeline = ({ drugs, labs, onsetDate }) => {
       </div>
 
       <div className="relative w-full pb-8 overflow-visible"> 
-        {/* Grid Background */}
         <div className={`absolute inset-0 ${PADDING_LEFT_CLASS} pointer-events-none z-0`}>
              <div className="relative w-full h-full">
                 {timelineData.points.map((t, i) => {
@@ -115,18 +224,11 @@ const RevisedTimeline = ({ drugs, labs, onsetDate }) => {
         </div>
 
         <div className="relative z-10 space-y-4">
-            {/* --- SECTION 1: DRUGS & ONSET --- */}
             <div className="relative border-b border-slate-200 pb-4">
-                 {/* ONSET LINE */}
                  {onsetDate && !isNaN(new Date(onsetDate).getTime()) && (
                     <div className={`absolute inset-y-0 right-0 pointer-events-none z-20 overflow-visible ${LEFT_OFFSET_CLASS}`}>
-                       <div 
-                          className="absolute top-0 bottom-0 w-0.5 bg-red-500 border-l border-dashed border-red-500 opacity-80"
-                          style={{ left: `${timelineData.getPos(onsetDate)}%` }}
-                       >
-                           <div className="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm absolute -top-4 left-0 -translate-x-1/2 whitespace-nowrap z-50">
-                              ONSET
-                           </div>
+                       <div className="absolute top-0 bottom-0 w-0.5 bg-red-500 border-l border-dashed border-red-500 opacity-80" style={{ left: `${timelineData.getPos(onsetDate)}%` }}>
+                           <div className="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm absolute -top-4 left-0 -translate-x-1/2 whitespace-nowrap z-50">ONSET</div>
                        </div>
                     </div>
                  )}
@@ -137,9 +239,7 @@ const RevisedTimeline = ({ drugs, labs, onsetDate }) => {
                  </div>
                  {Object.entries(groupedDrugs).map(([name, segments], i) => (
                     <div key={i} className="flex h-8 items-center group hover:bg-slate-50 rounded relative z-10">
-                        <div className={`${LABEL_WIDTH_CLASS} shrink-0 pr-6 text-right text-xs font-bold text-slate-700 truncate`} title={name}>
-                            {name}
-                        </div>
+                        <div className={`${LABEL_WIDTH_CLASS} shrink-0 pr-6 text-right text-xs font-bold text-slate-700 truncate`} title={name}>{name}</div>
                         <div className="flex-1 relative h-full">
                             {segments.map((seg, idx) => {
                                 const start = timelineData.getPos(seg.startDate);
@@ -147,7 +247,6 @@ const RevisedTimeline = ({ drugs, labs, onsetDate }) => {
                                 const width = Math.max(end - start, 0.5);
                                 return (
                                     <div key={idx} className="absolute h-2.5 bg-slate-500 rounded-full opacity-80 top-[11px]" style={{ left: `${start}%`, width: `${width}%` }}>
-                                        {/* ✅ Dots Larger & Styled */}
                                         <div className="absolute left-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-slate-700 rounded-full border-2 border-white shadow-sm -ml-1.5"></div>
                                         {seg.endDate && <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-slate-700 rounded-full border-2 border-white shadow-sm -mr-1.5"></div>}
                                     </div>
@@ -158,54 +257,35 @@ const RevisedTimeline = ({ drugs, labs, onsetDate }) => {
                  ))}
             </div>
 
-            {/* --- SECTION 2: LABS --- */}
             <div className="pt-2">
                  <div className="flex h-6 items-end pb-1 mb-2">
                      <div className={`${LABEL_WIDTH_CLASS} shrink-0 font-bold text-xs text-right pr-6 text-slate-400`}>CLINICAL DATA</div>
                      <div className="flex-1"></div>
                  </div>
-                 
-                 {/* Temp */}
                  <div className="flex h-8 items-center">
                     <div className={`${LABEL_WIDTH_CLASS} shrink-0 pr-6 text-right text-xs font-bold text-orange-500 uppercase`}>Temp (°C)</div>
                     <div className="flex-1 relative h-full">
                         {safeLabs.map((lab, i) => {
                             const pos = timelineData.getPos(lab.date);
-                            return (
-                                <div key={i} className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 text-[10px] font-bold px-2 py-0.5 rounded-full border shadow-sm z-10 ${parseFloat(lab.temp) >= 38.5 ? 'bg-red-50 text-red-600 border-red-200' : 'bg-white text-slate-600 border-slate-200'}`} style={{ left: `${pos}%` }}>
-                                    {lab.temp}
-                                </div>
-                            )
+                            return <div key={i} className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 text-[10px] font-bold px-2 py-0.5 rounded-full border shadow-sm z-10 ${parseFloat(lab.temp) >= 38.5 ? 'bg-red-50 text-red-600 border-red-200' : 'bg-white text-slate-600 border-slate-200'}`} style={{ left: `${pos}%` }}>{lab.temp}</div>
                         })}
                     </div>
                  </div>
-
-                 {/* Eosin */}
                  <div className="flex h-8 items-center">
                     <div className={`${LABEL_WIDTH_CLASS} shrink-0 pr-6 text-right text-xs font-bold text-purple-600 uppercase`}>Eosinophil</div>
                     <div className="flex-1 relative h-full">
                         {safeLabs.map((lab, i) => {
                             const pos = timelineData.getPos(lab.date);
-                            return (
-                                <div key={i} className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 text-[10px] font-bold px-2 py-0.5 rounded-full border shadow-sm z-10 ${parseFloat(lab.eosin) >= 700 ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-white text-slate-600 border-slate-200'}`} style={{ left: `${pos}%` }}>
-                                    {lab.eosin}
-                                </div>
-                            )
+                            return <div key={i} className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 text-[10px] font-bold px-2 py-0.5 rounded-full border shadow-sm z-10 ${parseFloat(lab.eosin) >= 700 ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-white text-slate-600 border-slate-200'}`} style={{ left: `${pos}%` }}>{lab.eosin}</div>
                         })}
                     </div>
                  </div>
-
-                 {/* ALT */}
                  <div className="flex h-8 items-center">
                     <div className={`${LABEL_WIDTH_CLASS} shrink-0 pr-6 text-right text-xs font-bold text-blue-500 uppercase`}>ALT (U/L)</div>
                     <div className="flex-1 relative h-full">
                         {safeLabs.filter(l => l.alt).map((lab, i) => {
                             const pos = timelineData.getPos(lab.date);
-                            return (
-                                <div key={i} className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 min-w-[24px] px-2 py-0.5 text-center text-[10px] font-bold rounded-full border shadow-sm z-10 ${parseFloat(lab.alt) > 100 ? 'bg-blue-50 text-blue-700 border-blue-300' : 'bg-white text-blue-600 border-slate-200'}`} style={{ left: `${pos}%` }}>
-                                    {lab.alt}
-                                </div>
-                            )
+                            return <div key={i} className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 min-w-[24px] px-2 py-0.5 text-center text-[10px] font-bold rounded-full border shadow-sm z-10 ${parseFloat(lab.alt) > 100 ? 'bg-blue-50 text-blue-700 border-blue-300' : 'bg-white text-blue-600 border-slate-200'}`} style={{ left: `${pos}%` }}>{lab.alt}</div>
                         })}
                     </div>
                  </div>
@@ -217,7 +297,7 @@ const RevisedTimeline = ({ drugs, labs, onsetDate }) => {
 };
 
 /* -------------------------------------------------------------------------- */
-/* 2. DRUG ANALYSIS COMPONENT */
+/* 4. DRUG ANALYSIS COMPONENT */
 /* -------------------------------------------------------------------------- */
 
 const DrugAnalysisSection = ({ drugs, onsetDate, labs }) => {
@@ -240,81 +320,28 @@ const DrugAnalysisSection = ({ drugs, onsetDate, labs }) => {
       <div className="flex items-center gap-3 mb-6 border-b border-slate-700 pb-4">
         <AlertTriangle className="text-yellow-400" size={24} />
         <div>
-          <h3 className="font-bold text-lg">Suspected Drug Analysis</h3>
+          <h3 className="font-bold text-lg">Detailed Suspected Drug Analysis</h3>
           <p className="text-sm text-slate-400">Based on Latency & Re-challenge/Tolerance Data</p>
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {Object.entries(groupedDrugs).map(([name, segments]) => (
-          <SingleDrugAnalysis key={name} name={name} segments={segments} onsetDate={onsetDate} labs={safeLabs} />
-        ))}
-      </div>
-    </div>
-  );
-};
-
-const SingleDrugAnalysis = ({ name, segments, onsetDate, labs }) => {
-  const sortedSegments = [...segments].sort(
-    (a, b) => new Date(a.startDate) - new Date(b.startDate)
-  );
-  const firstExposure = sortedSegments[0];
-  let latency = null;
-  let riskLevel = 'Unknown';
-  let riskColor = 'bg-white text-slate-800';
-  let riskText = 'No Dates';
-
-  if (onsetDate && firstExposure.startDate && !isNaN(new Date(onsetDate)) && !isNaN(new Date(firstExposure.startDate))) {
-    const start = new Date(firstExposure.startDate);
-    const onset = new Date(onsetDate);
-    const diffTime = Math.ceil((onset - start) / (1000 * 60 * 60 * 24));
-    latency = diffTime;
-
-    if (diffTime >= 14 && diffTime <= 60) {
-      riskLevel = 'High'; riskColor = 'bg-rose-50 border-rose-200 text-rose-800'; riskText = 'HIGH RISK (Typical 2-8 wks)';
-    } else if (diffTime > 5 && diffTime < 14) {
-      riskLevel = 'Medium'; riskColor = 'bg-orange-50 border-orange-200 text-orange-800'; riskText = 'Possible (Early)';
-    } else if (diffTime > 60) {
-      riskLevel = 'Low'; riskColor = 'bg-yellow-50 border-yellow-200 text-yellow-800'; riskText = 'Low Risk (>60 days)';
-    } else if (diffTime <= 5) {
-      riskLevel = 'Very Low'; riskColor = 'bg-green-50 border-green-200 text-green-800'; riskText = 'Unlikely (<5 days)';
-    }
-  }
-
-  let toleranceFound = false;
-  if (labs && labs.length > 0 && onsetDate && !isNaN(new Date(onsetDate))) {
-    const onset = new Date(onsetDate);
-    const recoveryLabs = labs.filter((l) => new Date(l.date) > onset);
-    if (recoveryLabs.length > 0) {
-      const lastLab = recoveryLabs[recoveryLabs.length - 1];
-      const isImproved = parseFloat(lastLab.temp || 37) < 37.5 && parseFloat(lastLab.eosin || 0) < 500 && parseFloat(lastLab.alt || 0) < 50;
-      if (isImproved) {
-        const labDate = new Date(lastLab.date);
-        const activeAtLab = sortedSegments.some((seg) => {
-          const s = new Date(seg.startDate);
-          const e = seg.endDate ? new Date(seg.endDate) : new Date();
-          return labDate >= s && labDate <= e;
-        });
-        if (activeAtLab) toleranceFound = true;
-      }
-    }
-  }
-  if (toleranceFound) {
-    riskColor = 'bg-emerald-50 border-emerald-200 text-emerald-800';
-    riskText = 'UNLIKELY (Tolerated/Improved)';
-  }
-
-  return (
-    <div className={`flex items-center justify-between p-4 rounded-lg border ${riskColor} mb-2`}>
-      <div className="flex items-center gap-4">
-        <div className={`p-2.5 rounded-full bg-white/50 border border-black/5`}> <Pill size={20} /> </div>
-        <div>
-          <div className="font-bold text-base">{name}</div>
-          <div className="text-xs opacity-80">Start: {firstExposure.startDate} {sortedSegments.length > 1 && (<span className="ml-2 bg-black/10 px-1.5 py-0.5 rounded text-[10px] font-bold">Multiple Exposures</span>)}</div>
-        </div>
-      </div>
-      <div className="text-right">
-        <div className="text-xs font-extrabold uppercase tracking-wide">{riskText}</div>
-        <div className="text-xs opacity-70 mt-1">Latency: {latency !== null ? `${latency} days` : '-'}</div>
+        {Object.entries(groupedDrugs).map(([name, segments]) => {
+           const risk = calculateDrugRisk(segments, onsetDate, labs);
+           return (
+             <div key={name} className={`flex items-center justify-between p-4 rounded-lg border ${risk.color} mb-2`}>
+                <div className="flex items-center gap-4">
+                  <div className={`p-2.5 rounded-full bg-white/50 border border-black/5`}> <Pill size={20} /> </div>
+                  <div>
+                    <div className="font-bold text-base">{name}</div>
+                    <div className="text-xs opacity-80">Start: {segments[0].startDate} {segments.length > 1 && (<span className="ml-2 bg-black/10 px-1.5 py-0.5 rounded text-[10px] font-bold">Multiple Exposures</span>)}</div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xs font-extrabold uppercase tracking-wide">{risk.text}</div>
+                </div>
+             </div>
+           );
+        })}
       </div>
     </div>
   );
@@ -328,11 +355,11 @@ const ScoreBadge = ({ score }) => {
 };
 
 /* -------------------------------------------------------------------------- */
-/* 3. MAIN DRESS ASSESSMENT COMPONENT */
+/* 5. MAIN DRESS ASSESSMENT COMPONENT */
 /* -------------------------------------------------------------------------- */
 
 const DressAssessment = (props) => {
-  const location = useLocation(); // ✅ Access router state to detect Saved Case
+  const location = useLocation();
   
   const drugs = props.drugList || [];
   const setDrugs = props.setDrugList || (() => {});
@@ -350,7 +377,7 @@ const DressAssessment = (props) => {
   const [newLab, setNewLab] = useState({ date: '', temp: '', eosin: '', alt: '' });
   const [newDrug, setNewDrug] = useState({ name: '', startDate: '', endDate: '' });
   const resultsRef = useRef(null);
-  const hasAutoShownRef = useRef(false); // Track if we've already auto-shown
+  const hasAutoShownRef = useRef(false);
 
   // --- 1. LOAD LOCAL DATA ---
   useEffect(() => {
@@ -363,24 +390,22 @@ const DressAssessment = (props) => {
 
   // --- 2. AUTO-SHOW SAVED CASE LOGIC ---
   useEffect(() => {
-    // Check if we are in "Saved Case Mode" (via Router state)
     const isSavedCase = !!location.state?.caseData;
-    
-    // Only auto-show if:
-    // 1. It IS a saved case
-    // 2. We haven't auto-shown yet (prevent re-showing on edits)
-    // 3. We actually have data to show
     if (isSavedCase && !hasAutoShownRef.current) {
         if (drugs.length > 0 || labs.length > 0) {
-            setAnalyzed(true);
-            hasAutoShownRef.current = true;
-            setTimeout(() => { resultsRef.current?.scrollIntoView({ behavior: 'smooth' }); }, 100);
+            // Delay to prevent race conditions
+            setTimeout(() => {
+                setAnalyzed(true);
+                hasAutoShownRef.current = true;
+                resultsRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }, 300);
         }
     }
   }, [drugs, labs, location.state]);
 
-  // --- 3. CALCULATE SCORE ---
-  const calculateScore = useMemo(() => {
+  // --- 3. CALCULATE SCORE & RANK DRUGS ---
+  const { scoreData, rankedDrugs } = useMemo(() => {
+    // A. Calculate RegiSCAR Score
     let breakdown = [];
     let total = 0;
     const safeLabs = Array.isArray(labs) ? labs : [];
@@ -437,25 +462,56 @@ const DressAssessment = (props) => {
     if (total >= 4) { interpretation = 'Probable'; color = 'text-rose-600'; bg = 'bg-rose-50'; border = 'border-rose-100'; }
     if (total > 5) { interpretation = 'Definite'; color = 'text-red-800'; bg = 'bg-red-100'; border = 'border-red-300'; }
 
-    return { total, breakdown, interpretation, color, bg, border };
-  }, [clinical, labs]);
+    // B. Calculate Ranked Drugs
+    const groups = {};
+    const safeDrugs = Array.isArray(drugs) ? drugs : [];
+    safeDrugs.forEach(d => {
+        if(!groups[d.name]) groups[d.name] = [];
+        groups[d.name].push(d);
+    });
+    
+    const analyzedDrugs = Object.entries(groups).map(([name, segments]) => {
+        const risk = calculateDrugRisk(segments, onsetDate, labs);
+        return { name, score: risk.score, risk }; 
+    });
+    // Sort by risk score descending
+    const sortedDrugs = analyzedDrugs.sort((a, b) => b.score - a.score);
 
-  // --- 4. SYNC TO PARENT (BREAK LOOP) ---
+    return {
+        scoreData: { total, breakdown, interpretation, color, bg, border },
+        rankedDrugs: sortedDrugs
+    };
+  }, [clinical, labs, drugs, onsetDate]);
+
+  // --- 4. SYNC TO PARENT (WITH BREAK LOOP FIX) ---
   const lastResultRef = useRef(null);
+  
+  // Use stringify to compare deep objects effectively without loop
+  const resultString = JSON.stringify({
+      score: scoreData.total,
+      interpretation: scoreData.interpretation,
+      rankedDrugs, // Including ranked drugs here allows Parent to see the changes
+      drugs, labs, onsetDate, clinical, pharmacistNote
+  });
+
   useEffect(() => {
     if(props.onAnalysisComplete) {
        const newResult = {
           type: 'RegiSCAR',
-          score: calculateScore.total,
-          interpretation: calculateScore.interpretation,
+          score: scoreData.total,
+          interpretation: scoreData.interpretation,
+          rankedDrugs: rankedDrugs, // ✅ Send Sorted Drugs to Parent
           rawData: { drugs, labs, onsetDate, clinical, pharmacistNote }
        };
-       if (JSON.stringify(newResult) !== JSON.stringify(lastResultRef.current)) {
-           lastResultRef.current = newResult;
-           setTimeout(() => { props.onAnalysisComplete(newResult); }, 0);
+
+       if (resultString !== lastResultRef.current) {
+           lastResultRef.current = resultString;
+           // Break Loop:
+           const t = setTimeout(() => { props.onAnalysisComplete(newResult); }, 50);
+           return () => clearTimeout(t);
        }
     }
-  }, [drugs, labs, onsetDate, clinical, pharmacistNote, calculateScore]);
+  }, [resultString, props.onAnalysisComplete]); // Dependency on the String rep
 
   // --- HANDLERS ---
   const handleAnalyze = () => {
@@ -467,13 +523,10 @@ const DressAssessment = (props) => {
     if (newDrug.name && newDrug.startDate && !isNaN(new Date(newDrug.startDate).getTime())) {
       setDrugs([...drugs, { ...newDrug, id: Date.now() }]);
       setNewDrug({ name: '', startDate: '', endDate: '' });
-      setAnalyzed(false); // Reset
+      setAnalyzed(false);
     }
   };
-  const removeDrug = (id) => {
-      setDrugs(drugs.filter((d) => d.id !== id));
-      setAnalyzed(false); // Reset
-  };
+  const removeDrug = (id) => { setDrugs(drugs.filter((d) => d.id !== id)); setAnalyzed(false); };
 
   const addLab = () => {
     if (newLab.date && !isNaN(new Date(newLab.date).getTime())) {
@@ -483,22 +536,10 @@ const DressAssessment = (props) => {
       updatedLabs.sort((a, b) => new Date(a.date) - new Date(b.date));
       setLabs(updatedLabs);
       setNewLab({ date: '', temp: '', eosin: '', alt: '' });
-      setAnalyzed(false); // Reset
+      setAnalyzed(false);
     }
   };
-  const removeLab = (id) => {
-      setLabs(labs.filter((l) => l.id !== id));
-      setAnalyzed(false); // Reset
-  };
-
-  const organOptions = [
-    { id: 'liver', label: 'Liver', detail: 'ALT > 2N' },
-    { id: 'kidney', label: 'Kidney', detail: 'Cr > 1.5N' },
-    { id: 'lung', label: 'Lung', detail: 'Pneumonitis' },
-    { id: 'heart', label: 'Heart', detail: 'Myocarditis' },
-    { id: 'muscle', label: 'Muscle', detail: 'CPK > 2N' },
-    { id: 'pancreas', label: 'Pancreas', detail: 'Amylase > 2N' },
-  ];
+  const removeLab = (id) => { setLabs(labs.filter((l) => l.id !== id)); setAnalyzed(false); };
 
   const handleOrganToggle = (organId) => {
     setClinical((prev) => {
@@ -508,15 +549,14 @@ const DressAssessment = (props) => {
     setAnalyzed(false);
   };
 
-  const handleClinicalChange = (key, value) => {
-      setClinical({ ...clinical, [key]: value });
-      setAnalyzed(false);
-  };
+  const handleClinicalChange = (key, value) => { setClinical({ ...clinical, [key]: value }); setAnalyzed(false); };
 
   const handleRashFeature = (feature) => {
       setClinical((prev) => ({ ...prev, rashFeatures: prev.rashFeatures.includes(feature) ? prev.rashFeatures.filter((x) => x !== feature) : [...prev.rashFeatures, feature] }));
       setAnalyzed(false);
   };
+
+  const hasData = drugs.length > 0 || labs.length > 0;
 
   return (
     <div className="max-w-[1600px] mx-auto p-6 bg-slate-50 min-h-screen font-sans text-slate-800">
@@ -657,7 +697,7 @@ const DressAssessment = (props) => {
           </div>
         </div>
 
-        {/* --- ANALYZE BUTTON (Trigger) - Renamed & No Icon --- */}
+        {/* --- ANALYZE BUTTON --- */}
         <button
           onClick={handleAnalyze}
           className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-4 rounded-xl shadow-lg mb-6 hover:shadow-xl hover:scale-[1.01] transition-all text-lg flex items-center justify-center gap-2 mt-8"
@@ -677,15 +717,15 @@ const DressAssessment = (props) => {
             {/* SCORE */}
             <div className="bg-white p-6 rounded-xl shadow-lg border border-purple-100">
               <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                <div className={`p-6 text-center rounded-xl ${calculateScore.bg} border ${calculateScore.border} min-w-[250px]`}>
+                <div className={`p-6 text-center rounded-xl ${scoreData.bg} border ${scoreData.border} min-w-[250px]`}>
                   <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">RegiSCAR Final Score</h3>
-                  <div className="flex items-baseline justify-center gap-2"><span className={`text-6xl font-black ${calculateScore.color} leading-none`}>{calculateScore.total}</span></div>
-                  <span className={`inline-block px-4 py-1 mt-2 rounded-full text-sm font-bold bg-white border shadow-sm ${calculateScore.color} border-${calculateScore.color.split('-')[1]}-200`}>{calculateScore.interpretation}</span>
+                  <div className="flex items-baseline justify-center gap-2"><span className={`text-6xl font-black ${scoreData.color} leading-none`}>{scoreData.total}</span></div>
+                  <span className={`inline-block px-4 py-1 mt-2 rounded-full text-sm font-bold bg-white border shadow-sm ${scoreData.color} border-${scoreData.color.split('-')[1]}-200`}>{scoreData.interpretation}</span>
                 </div>
                 <div className="flex-1 w-full">
                   <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Score Breakdown</h4>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {calculateScore.breakdown.map((item, i) => (
+                    {scoreData.breakdown.map((item, i) => (
                       <div key={i} className="flex justify-between items-center p-2 border border-slate-100 rounded bg-slate-50/50">
                         <div><span className="font-bold text-xs text-slate-700 block">{item.label}</span>{item.detail && (<span className="text-[10px] text-slate-400">{item.detail}</span>)}</div>
                         <ScoreBadge score={item.score} />
@@ -696,6 +736,9 @@ const DressAssessment = (props) => {
               </div>
             </div>
             
+            {/* TOP 3 SUSPECTS (NEW) */}
+            <TopSuspects drugs={drugs} labs={labs} onsetDate={onsetDate} />
+
             {/* TIMELINE */}
             <RevisedTimeline drugs={drugs} labs={labs} onsetDate={onsetDate} />
             
