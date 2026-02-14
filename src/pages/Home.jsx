@@ -24,6 +24,23 @@ const Home = () => {
     navigate(`/assess/${caseData.type || 'dili'}`, { state: { caseData } });
   };
 
+  // ✅ HELPER: ฟังก์ชันใหม่ช่วยดึงข้อมูลยาให้ครบทุกแบบ
+  const getSuspectedDrugs = (c) => {
+    // 1. ลองดึงจาก rankedDrugs (ผลวิเคราะห์ที่เรียงแล้ว)
+    if (Array.isArray(c.rankedDrugs) && c.rankedDrugs.length > 0) {
+        return c.rankedDrugs;
+    }
+    // 2. ถ้าไม่มี ให้ลองดูใน savedData.drugList (สำหรับเคสใหม่ๆ)
+    if (c.savedData && Array.isArray(c.savedData.drugList) && c.savedData.drugList.length > 0) {
+        return c.savedData.drugList;
+    }
+    // 3. ถ้ายังไม่มี ให้ลองดูที่ drugList โดยตรง (เคสเก่า)
+    if (Array.isArray(c.drugList) && c.drugList.length > 0) {
+        return c.drugList;
+    }
+    return [];
+  };
+
   const tools = [
     {
       id: 'dili',
@@ -275,10 +292,10 @@ const Home = () => {
                         </span>
                       </td>
 
-                      {/* 2. แสดง Suspected Drugs แบบเคส Man Ung */}
+                      {/* 2. แสดง Suspected Drugs แบบเคส Man Ung (ใช้ฟังก์ชัน helper) */}
                       <td className="p-4">
                         <div className="flex flex-wrap gap-1">
-                          {(c.rankedDrugs || []).slice(0, 3).map((d, i) => (
+                          {getSuspectedDrugs(c).slice(0, 3).map((d, i) => (
                             <span
                               key={i}
                               className="px-2 py-0.5 rounded text-xs border font-medium bg-slate-50 text-slate-600 border-slate-200"
@@ -289,7 +306,7 @@ const Home = () => {
                               </span>
                             </span>
                           ))}
-                          {(!c.rankedDrugs || c.rankedDrugs.length === 0) && (
+                          {getSuspectedDrugs(c).length === 0 && (
                             <span className="text-slate-400 italic text-xs">
                               No data
                             </span>
