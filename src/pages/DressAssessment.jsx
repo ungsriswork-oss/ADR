@@ -88,7 +88,8 @@ const RevisedTimeline = ({ drugs, labs, onsetDate }) => {
   }, {});
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-lg border border-slate-200 mb-8 font-sans animate-fade-in-up mt-8">
+    // Added print:print-color-adjust-exact to force background colors in print
+    <div className="bg-white p-6 rounded-xl shadow-lg border border-slate-200 mb-8 font-sans animate-fade-in-up mt-8 print:shadow-none print:border-0 print:mt-4 print:print-color-adjust-exact">
       <div className="flex items-center gap-2 mb-4 text-slate-800 font-bold border-b border-slate-100 pb-3">
         <Activity className="w-6 h-6 text-purple-600" />
         <h3 className="text-lg">Clinical Timeline (Focus View)</h3>
@@ -146,10 +147,11 @@ const RevisedTimeline = ({ drugs, labs, onsetDate }) => {
                                 const end = seg.endDate ? timelineData.getPos(seg.endDate) : 100; 
                                 const width = Math.max(end - start, 0.5);
                                 return (
-                                    <div key={idx} className="absolute h-2.5 bg-slate-500 rounded-full opacity-80 top-[11px]" style={{ left: `${start}%`, width: `${width}%` }}>
+                                    // *** FIXED HERE: Added print classes to force visibility ***
+                                    <div key={idx} className="absolute h-2.5 bg-slate-500 rounded-full opacity-80 top-[11px] print:bg-slate-600 print:opacity-100 print:border print:border-slate-800" style={{ left: `${start}%`, width: `${width}%` }}>
                                         {/* ✅ Dots Larger & Styled */}
-                                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-slate-700 rounded-full border-2 border-white shadow-sm -ml-1.5"></div>
-                                        {seg.endDate && <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-slate-700 rounded-full border-2 border-white shadow-sm -mr-1.5"></div>}
+                                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-slate-700 rounded-full border-2 border-white shadow-sm -ml-1.5 print:bg-black print:border-black"></div>
+                                        {seg.endDate && <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-slate-700 rounded-full border-2 border-white shadow-sm -mr-1.5 print:bg-black print:border-black"></div>}
                                     </div>
                                 )
                             })}
@@ -236,12 +238,13 @@ const DrugAnalysisSection = ({ drugs, onsetDate, labs }) => {
   if (Object.keys(groupedDrugs).length === 0) return null;
 
   return (
-    <div className="bg-slate-800 text-white p-6 rounded-xl shadow-lg border border-slate-700 mt-6">
-      <div className="flex items-center gap-3 mb-6 border-b border-slate-700 pb-4">
-        <AlertTriangle className="text-yellow-400" size={24} />
+    // Added print classes for proper sizing and color
+    <div className="bg-slate-800 text-white p-6 rounded-xl shadow-lg border border-slate-700 mt-6 print:bg-white print:text-black print:border-slate-300 print:shadow-none print:mt-4">
+      <div className="flex items-center gap-3 mb-6 border-b border-slate-700 pb-4 print:border-slate-300">
+        <AlertTriangle className="text-yellow-400 print:text-black" size={24} />
         <div>
           <h3 className="font-bold text-lg">Suspected Drug Analysis</h3>
-          <p className="text-sm text-slate-400">Based on Latency & Re-challenge/Tolerance Data</p>
+          <p className="text-sm text-slate-400 print:text-slate-600">Based on Latency & Re-challenge/Tolerance Data</p>
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -304,7 +307,7 @@ const SingleDrugAnalysis = ({ name, segments, onsetDate, labs }) => {
   }
 
   return (
-    <div className={`flex items-center justify-between p-4 rounded-lg border ${riskColor} mb-2`}>
+    <div className={`flex items-center justify-between p-4 rounded-lg border ${riskColor} mb-2 print:border-slate-300 print:text-black`}>
       <div className="flex items-center gap-4">
         <div className={`p-2.5 rounded-full bg-white/50 border border-black/5`}> <Pill size={20} /> </div>
         <div>
@@ -324,7 +327,7 @@ const ScoreBadge = ({ score }) => {
   let color = 'bg-slate-100 text-slate-500';
   if (score > 0) color = 'bg-rose-100 text-rose-700 border-rose-200';
   if (score < 0) color = 'bg-blue-50 text-blue-600 border-blue-200';
-  return <span className={`inline-flex items-center justify-center min-w-[32px] px-2 py-0.5 rounded text-sm font-bold border ${color}`}>{score > 0 ? `+${score}` : score}</span>;
+  return <span className={`inline-flex items-center justify-center min-w-[32px] px-2 py-0.5 rounded text-sm font-bold border ${color} print:border-slate-300 print:bg-white print:text-black`}>{score > 0 ? `+${score}` : score}</span>;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -519,10 +522,11 @@ const DressAssessment = (props) => {
   };
 
   return (
-    <div className="max-w-[1600px] mx-auto p-6 bg-slate-50 min-h-screen font-sans text-slate-800">
-      <div className="space-y-8">
-        {/* ROW 1: DRUGS */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+    <div className="max-w-[1600px] mx-auto p-6 bg-slate-50 min-h-screen font-sans text-slate-800 print:bg-white print:p-0 print:min-h-0">
+      <div className="space-y-8 print:space-y-0">
+        
+        {/* ROW 1: DRUGS - HIDDEN ON PRINT */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 print:hidden">
           <h3 className="text-base font-bold text-purple-700 uppercase mb-4 flex items-center gap-2 border-b border-purple-50 pb-3">
             <Pill className="w-5 h-5" /> 1. Suspected Drugs & Onset
           </h3>
@@ -554,8 +558,8 @@ const DressAssessment = (props) => {
           </div>
         </div>
 
-        {/* ROW 2: LABS */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+        {/* ROW 2: LABS - HIDDEN ON PRINT */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 print:hidden">
           <h3 className="text-base font-bold text-purple-700 uppercase mb-4 flex items-center gap-2 border-b border-purple-50 pb-3"><Droplet className="w-5 h-5" /> 2. Clinical Data Points</h3>
           <div className="bg-purple-50 p-3 rounded-lg border border-purple-100 mb-4 flex flex-col md:flex-row gap-4 items-end">
             <div className="w-full md:w-[200px]"><label className="text-xs font-bold text-purple-700 uppercase mb-1 block">Date</label><input type="date" className="w-full text-xs border rounded p-2 bg-white" value={newLab.date} onChange={(e) => setNewLab({ ...newLab, date: e.target.value })} /></div>
@@ -585,8 +589,8 @@ const DressAssessment = (props) => {
           </div>
         </div>
 
-        {/* ROW 3: CHECKLIST */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+        {/* ROW 3: CHECKLIST - HIDDEN ON PRINT */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 print:hidden">
           <h3 className="text-base font-bold text-purple-700 uppercase mb-6 flex items-center gap-2 border-b border-purple-50 pb-3"><CheckCircle className="w-5 h-5" /> 3. Detailed Clinical Checklist (RegiSCAR)</h3>
           <div className="grid grid-cols-12 gap-6">
             <div className="col-span-12 md:col-span-3 space-y-4">
@@ -657,36 +661,36 @@ const DressAssessment = (props) => {
           </div>
         </div>
 
-        {/* --- ANALYZE BUTTON (Trigger) - Renamed & No Icon --- */}
+        {/* --- ANALYZE BUTTON (Trigger) - HIDDEN ON PRINT --- */}
         <button
           onClick={handleAnalyze}
-          className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-4 rounded-xl shadow-lg mb-6 hover:shadow-xl hover:scale-[1.01] transition-all text-lg flex items-center justify-center gap-2 mt-8"
+          className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-4 rounded-xl shadow-lg mb-6 hover:shadow-xl hover:scale-[1.01] transition-all text-lg flex items-center justify-center gap-2 mt-8 print:hidden"
         >
           Analyze
         </button>
 
-        {/* --- PHARMACIST NOTE --- */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mt-8 mb-8">
+        {/* --- PHARMACIST NOTE - HIDDEN ON PRINT --- */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mt-8 mb-8 print:hidden">
           <div className="flex items-center gap-2 mb-4 text-slate-800 font-bold border-b border-slate-100 pb-2"><Edit3 className="w-5 h-5 text-purple-600" /><h3>Pharmacist Note</h3></div>
           <textarea className="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-purple-200 focus:border-purple-400 outline-none h-24 resize-none" placeholder="Enter clinical observations, drug interactions, or recommendations..." value={pharmacistNote} onChange={(e) => setPharmacistNote(e.target.value)}></textarea>
         </div>
 
-        {/* --- RESULTS (Hidden until analyzed) --- */}
+        {/* --- RESULTS (Hidden until analyzed, VISIBLE ON PRINT) --- */}
         {analyzed && (
-          <div ref={resultsRef} className="animate-fade-in-up space-y-8 pb-12">
-            {/* SCORE */}
-            <div className="bg-white p-6 rounded-xl shadow-lg border border-purple-100">
+          <div ref={resultsRef} className="animate-fade-in-up space-y-8 pb-12 print:space-y-0 print:block">
+            {/* SCORE - Page 1 */}
+            <div className="bg-white p-6 rounded-xl shadow-lg border border-purple-100 print:shadow-none print:border-slate-200">
               <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                <div className={`p-6 text-center rounded-xl ${calculateScore.bg} border ${calculateScore.border} min-w-[250px]`}>
+                <div className={`p-6 text-center rounded-xl ${calculateScore.bg} border ${calculateScore.border} min-w-[250px] print:bg-white print:border-slate-300`}>
                   <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">RegiSCAR Final Score</h3>
-                  <div className="flex items-baseline justify-center gap-2"><span className={`text-6xl font-black ${calculateScore.color} leading-none`}>{calculateScore.total}</span></div>
-                  <span className={`inline-block px-4 py-1 mt-2 rounded-full text-sm font-bold bg-white border shadow-sm ${calculateScore.color} border-${calculateScore.color.split('-')[1]}-200`}>{calculateScore.interpretation}</span>
+                  <div className="flex items-baseline justify-center gap-2"><span className={`text-6xl font-black ${calculateScore.color} leading-none print:text-black`}>{calculateScore.total}</span></div>
+                  <span className={`inline-block px-4 py-1 mt-2 rounded-full text-sm font-bold bg-white border shadow-sm ${calculateScore.color} border-${calculateScore.color.split('-')[1]}-200 print:text-black print:border-black`}>{calculateScore.interpretation}</span>
                 </div>
                 <div className="flex-1 w-full">
-                  <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Score Breakdown</h4>
+                  <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3 print:text-black">Score Breakdown</h4>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {calculateScore.breakdown.map((item, i) => (
-                      <div key={i} className="flex justify-between items-center p-2 border border-slate-100 rounded bg-slate-50/50">
+                      <div key={i} className="flex justify-between items-center p-2 border border-slate-100 rounded bg-slate-50/50 print:bg-white print:border-slate-200">
                         <div><span className="font-bold text-xs text-slate-700 block">{item.label}</span>{item.detail && (<span className="text-[10px] text-slate-400">{item.detail}</span>)}</div>
                         <ScoreBadge score={item.score} />
                       </div>
@@ -696,11 +700,15 @@ const DressAssessment = (props) => {
               </div>
             </div>
             
-            {/* TIMELINE */}
-            <RevisedTimeline drugs={drugs} labs={labs} onsetDate={onsetDate} />
+            {/* TIMELINE - Page 2 (Forced Break) */}
+            <div className="print:break-before-page">
+              <RevisedTimeline drugs={drugs} labs={labs} onsetDate={onsetDate} />
+            </div>
             
-            {/* DRUG ANALYSIS */}
-            <DrugAnalysisSection drugs={drugs} onsetDate={onsetDate} labs={labs} />
+            {/* DRUG ANALYSIS - Page 3 (Forced Break) */}
+            <div className="print:break-before-page">
+              <DrugAnalysisSection drugs={drugs} onsetDate={onsetDate} labs={labs} />
+            </div>
           </div>
         )}
       </div>
