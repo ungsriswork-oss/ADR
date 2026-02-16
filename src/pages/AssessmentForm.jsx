@@ -8,6 +8,7 @@ import SjsAssessment from './SjsAssessment';
 import HemeAssessment from './HemeAssessment';
 import RashAssessment from './RashAssessment';
 import ElectroAssessment from './ElectroAssessment';
+import SamsAssessment from './SamsAssessment'; // ✅ (1) เพิ่ม Import SAMS
 
 const AssessmentForm = () => {
   const { type } = useParams();
@@ -33,7 +34,7 @@ const AssessmentForm = () => {
   const [naranjoScores, setNaranjoScores] = useState({});
   const [pharmacistNote, setPharmacistNote] = useState('');
 
-  // ✅ (1) เพิ่มตัวแปร state สำหรับเก็บค่า Checkbox ของ Prodrome
+  // Checkbox ของ Prodrome
   const [prodromeData, setProdromeData] = useState({});
 
   // Result
@@ -83,8 +84,12 @@ const AssessmentForm = () => {
 
       if (type === 'rash') {
         setNaranjoScores(src.naranjoScores || src.scores || {});
-        // ✅ (2) โหลดค่า Prodrome ที่เคยบันทึกไว้มาใส่ State
         setProdromeData(src.prodromeData || {});
+      }
+
+      // สำหรับ SAMS ถ้ามีข้อมูลเก่า (ในอนาคตถ้า SAMS รองรับการโหลดค่ากลับ)
+      if (type === 'sams' && loaded.analysisResultFull) {
+         setAnalysisResult(loaded.analysisResultFull);
       }
 
       if (!loaded.analysisResultFull) {
@@ -101,6 +106,7 @@ const AssessmentForm = () => {
     rash: { title: 'Drug Rash (Naranjo)', themeColor: 'pink' },
     electro: { title: 'Electrolyte Imbalance', themeColor: 'yellow' },
     heme: { title: 'Hematologic Disorder', themeColor: 'rose' },
+    sams: { title: 'SAMS-CI', themeColor: 'cyan' }, // ✅ (2) เพิ่ม Setting SAMS
     default: { title: 'Assessment', themeColor: 'slate' },
   };
   const currentSetting = typeSettings[type] || typeSettings.default;
@@ -112,7 +118,12 @@ const AssessmentForm = () => {
       return alert('กรุณากรอก ชื่อ-นามสกุล และ HN');
 
     let rankedList = analysisResult?.rankedDrugs || [];
-    if (type === 'rash' && rankedList.length === 0 && drugList.length > 0) {
+    
+    // กรณี SAMS อาจจะไม่มี rankedDrugs แต่มี Score รวม
+    if (type === 'sams' && analysisResult) {
+        rankedList = [{ name: 'Statin Assessment', total: analysisResult.total || '-' }];
+    }
+    else if (type === 'rash' && rankedList.length === 0 && drugList.length > 0) {
       rankedList = drugList.map((d) => ({ name: d.name, total: '-' }));
     }
 
@@ -130,20 +141,20 @@ const AssessmentForm = () => {
 
       analysisResultFull: analysisResult,
 
-      savedData: ['rash', 'sjs'].includes(type)
+      savedData: ['rash', 'sjs', 'sams'].includes(type) // ✅ (3) เพิ่ม sams ใน savedData
         ? {
             drugList,
             symptomDate,
-            dailyLogs,
+            dailyLogs: ['rash', 'sjs'].includes(type) ? dailyLogs : undefined,
             naranjoScores: type === 'rash' ? naranjoScores : undefined,
             pharmacistNote,
-            // ✅ (3) บันทึกค่า Prodrome ลงฐานข้อมูล
-            prodromeData,
+            prodromeData: type === 'rash' ? prodromeData : undefined,
+            // สำหรับ SAMS ข้อมูลคำตอบ (Answers) จะอยู่ใน analysisResultFull แล้ว
           }
         : null,
 
-      rFactor: analysisResult?.rFactor || '-',
-      analysisType: analysisResult?.type || 'N/A',
+      rFactor: analysisResult?.rFactor || analysisResult?.total || '-',
+      analysisType: analysisResult?.type || analysisResult?.text || 'N/A',
       rankedDrugs: rankedList,
       savedAt: new Date().toISOString(),
     };
@@ -274,7 +285,6 @@ const AssessmentForm = () => {
               setDrugList={setDrugList}
               symptomDate={symptomDate}
               setSymptomDate={setSymptomDate}
-              // Pass initial data correctly
               initialData={{
                 savedData: {
                   drugs: drugList,
@@ -313,7 +323,6 @@ const AssessmentForm = () => {
             <HemeAssessment onAnalysisComplete={setAnalysisResult} />
           )}
 
-          {/* ✅ (4) ส่ง Props prodromeData ให้ตัวลูกใช้งาน */}
           {type === 'rash' && (
             <RashAssessment
               drugList={drugList}
@@ -326,7 +335,6 @@ const AssessmentForm = () => {
               setNaranjoScores={setNaranjoScores}
               pharmacistNote={pharmacistNote}
               setPharmacistNote={setPharmacistNote}
-              // เพิ่มตรงนี้
               prodromeData={prodromeData}
               setProdromeData={setProdromeData}
               onAnalysisComplete={setAnalysisResult}
@@ -337,7 +345,7 @@ const AssessmentForm = () => {
                   dailyLogs,
                   naranjoScores,
                   pharmacistNote,
-                  prodromeData, // ส่งลงไปเพื่อให้ลูกรู้สถานะล่าสุด
+                  prodromeData,
                 },
               }}
             />
@@ -345,6 +353,11 @@ const AssessmentForm = () => {
 
           {type === 'electro' && (
             <ElectroAssessment onAnalysisComplete={setAnalysisResult} />
+          )}
+
+          {/* ✅ (4) เพิ่ม Render SAMS */}
+          {type === 'sams' && (
+            <SamsAssessment onAnalysisComplete={setAnalysisResult} />
           )}
         </div>
 
@@ -357,9 +370,7 @@ const AssessmentForm = () => {
             Cancel
           </button>
 
-          {/* ❌ ซ่อนปุ่ม Analyze ในทุก Type ที่เรามี (DILI, SJS, RASH, DRESS, AGEP, HEME, ELECTRO)
-            เพราะหน้าจอเหล่านั้นจัดการ Analyze เอง หรือเป็น Auto-calculate หมดแล้ว 
-          */}
+          {/* ✅ (5) ซ่อน Analyze สำหรับ sams ด้วย */}
           {![
             'dili',
             'sjs',
@@ -368,6 +379,7 @@ const AssessmentForm = () => {
             'agep',
             'heme',
             'electro',
+            'sams',
           ].includes(type) && (
             <button
               onClick={() => setAnalyzeCount((c) => c + 1)}

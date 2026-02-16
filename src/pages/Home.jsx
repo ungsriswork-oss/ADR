@@ -24,23 +24,21 @@ const Home = () => {
     navigate(`/assess/${caseData.type || 'dili'}`, { state: { caseData } });
   };
 
-  // ✅ HELPER: ฟังก์ชันใหม่ช่วยดึงข้อมูลยาให้ครบทุกแบบ
+  // ✅ HELPER: ฟังก์ชันเดิม ดึงข้อมูลยาให้ครบทุกแบบ
   const getSuspectedDrugs = (c) => {
-    // 1. ลองดึงจาก rankedDrugs (ผลวิเคราะห์ที่เรียงแล้ว)
     if (Array.isArray(c.rankedDrugs) && c.rankedDrugs.length > 0) {
         return c.rankedDrugs;
     }
-    // 2. ถ้าไม่มี ให้ลองดูใน savedData.drugList (สำหรับเคสใหม่ๆ)
     if (c.savedData && Array.isArray(c.savedData.drugList) && c.savedData.drugList.length > 0) {
         return c.savedData.drugList;
     }
-    // 3. ถ้ายังไม่มี ให้ลองดูที่ drugList โดยตรง (เคสเก่า)
     if (Array.isArray(c.drugList) && c.drugList.length > 0) {
         return c.drugList;
     }
     return [];
   };
 
+  // ✅ UPDATE 1: เพิ่ม SAMS-CI ในรายการ Tools
   const tools = [
     {
       id: 'dili',
@@ -98,9 +96,18 @@ const Home = () => {
       active: true,
       path: '/assess/agep',
     },
+    // --- ส่วนที่เพิ่มใหม่ ---
+    {
+      id: 'sams',
+      title: 'SAMS-CI',
+      desc: 'Statin-Associated Muscle Sx',
+      color: 'cyan', // เลือกสี Cyan เพื่อให้ต่างจาก Teal ของ AGEP
+      active: true,
+      path: '/assess/sams',
+    },
   ];
 
-  // Helper function สำหรับจัดการสี Badge ของ ADR Type
+  // ✅ UPDATE 2: เพิ่มเคสสีสำหรับ 'sams' ใน Badge
   const getADRBadgeClass = (type) => {
     switch (type?.toLowerCase()) {
       case 'dili':
@@ -111,6 +118,10 @@ const Home = () => {
         return 'bg-red-100 text-red-700 border-red-200';
       case 'dress':
         return 'bg-purple-100 text-purple-700 border-purple-200';
+      case 'agep': // เพิ่มของ AGEP เดิมเผื่อไว้ (ในโค้ดเก่าอาจจะยังไม่มี case นี้ชัดเจน)
+        return 'bg-teal-100 text-teal-700 border-teal-200';
+      case 'sams': // เพิ่มใหม่สำหรับ SAMS
+        return 'bg-cyan-100 text-cyan-700 border-cyan-200';
       default:
         return 'bg-slate-100 text-slate-700 border-slate-200';
     }
@@ -144,7 +155,7 @@ const Home = () => {
       </nav>
 
       <div className="max-w-5xl mx-auto px-6 py-8">
-        {/* Tools Grid ส่วนเดิม */}
+        {/* Tools Grid - Mapping tools array ที่เพิ่ม SAMS แล้ว */}
         <div className="mb-10">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {tools.map((tool) => (
@@ -232,7 +243,7 @@ const Home = () => {
           </span>
         </div>
 
-        {/* ตาราง Case Follow-up ที่ปรับปรุงใหม่ */}
+        {/* ตาราง Case Follow-up ส่วนเดิม */}
         <div>
           <div className="flex justify-between items-center mb-4">
             <div>
@@ -250,8 +261,7 @@ const Home = () => {
                   <th className="p-4 font-bold">Date Saved</th>
                   <th className="p-4 font-bold">HN</th>
                   <th className="p-4 font-bold">Patient Name</th>
-                  <th className="p-4 font-bold text-center">ADR Type</th>{' '}
-                  {/* เพิ่มคอลัมน์ ADR Type */}
+                  <th className="p-4 font-bold text-center">ADR Type</th>
                   <th className="p-4 font-bold">Suspected Drugs</th>
                   <th className="p-4 font-bold text-right w-20">Delete</th>
                 </tr>
@@ -281,7 +291,7 @@ const Home = () => {
                       </td>
                       <td className="p-4 font-bold text-slate-800">{c.name}</td>
 
-                      {/* 1. แสดง ADR Type */}
+                      {/* แสดง ADR Type */}
                       <td className="p-4 text-center">
                         <span
                           className={`px-2 py-1 rounded text-[10px] font-bold border uppercase ${getADRBadgeClass(
@@ -292,7 +302,7 @@ const Home = () => {
                         </span>
                       </td>
 
-                      {/* 2. แสดง Suspected Drugs แบบเคส Man Ung (ใช้ฟังก์ชัน helper) */}
+                      {/* แสดง Suspected Drugs */}
                       <td className="p-4">
                         <div className="flex flex-wrap gap-1">
                           {getSuspectedDrugs(c).slice(0, 3).map((d, i) => (
