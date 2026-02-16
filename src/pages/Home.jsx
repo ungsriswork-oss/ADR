@@ -27,18 +27,22 @@ const Home = () => {
   // ✅ HELPER: ฟังก์ชันเดิม ดึงข้อมูลยาให้ครบทุกแบบ
   const getSuspectedDrugs = (c) => {
     if (Array.isArray(c.rankedDrugs) && c.rankedDrugs.length > 0) {
-        return c.rankedDrugs;
+      return c.rankedDrugs;
     }
-    if (c.savedData && Array.isArray(c.savedData.drugList) && c.savedData.drugList.length > 0) {
-        return c.savedData.drugList;
+    if (
+      c.savedData &&
+      Array.isArray(c.savedData.drugList) &&
+      c.savedData.drugList.length > 0
+    ) {
+      return c.savedData.drugList;
     }
     if (Array.isArray(c.drugList) && c.drugList.length > 0) {
-        return c.drugList;
+      return c.drugList;
     }
     return [];
   };
 
-  // ✅ UPDATE 1: เพิ่ม SAMS-CI ในรายการ Tools
+  // ✅ UPDATE: ปรับลำดับ Tools ตามที่คุณต้องการ (AGEP <-> Electro, SAMS <-> Heme)
   const tools = [
     {
       id: 'dili',
@@ -72,22 +76,7 @@ const Home = () => {
       active: true,
       path: '/assess/dress',
     },
-    {
-      id: 'electro',
-      title: 'Electrolyte Imbalance',
-      desc: 'Naranjo Scale for lytes',
-      color: 'yellow',
-      active: true,
-      path: '/assess/electro',
-    },
-    {
-      id: 'heme',
-      title: 'Hematologic Disorder',
-      desc: 'Lab Monitoring + Naranjo',
-      color: 'rose',
-      active: true,
-      path: '/assess/heme',
-    },
+    // สลับตำแหน่ง: เอา AGEP มาไว้ตรงนี้ (แทน Electro เดิม)
     {
       id: 'agep',
       title: 'AGEP',
@@ -96,18 +85,36 @@ const Home = () => {
       active: true,
       path: '/assess/agep',
     },
-    // --- ส่วนที่เพิ่มใหม่ ---
+    // สลับตำแหน่ง: เอา SAMS-CI มาไว้ตรงนี้ (แทน Heme เดิม)
     {
       id: 'sams',
       title: 'SAMS-CI',
       desc: 'Statin-Associated Muscle Sx',
-      color: 'cyan', // เลือกสี Cyan เพื่อให้ต่างจาก Teal ของ AGEP
+      color: 'cyan',
       active: true,
       path: '/assess/sams',
     },
+    // สลับตำแหน่ง: เอา Electro มาไว้ตรงนี้
+    {
+      id: 'electro',
+      title: 'Electrolyte Imbalance',
+      desc: 'Naranjo Scale for lytes',
+      color: 'yellow',
+      active: true,
+      path: '/assess/electro',
+    },
+    // สลับตำแหน่ง: เอา Hematologic มาไว้ตรงนี้
+    {
+      id: 'heme',
+      title: 'Hematologic Disorder',
+      desc: 'Lab Monitoring + Naranjo',
+      color: 'rose',
+      active: true,
+      path: '/assess/heme',
+    },
   ];
 
-  // ✅ UPDATE 2: เพิ่มเคสสีสำหรับ 'sams' ใน Badge
+  // ✅ HELPER: ฟังก์ชันเดิม
   const getADRBadgeClass = (type) => {
     switch (type?.toLowerCase()) {
       case 'dili':
@@ -118,9 +125,9 @@ const Home = () => {
         return 'bg-red-100 text-red-700 border-red-200';
       case 'dress':
         return 'bg-purple-100 text-purple-700 border-purple-200';
-      case 'agep': // เพิ่มของ AGEP เดิมเผื่อไว้ (ในโค้ดเก่าอาจจะยังไม่มี case นี้ชัดเจน)
+      case 'agep':
         return 'bg-teal-100 text-teal-700 border-teal-200';
-      case 'sams': // เพิ่มใหม่สำหรับ SAMS
+      case 'sams':
         return 'bg-cyan-100 text-cyan-700 border-cyan-200';
       default:
         return 'bg-slate-100 text-slate-700 border-slate-200';
@@ -129,7 +136,7 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
-      {/* Navigation ส่วนเดิม */}
+      {/* Navigation */}
       <nav className="bg-white border-b border-slate-200 px-6 py-4 shadow-sm sticky top-0 z-20">
         <div className="max-w-5xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-2">
@@ -155,7 +162,7 @@ const Home = () => {
       </nav>
 
       <div className="max-w-5xl mx-auto px-6 py-8">
-        {/* Tools Grid - Mapping tools array ที่เพิ่ม SAMS แล้ว */}
+        {/* Tools Grid */}
         <div className="mb-10">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {tools.map((tool) => (
@@ -200,7 +207,7 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Disclaimer ส่วนเดิม */}
+        {/* Disclaimer */}
         <div
           style={{
             backgroundColor: '#fff1f0',
@@ -243,7 +250,7 @@ const Home = () => {
           </span>
         </div>
 
-        {/* ตาราง Case Follow-up ส่วนเดิม */}
+        {/* Case Follow-up Table */}
         <div>
           <div className="flex justify-between items-center mb-4">
             <div>
@@ -291,7 +298,6 @@ const Home = () => {
                       </td>
                       <td className="p-4 font-bold text-slate-800">{c.name}</td>
 
-                      {/* แสดง ADR Type */}
                       <td className="p-4 text-center">
                         <span
                           className={`px-2 py-1 rounded text-[10px] font-bold border uppercase ${getADRBadgeClass(
@@ -302,20 +308,21 @@ const Home = () => {
                         </span>
                       </td>
 
-                      {/* แสดง Suspected Drugs */}
                       <td className="p-4">
                         <div className="flex flex-wrap gap-1">
-                          {getSuspectedDrugs(c).slice(0, 3).map((d, i) => (
-                            <span
-                              key={i}
-                              className="px-2 py-0.5 rounded text-xs border font-medium bg-slate-50 text-slate-600 border-slate-200"
-                            >
-                              {d.name}{' '}
-                              <span className="opacity-60 ml-0.5 text-[10px]">
-                                ({d.total || d.score || 0})
+                          {getSuspectedDrugs(c)
+                            .slice(0, 3)
+                            .map((d, i) => (
+                              <span
+                                key={i}
+                                className="px-2 py-0.5 rounded text-xs border font-medium bg-slate-50 text-slate-600 border-slate-200"
+                              >
+                                {d.name}{' '}
+                                <span className="opacity-60 ml-0.5 text-[10px]">
+                                  ({d.total || d.score || 0})
+                                </span>
                               </span>
-                            </span>
-                          ))}
+                            ))}
                           {getSuspectedDrugs(c).length === 0 && (
                             <span className="text-slate-400 italic text-xs">
                               No data
