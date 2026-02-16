@@ -1,8 +1,9 @@
+// src/App.jsx
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import AssessmentForm from './pages/AssessmentForm';
-import SamsAssessment from './pages/SamsAssessment'; // <--- เพิ่ม import
+// ไม่ต้อง import SamsAssessment ที่นี่ก็ได้ เพราะเราจะไปใช้ใน AssessmentForm แทน
 
 function App() {
   return (
@@ -10,10 +11,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         
-        {/* เพิ่ม route เฉพาะสำหรับ SAMS */}
-        <Route path="/assess/sams" element={<SamsAssessment />} />
-        
-        {/* Route เดิมสำหรับแบบประเมินอื่นๆ */}
+        {/* ✅ ลบบรรทัด Route แยกของ SAMS ออก ให้เหลือแค่บรรทัดนี้บรรทัดเดียวครอบจักรวาลครับ */}
         <Route path="/assess/:type" element={<AssessmentForm />} />
       </Routes>
     </Router>
