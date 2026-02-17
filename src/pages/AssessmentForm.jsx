@@ -1,3 +1,4 @@
+// src/pages/AssessmentForm.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 
@@ -9,7 +10,8 @@ import SjsAssessment from './SjsAssessment';
 import HemeAssessment from './HemeAssessment';
 import RashAssessment from './RashAssessment';
 import ElectroAssessment from './ElectroAssessment';
-import SamsAssessment from './SamsAssessment'; // ✅ 1. เพิ่ม Import
+import SamsAssessment from './SamsAssessment';
+import DrugFeverAssessment from './DrugFeverAssessment'; // ✅ 1. เพิ่ม Import Drug Fever
 
 const AssessmentForm = () => {
   const { type } = useParams();
@@ -50,7 +52,8 @@ const AssessmentForm = () => {
     rash: { title: 'Drug Rash (Naranjo)', themeColor: 'pink' },
     electro: { title: 'Electrolyte Imbalance', themeColor: 'yellow' },
     heme: { title: 'Hematologic Disorder', themeColor: 'rose' },
-    sams: { title: 'SAMS-CI', themeColor: 'cyan' }, // ✅ 2. เพิ่ม Config สี
+    sams: { title: 'SAMS-CI', themeColor: 'cyan' },
+    drugfever: { title: 'Drug Fever', themeColor: 'indigo' }, // ✅ 2. เพิ่ม Config สีและชื่อ
     default: { title: 'Assessment', themeColor: 'slate' },
   };
   const currentSetting = typeSettings[type] || typeSettings.default;
@@ -105,6 +108,7 @@ const AssessmentForm = () => {
 
     // จัดการ Ranked List
     let rankedList = analysisResult?.rankedDrugs || [];
+    
     // กรณี SAMS มักไม่มี rankedDrugs แบบละเอียด ให้สร้าง Dummy ขึ้นมาแสดงในตารางหน้าแรก
     if (type === 'sams' && analysisResult) {
         rankedList = [{ name: 'Statin Risk Score', total: analysisResult.total || '-' }];
@@ -130,7 +134,7 @@ const AssessmentForm = () => {
         dailyLogs: ['rash', 'sjs'].includes(type) ? dailyLogs : undefined,
         naranjoScores: type === 'rash' ? naranjoScores : undefined,
         prodromeData: type === 'rash' ? prodromeData : undefined,
-        // SAMS ไม่ต้องเก็บ state พิเศษ เพราะคำนวณใหม่ได้จาก analysisResult หรือเพิ่ม state ในอนาคตได้
+        // Drug Fever อาจจะใช้ข้อมูลใน analysisResult ในการ Load กลับมาดู (ผ่าน onAnalysisComplete ที่ส่ง drugEntries กลับมา)
       },
 
       analysisResultFull: analysisResult,
@@ -142,6 +146,7 @@ const AssessmentForm = () => {
 
     try {
       const existingData = JSON.parse(localStorage.getItem('dili_cases') || '[]');
+      // กรองข้อมูลเดิมออก (กรณี Edit) แล้วใส่ข้อมูลใหม่เข้าไปข้างหน้า
       const filteredData = existingData.filter((c) => c.id !== newCase.id);
       localStorage.setItem('dili_cases', JSON.stringify([newCase, ...filteredData]));
       alert('บันทึกข้อมูลเรียบร้อยแล้ว!');
@@ -192,7 +197,12 @@ const AssessmentForm = () => {
         {/* TOOL RENDER AREA */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
           
-          {/* ✅ 3. เพิ่มการ Render SAMS */}
+          {/* ✅ 3. เพิ่มเงื่อนไข Render Drug Fever */}
+          {type === 'drugfever' && (
+            <DrugFeverAssessment onAnalysisComplete={setAnalysisResult} />
+          )}
+
+          {/* SAMS */}
           {type === 'sams' && (
             <SamsAssessment onAnalysisComplete={setAnalysisResult} />
           )}
@@ -260,8 +270,8 @@ const AssessmentForm = () => {
         <div className="mt-8 flex justify-end gap-3 print:hidden">
           <button onClick={() => navigate('/')} className="px-6 py-2 rounded-lg border hover:bg-slate-50 transition">Cancel</button>
 
-          {/* ปุ่ม Analyze (ซ่อนสำหรับ Tools ที่คำนวณ Auto) */}
-          {![ 'dili', 'sjs', 'rash', 'dress', 'agep', 'heme', 'electro', 'sams' ].includes(type) && (
+          {/* ปุ่ม Analyze (ซ่อนสำหรับ Tools ที่คำนวณ Auto หรือไม่จำเป็นต้องกด) */}
+          {![ 'dili', 'sjs', 'rash', 'dress', 'agep', 'heme', 'electro', 'sams', 'drugfever' ].includes(type) && (
             <button onClick={() => setAnalyzeCount((c) => c + 1)} className={`px-6 py-2 rounded-lg bg-${theme}-500 hover:bg-${theme}-600 text-white shadow-sm transition`}>Analyze</button>
           )}
 

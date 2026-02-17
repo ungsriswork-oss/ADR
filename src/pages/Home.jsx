@@ -42,7 +42,7 @@ const Home = () => {
     return [];
   };
 
-  // ✅ UPDATE: ปรับลำดับ Tools ตามที่คุณต้องการ (AGEP <-> Electro, SAMS <-> Heme)
+  // ✅ UPDATE: เพิ่ม Drug Fever ต่อท้าย Hematologic Disorder
   const tools = [
     {
       id: 'dili',
@@ -76,7 +76,6 @@ const Home = () => {
       active: true,
       path: '/assess/dress',
     },
-    // สลับตำแหน่ง: เอา AGEP มาไว้ตรงนี้ (แทน Electro เดิม)
     {
       id: 'agep',
       title: 'AGEP',
@@ -85,7 +84,6 @@ const Home = () => {
       active: true,
       path: '/assess/agep',
     },
-    // สลับตำแหน่ง: เอา SAMS-CI มาไว้ตรงนี้ (แทน Heme เดิม)
     {
       id: 'sams',
       title: 'SAMS-CI',
@@ -94,7 +92,6 @@ const Home = () => {
       active: true,
       path: '/assess/sams',
     },
-    // สลับตำแหน่ง: เอา Electro มาไว้ตรงนี้
     {
       id: 'electro',
       title: 'Electrolyte Imbalance',
@@ -103,7 +100,6 @@ const Home = () => {
       active: true,
       path: '/assess/electro',
     },
-    // สลับตำแหน่ง: เอา Hematologic มาไว้ตรงนี้
     {
       id: 'heme',
       title: 'Hematologic Disorder',
@@ -112,9 +108,18 @@ const Home = () => {
       active: true,
       path: '/assess/heme',
     },
+    // ✅ เพิ่มส่วน Drug Fever ไว้ตรงนี้ ถัดจาก Heme
+    {
+      id: 'drugfever',
+      title: 'Drug Fever',
+      desc: 'Timeline & Criteria Check',
+      color: 'indigo', // ใช้สี indigo เพื่อให้ดูแตกต่างและเข้ากับระบบ
+      active: true,
+      path: '/assess/drugfever',
+    },
   ];
 
-  // ✅ HELPER: ฟังก์ชันเดิม
+  // ✅ HELPER: เพิ่มการรองรับสีของ drugfever ใน Case Follow-up
   const getADRBadgeClass = (type) => {
     switch (type?.toLowerCase()) {
       case 'dili':
@@ -129,6 +134,10 @@ const Home = () => {
         return 'bg-teal-100 text-teal-700 border-teal-200';
       case 'sams':
         return 'bg-cyan-100 text-cyan-700 border-cyan-200';
+      case 'heme':
+        return 'bg-rose-100 text-rose-700 border-rose-200';
+      case 'drugfever': // ✅ เพิ่ม Case นี้สำหรับแสดงผลตอนบันทึก
+        return 'bg-indigo-100 text-indigo-700 border-indigo-200';
       default:
         return 'bg-slate-100 text-slate-700 border-slate-200';
     }
