@@ -1,6 +1,10 @@
 // src/pages/DrugFeverAssessment.jsx
 import React, { useState, useEffect, useMemo } from 'react';
 
+// --- IMPORT IMAGE ---
+// ⚠️ ตรวจสอบชื่อไฟล์ในโฟลเดอร์ src/assets ว่ามี 's' หรือไม่ แล้วแก้บรรทัดนี้ให้ตรงกัน
+import drugFeverCauseImg from '../assets/drug_fever_causes.png'; 
+
 // --- 1. PHARMACIST NOTE COMPONENT ---
 const PharmacistNoteSection = ({ note, setNote }) => (
     <div className="border border-slate-300 rounded-lg overflow-hidden bg-white print:border-black mb-6 shadow-sm print:break-inside-avoid">
@@ -34,15 +38,15 @@ const CommonCausesModal = ({ isOpen, onClose }) => {
                 <h3 className="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Drug Fever Common Causes</h3>
                 
                 <div className="overflow-auto max-h-[70vh] flex justify-center bg-slate-50 rounded border border-slate-100 p-4">
-                    {/* ตรวจสอบ path รูปภาพให้ถูกต้อง */}
+                    {/* ใช้ตัวแปรที่ import มา */}
                     <img 
-                        src="/assets/drug_fever_causes.png" 
+                        src={drugFeverCauseImg} 
                         alt="Common Causes Table" 
                         className="max-w-full h-auto object-contain"
                         onError={(e) => {
                             e.target.onerror = null; 
-                            e.target.style.display = 'none'; // Hide if broken
-                            e.target.parentNode.innerHTML = '<div class="text-center p-10 text-slate-400">Image not found: /assets/drug_fever_causes.png</div>';
+                            e.target.style.display = 'none'; 
+                            e.target.parentNode.innerHTML = '<div class="text-center p-10 text-slate-400 text-sm">Image load failed.<br/>Please check filename in src/assets/</div>';
                         }}
                     />
                 </div>
@@ -77,7 +81,6 @@ const SmartVisualTimeline = ({ groupedDrugs, logs, feverOnset }) => {
     let sortedDates = Array.from(allDates).map(d => new Date(d)).sort((a, b) => a - b);
     if (sortedDates.length === 0) return null;
 
-    // Fill gaps
     const displayPoints = [];
     for (let i = 0; i < sortedDates.length; i++) {
         displayPoints.push(sortedDates[i]);
@@ -93,7 +96,6 @@ const SmartVisualTimeline = ({ groupedDrugs, logs, feverOnset }) => {
         }
     }
     
-    // Config
     const pointWidth = 80;
     const chartHeight = 450;
     const headerHeight = 40;
@@ -102,7 +104,6 @@ const SmartVisualTimeline = ({ groupedDrugs, logs, feverOnset }) => {
     const graphHeight = chartHeight - headerHeight - footerHeight;
     const totalWidth = Math.max(700, displayPoints.length * pointWidth + leftMargin + 50);
     
-    // Time-Sensitive X Calculation
     const getX = (dateStr, isTimeSensitive = false) => {
         const dObj = new Date(dateStr);
         const dStr = dObj.toDateString();
@@ -115,7 +116,6 @@ const SmartVisualTimeline = ({ groupedDrugs, logs, feverOnset }) => {
         if (isTimeSensitive) {
             const h = dObj.getHours();
             const m = dObj.getMinutes();
-            // Offset based on time of day (0-24h)
             offset = ((h + m/60) / 24) * pointWidth;
         }
         return baseX + offset;
@@ -143,8 +143,6 @@ const SmartVisualTimeline = ({ groupedDrugs, logs, feverOnset }) => {
             </h3>
             <div style={{ width: '100%', minWidth: totalWidth }}>
                 <svg width={totalWidth} height={chartHeight} className="font-sans text-xs">
-                    
-                    {/* Y-Axis Labels */}
                     <g className="text-[10px] fill-slate-400 print:fill-black">
                          {[36, 37, 38, 39, 40, 41].map(t => (
                             <text key={`ty-${t}`} x={leftMargin - 10} y={getTempY(t) + 4} textAnchor="end" fill="#ef4444" fontWeight="bold">{t}°</text>
@@ -157,7 +155,6 @@ const SmartVisualTimeline = ({ groupedDrugs, logs, feverOnset }) => {
                         <line x1={leftMargin} y1={headerHeight} x2={leftMargin} y2={chartHeight} stroke="#e2e8f0" strokeWidth="1" />
                     </g>
 
-                    {/* Grid */}
                     {displayPoints.map((d, i) => {
                         const x = leftMargin + 20 + (i * pointWidth);
                         return (
@@ -169,7 +166,6 @@ const SmartVisualTimeline = ({ groupedDrugs, logs, feverOnset }) => {
                         );
                     })}
 
-                    {/* FEVER ONSET LINE */}
                     {(() => {
                         if (!feverOnset) return null;
                         const x = getX(feverOnset, true);
@@ -182,7 +178,6 @@ const SmartVisualTimeline = ({ groupedDrugs, logs, feverOnset }) => {
                         );
                     })()}
 
-                    {/* Pulse Graph (Connected) */}
                     <path d={(() => {
                         const sorted = [...logs].filter(l=>l.pulse).sort((a,b)=>new Date(a.date)-new Date(b.date));
                         let d = ""; let first = true;
@@ -197,7 +192,6 @@ const SmartVisualTimeline = ({ groupedDrugs, logs, feverOnset }) => {
                         return <g key={`p-${i}`}><circle cx={x} cy={y} r="3" fill="white" stroke="#3b82f6" strokeWidth="2" /><text x={x} y={y-6} textAnchor="middle" fill="#3b82f6" fontSize="8" fontWeight="bold">{l.pulse}</text></g>;
                     })}
 
-                    {/* Temp Graph (Connected) */}
                     <path d={(() => {
                         const sorted = [...logs].filter(l=>l.temp).sort((a,b)=>new Date(a.date)-new Date(b.date));
                         let d = ""; let first = true;
@@ -212,7 +206,6 @@ const SmartVisualTimeline = ({ groupedDrugs, logs, feverOnset }) => {
                         return <g key={`t-${i}`}><circle cx={x} cy={y} r="3" fill="white" stroke="#ef4444" strokeWidth="2" /><text x={x} y={y-8} textAnchor="middle" fill="#ef4444" fontSize="9" fontWeight="bold">{l.temp}</text></g>;
                     })}
 
-                    {/* Grouped Drugs */}
                     {groupedDrugs.map((group, i) => {
                         const y = chartHeight - footerHeight + 20 + (i * 30); 
                         return (
@@ -248,7 +241,7 @@ const DrugAssessmentCard = ({ drugGroup, logs, feverDate, onChangeCriteria, onDe
         });
     };
 
-    // C1: Temporal
+    // C1
     let autoC1 = -2;
     const earliestStart = drugGroup.intervals.reduce((min, inv) => {
         if(!inv.start) return min;
@@ -262,7 +255,7 @@ const DrugAssessmentCard = ({ drugGroup, logs, feverDate, onChangeCriteria, onDe
         if (lag >= 0) autoC1 = 1;
     }
 
-    // C2: Dechallenge
+    // C2
     let autoC2 = 0; 
     for (const inv of drugGroup.intervals) {
         if (inv.stop) {
@@ -278,7 +271,7 @@ const DrugAssessmentCard = ({ drugGroup, logs, feverDate, onChangeCriteria, onDe
         }
     }
 
-    // C4: Rechallenge (Auto Negative)
+    // C4
     let autoC4 = 0;
     let c4_auto_triggered = false;
     const feverTime = feverDate ? new Date(feverDate).getTime() : 0;
@@ -309,7 +302,6 @@ const DrugAssessmentCard = ({ drugGroup, logs, feverDate, onChangeCriteria, onDe
 
     return (
         <div className="border border-indigo-100 rounded-b-xl rounded-tr-xl overflow-hidden bg-white shadow-sm mb-4 transition animate-fade-in p-5 print:shadow-none print:border print:border-slate-400 print:rounded-xl print:mb-8 print:break-inside-avoid">
-            {/* Header */}
             <div className="flex justify-between items-start mb-6 border-b pb-4">
                 <div>
                     <h3 className="text-xl font-bold text-indigo-900 flex items-center gap-2 print:text-black">
@@ -331,9 +323,7 @@ const DrugAssessmentCard = ({ drugGroup, logs, feverDate, onChangeCriteria, onDe
                 </div>
             </div>
 
-            {/* Assessment Body */}
             <div className="space-y-4 text-left">
-                {/* Q1 */}
                 <div className="flex items-start gap-4 p-3 rounded border border-slate-100 hover:bg-slate-50 transition print:bg-white print:border-slate-300">
                     <div className={`mt-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${c1 > 0 ? 'bg-green-500 text-white' : 'bg-red-500 text-white'} print:text-black print:bg-transparent print:border print:border-black`}>1</div>
                     <div className="flex-1">
@@ -350,7 +340,6 @@ const DrugAssessmentCard = ({ drugGroup, logs, feverDate, onChangeCriteria, onDe
                     </div>
                 </div>
 
-                {/* Q2 */}
                 <div className="flex items-start gap-4 p-3 rounded border border-slate-100 hover:bg-slate-50 transition print:bg-white print:border-slate-300">
                     <div className={`mt-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${c2 > 0 ? 'bg-green-500 text-white' : c2 < 0 ? 'bg-red-500 text-white' : 'bg-slate-400 text-white'} print:text-black print:bg-transparent print:border print:border-black`}>2</div>
                     <div className="flex-1">
@@ -368,7 +357,6 @@ const DrugAssessmentCard = ({ drugGroup, logs, feverDate, onChangeCriteria, onDe
                     </div>
                 </div>
 
-                {/* Q3 */}
                 <div className="flex items-start gap-4 p-3 rounded border border-slate-100 hover:bg-slate-50 transition print:bg-white print:border-slate-300">
                     <div className="mt-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-slate-500 bg-slate-200 print:text-black print:bg-transparent print:border print:border-black">3</div>
                     <div className="flex-1">
@@ -385,7 +373,6 @@ const DrugAssessmentCard = ({ drugGroup, logs, feverDate, onChangeCriteria, onDe
                     </div>
                 </div>
 
-                {/* Q4 */}
                 <div className="flex items-start gap-4 p-3 rounded border border-slate-100 hover:bg-slate-50 transition print:bg-white print:border-slate-300">
                     <div className="mt-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-slate-500 bg-slate-200 print:text-black print:bg-transparent print:border print:border-black">4</div>
                     <div className="flex-1">
@@ -403,7 +390,6 @@ const DrugAssessmentCard = ({ drugGroup, logs, feverDate, onChangeCriteria, onDe
                     </div>
                 </div>
 
-                {/* Q5 */}
                 <div className="flex items-start gap-4 p-3 rounded border border-slate-100 hover:bg-slate-50 transition print:bg-white print:border-slate-300">
                     <div className="mt-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-slate-500 bg-slate-200 print:text-black print:bg-transparent print:border print:border-black">5</div>
                     <div className="flex-1">
@@ -438,7 +424,7 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
     const [drugEntries, setDrugEntries] = useState([]);
     const [dailyLogs, setDailyLogs] = useState([]);
     const [activeDrugKey, setActiveDrugKey] = useState(null); 
-    const [showCausesModal, setShowCausesModal] = useState(false); // ✅ Modal State Added Back
+    const [showCausesModal, setShowCausesModal] = useState(false); 
     
     // Inputs
     const [currentDrug, setCurrentDrug] = useState({ name: '', startDate: '', stopDate: '' });
@@ -458,7 +444,6 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
         }
     }, [initialData]);
 
-    // ✅ FIXED: Bulk Update for Group
     const updateDrugGroupCriteria = (ids, field, value) => {
         setDrugEntries(prev => prev.map(d => 
             ids.includes(d.id) ? { ...d, [field]: value } : d
@@ -485,7 +470,6 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
             }
             groups[key].intervals.push({ start: d.startDate, stop: d.stopDate });
             groups[key].ids.push(d.id);
-            // Ensure consistency: use the last defined values in the group
             if(d.manualC1 !== undefined) groups[key].manualC1 = d.manualC1;
             if(d.manualC2 !== undefined) groups[key].manualC2 = d.manualC2;
             if(d.manualC3 !== undefined) groups[key].manualC3 = d.manualC3;
@@ -495,15 +479,13 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
         return Object.values(groups);
     }, [drugEntries]);
 
-    // Init active tab
     useEffect(() => {
         if (!activeDrugKey && groupedDrugs.length > 0) {
             setActiveDrugKey(groupedDrugs[0].key);
         }
     }, [groupedDrugs]);
 
-    // --- PARENT SCORING LOGIC FOR HOME PAGE ---
-    // Calculates score for each group to send to parent (fixes Home page 0 score issue)
+    // --- PARENT SCORING LOGIC ---
     const calculateScoreForGroup = (group) => {
         const isDrugActiveAt = (logDate) => {
             const logTime = new Date(logDate).getTime();
@@ -514,7 +496,6 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
             });
         };
 
-        // C1
         let autoC1 = -2;
         const earliestStart = group.intervals.reduce((min, inv) => {
             if(!inv.start) return min;
@@ -528,7 +509,6 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
             if (lag >= 0) autoC1 = 1;
         }
 
-        // C2
         let autoC2 = 0; 
         for (const inv of group.intervals) {
             if (inv.stop) {
@@ -544,7 +524,6 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
             }
         }
 
-        // C4
         let autoC4 = 0;
         const feverTime = feverOnsetDate ? new Date(feverOnsetDate).getTime() : 0;
         const toleratedLogs = dailyLogs.filter(l => 
@@ -563,15 +542,10 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
         return c1 + c2 + c3 + c4 + c5;
     };
 
-    // Handlers
     const handleAddDrug = () => {
         if (!currentDrug.name || !currentDrug.startDate) return alert("ระบุชื่อยาและวันที่เริ่ม");
         const newId = Date.now();
-        const newDrug = { 
-            ...currentDrug, 
-            id: newId,
-            // Don't set manuals yet, let auto calculate first
-        };
+        const newDrug = { ...currentDrug, id: newId };
         setDrugEntries([...drugEntries, newDrug].sort((a,b)=>new Date(a.startDate)-new Date(b.startDate)));
         setCurrentDrug({ name: '', startDate: '', stopDate: '' });
         setActiveDrugKey(currentDrug.name.toLowerCase().trim());
@@ -589,10 +563,8 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
         setDrugEntries(prev => prev.filter(d => d.id !== id));
     };
 
-    // Sync to Parent
     useEffect(() => {
         if (onAnalysisComplete) {
-            // ✅ Fix: Calculate scores before sending to parent
             const rankedDrugs = groupedDrugs.map(g => ({
                 name: g.name,
                 total: calculateScoreForGroup(g)
@@ -624,7 +596,6 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
                                 <label className="text-[10px] text-slate-500 block mb-1">ชื่อยา</label>
                                 <input type="text" placeholder="Name" className="w-full border p-1 rounded text-xs" value={currentDrug.name} onChange={e=>setCurrentDrug({...currentDrug, name: e.target.value})} />
                             </div>
-                            {/* ✅ LABELS ADDED */}
                             <div className="flex-1">
                                 <label className="text-[10px] text-slate-500 block mb-1">วันที่เริ่มยา</label>
                                 <input type="date" className="w-full border p-1 rounded text-xs" value={currentDrug.startDate} onChange={e=>setCurrentDrug({...currentDrug, startDate: e.target.value})} />
@@ -723,7 +694,6 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
                 <div className="flex items-center justify-between border-b pb-2">
                     <h3 className="text-sm font-bold text-indigo-800 uppercase">Individual Drug Assessment Results</h3>
                     
-                    {/* ✅ New Button for Common Causes (Added Back!) */}
                     <button 
                         onClick={() => setShowCausesModal(true)} 
                         className="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-1 rounded border border-slate-200 print:hidden flex items-center gap-1"
@@ -739,7 +709,6 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
                     </div>
                 ) : (
                     <>
-                        {/* SCREEN VIEW */}
                         <div className="print:hidden">
                             <div className="flex gap-1 overflow-x-auto pb-1 mb-0 no-scrollbar">
                                 {groupedDrugs.map(g => (
@@ -767,7 +736,6 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
                             )}
                         </div>
 
-                        {/* PRINT VIEW */}
                         <div className="hidden print:block">
                             {groupedDrugs.map(g => (
                                 <div key={g.key} className="print:break-after-page">
@@ -785,7 +753,6 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
                 )}
             </div>
 
-            {/* ✅ Common Causes Modal (Added Back!) */}
             <CommonCausesModal isOpen={showCausesModal} onClose={() => setShowCausesModal(false)} />
         </div>
     );
