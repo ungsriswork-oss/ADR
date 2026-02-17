@@ -11,7 +11,7 @@ import HemeAssessment from './HemeAssessment';
 import RashAssessment from './RashAssessment';
 import ElectroAssessment from './ElectroAssessment';
 import SamsAssessment from './SamsAssessment';
-import DrugFeverAssessment from './DrugFeverAssessment'; // ✅ 1. เพิ่ม Import Drug Fever
+import DrugFeverAssessment from './DrugFeverAssessment'; // ✅ 1. Import Drug Fever
 
 const AssessmentForm = () => {
   const { type } = useParams();
@@ -53,7 +53,7 @@ const AssessmentForm = () => {
     electro: { title: 'Electrolyte Imbalance', themeColor: 'yellow' },
     heme: { title: 'Hematologic Disorder', themeColor: 'rose' },
     sams: { title: 'SAMS-CI', themeColor: 'cyan' },
-    drugfever: { title: 'Drug Fever', themeColor: 'indigo' }, // ✅ 2. เพิ่ม Config สีและชื่อ
+    drugfever: { title: 'Drug Fever', themeColor: 'indigo' }, // ✅ 2. Config Theme สี Indigo
     default: { title: 'Assessment', themeColor: 'slate' },
   };
   const currentSetting = typeSettings[type] || typeSettings.default;
@@ -72,6 +72,7 @@ const AssessmentForm = () => {
       });
 
       const src = loaded.savedData || loaded;
+      // Load ข้อมูลพื้นฐาน (สำหรับ tool ทั่วไป)
       setDrugList(src.drugList || src.drugs || src.rashDrugs || loaded.drugList || []);
       setSymptomDate(src.symptomDate || src.rashOnset || src.onset || loaded.symptomDate || '');
       setPharmacistNote(loaded.pharmacistNote || src.pharmacistNote || '');
@@ -93,8 +94,8 @@ const AssessmentForm = () => {
         setLoadedAnalysisResult(loaded.analysisResultFull);
         setAnalysisResult(loaded.analysisResultFull);
       } else {
-        // ถ้าไม่มีผลบันทึกไว้ ให้ลอง Auto-analyze (ยกเว้น DILI ที่ต้องกดเอง)
-        if (type !== 'dili') {
+        // Auto-analyze สำหรับ tool บางตัว
+        if (!['dili', 'drugfever'].includes(type)) {
           setTimeout(() => setAnalyzeCount((c) => c + 1), 500);
         }
       }
@@ -106,36 +107,46 @@ const AssessmentForm = () => {
     if (!patientData.name || !patientData.hn)
       return alert('กรุณากรอก ชื่อ-นามสกุล และ HN');
 
-    // จัดการ Ranked List
+    // จัดการ Ranked List (สำหรับแสดงหน้า Home)
     let rankedList = analysisResult?.rankedDrugs || [];
-    
-    // กรณี SAMS มักไม่มี rankedDrugs แบบละเอียด ให้สร้าง Dummy ขึ้นมาแสดงในตารางหน้าแรก
     if (type === 'sams' && analysisResult) {
         rankedList = [{ name: 'Statin Risk Score', total: analysisResult.total || '-' }];
     } else if (type === 'rash' && rankedList.length === 0 && drugList.length > 0) {
       rankedList = drugList.map((d) => ({ name: d.name, total: '-' }));
     }
 
+    // เตรียม Saved Data Object
+    // สำหรับ Drug Fever เราจะดึงข้อมูลจาก analysisResult (เพราะจัดการ State ภายใน component ลูก)
+    const isDrugFever = type === 'drugfever';
+    
+    const savedDataObj = {
+        // Shared fields
+        drugList: isDrugFever ? [] : drugList, // Drug Fever ใช้ drugEntries แทน
+        symptomDate: isDrugFever ? (analysisResult?.feverOnsetDate || '') : symptomDate,
+        pharmacistNote: isDrugFever ? (analysisResult?.pharmacistNote || '') : pharmacistNote,
+        
+        // Tool specific fields
+        labEntries: ['dili', 'dress', 'agep', 'heme'].includes(type) ? labEntries : undefined,
+        dailyLogs: ['rash', 'sjs'].includes(type) ? dailyLogs : (isDrugFever ? analysisResult?.dailyLogs : undefined),
+        naranjoScores: type === 'rash' ? naranjoScores : undefined,
+        prodromeData: type === 'rash' ? prodromeData : undefined,
+        
+        // ✅ Drug Fever Specifics (ดึงจากลูก)
+        drugEntries: isDrugFever ? analysisResult?.drugEntries : undefined,
+        feverOnsetDate: isDrugFever ? analysisResult?.feverOnsetDate : undefined,
+        answers: isDrugFever ? analysisResult?.answers : undefined,
+    };
+
     const newCase = {
       id: location.state?.caseData?.id || Date.now(),
       type: type,
       ...patientData,
-      drugList,
-      symptomDate,
-      pharmacistNote,
-      labEntries: ['dili', 'dress', 'agep', 'heme'].includes(type) ? labEntries : [],
+      // Top level fields for easy access
+      drugList: isDrugFever && analysisResult?.drugEntries ? analysisResult.drugEntries : drugList,
+      symptomDate: savedDataObj.symptomDate,
+      pharmacistNote: savedDataObj.pharmacistNote,
       
-      // เก็บข้อมูลดิบ (Saved Data)
-      savedData: {
-        drugList,
-        symptomDate,
-        pharmacistNote,
-        // เก็บเฉพาะฟิลด์ที่แต่ละ Tool ใช้
-        dailyLogs: ['rash', 'sjs'].includes(type) ? dailyLogs : undefined,
-        naranjoScores: type === 'rash' ? naranjoScores : undefined,
-        prodromeData: type === 'rash' ? prodromeData : undefined,
-        // Drug Fever อาจจะใช้ข้อมูลใน analysisResult ในการ Load กลับมาดู (ผ่าน onAnalysisComplete ที่ส่ง drugEntries กลับมา)
-      },
+      savedData: savedDataObj, // เก็บ object ย่อย
 
       analysisResultFull: analysisResult,
       rFactor: analysisResult?.rFactor || analysisResult?.total || '-',
@@ -146,7 +157,6 @@ const AssessmentForm = () => {
 
     try {
       const existingData = JSON.parse(localStorage.getItem('dili_cases') || '[]');
-      // กรองข้อมูลเดิมออก (กรณี Edit) แล้วใส่ข้อมูลใหม่เข้าไปข้างหน้า
       const filteredData = existingData.filter((c) => c.id !== newCase.id);
       localStorage.setItem('dili_cases', JSON.stringify([newCase, ...filteredData]));
       alert('บันทึกข้อมูลเรียบร้อยแล้ว!');
@@ -197,9 +207,12 @@ const AssessmentForm = () => {
         {/* TOOL RENDER AREA */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
           
-          {/* ✅ 3. เพิ่มเงื่อนไข Render Drug Fever */}
+          {/* ✅ 3. Render Drug Fever Assessment */}
           {type === 'drugfever' && (
-            <DrugFeverAssessment onAnalysisComplete={setAnalysisResult} />
+            <DrugFeverAssessment 
+                onAnalysisComplete={setAnalysisResult} 
+                initialData={location.state?.caseData} 
+            />
           )}
 
           {/* SAMS */}
@@ -270,13 +283,19 @@ const AssessmentForm = () => {
         <div className="mt-8 flex justify-end gap-3 print:hidden">
           <button onClick={() => navigate('/')} className="px-6 py-2 rounded-lg border hover:bg-slate-50 transition">Cancel</button>
 
-          {/* ปุ่ม Analyze (ซ่อนสำหรับ Tools ที่คำนวณ Auto หรือไม่จำเป็นต้องกด) */}
+          {/* ปุ่ม Analyze (ซ่อนสำหรับ Tools ที่คำนวณ Auto หรือมีปุ่มภายในตัว) */}
           {![ 'dili', 'sjs', 'rash', 'dress', 'agep', 'heme', 'electro', 'sams', 'drugfever' ].includes(type) && (
             <button onClick={() => setAnalyzeCount((c) => c + 1)} className={`px-6 py-2 rounded-lg bg-${theme}-500 hover:bg-${theme}-600 text-white shadow-sm transition`}>Analyze</button>
           )}
 
-          <button onClick={handleSaveData} className="px-6 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white shadow-sm transition flex items-center gap-2">Save Data</button>
-          <button onClick={() => window.print()} className="px-6 py-2 rounded-lg bg-slate-800 hover:bg-slate-900 text-white shadow-sm transition flex items-center gap-2">Print</button>
+          <button onClick={handleSaveData} className="px-6 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white shadow-sm transition flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
+            Save Data
+          </button>
+          <button onClick={() => window.print()} className="px-6 py-2 rounded-lg bg-slate-800 hover:bg-slate-900 text-white shadow-sm transition flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+            Print
+          </button>
         </div>
       </div>
     </div>
