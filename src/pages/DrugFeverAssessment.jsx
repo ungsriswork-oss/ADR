@@ -19,7 +19,45 @@ const PharmacistNoteSection = ({ note, setNote }) => (
     </div>
 );
 
-// --- 2. SMART TIMELINE COMPONENT ---
+// --- 2. MODAL COMPONENT (COMMON CAUSES) ---
+const CommonCausesModal = ({ isOpen, onClose }) => {
+    if (!isOpen) return null;
+    return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 print:hidden backdrop-blur-sm animate-fade-in">
+            <div className="bg-white rounded-xl shadow-2xl p-6 max-w-4xl w-full mx-4 relative border border-slate-200">
+                <button 
+                    onClick={onClose} 
+                    className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition"
+                >
+                    ✕
+                </button>
+                <h3 className="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Drug Fever Common Causes</h3>
+                
+                <div className="overflow-auto max-h-[70vh] flex justify-center bg-slate-50 rounded border border-slate-100 p-4">
+                    {/* ตรวจสอบ path รูปภาพให้ถูกต้อง */}
+                    <img 
+                        src="/assets/drug_fever_causes.png" 
+                        alt="Common Causes Table" 
+                        className="max-w-full h-auto object-contain"
+                        onError={(e) => {
+                            e.target.onerror = null; 
+                            e.target.style.display = 'none'; // Hide if broken
+                            e.target.parentNode.innerHTML = '<div class="text-center p-10 text-slate-400">Image not found: /assets/drug_fever_causes.png</div>';
+                        }}
+                    />
+                </div>
+                
+                <div className="mt-4 text-right">
+                    <button onClick={onClose} className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-sm font-bold transition">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// --- 3. SMART TIMELINE COMPONENT ---
 const SmartVisualTimeline = ({ groupedDrugs, logs, feverOnset }) => {
     if ((!groupedDrugs.length && !logs.length)) return null;
 
@@ -64,16 +102,20 @@ const SmartVisualTimeline = ({ groupedDrugs, logs, feverOnset }) => {
     const graphHeight = chartHeight - headerHeight - footerHeight;
     const totalWidth = Math.max(700, displayPoints.length * pointWidth + leftMargin + 50);
     
+    // Time-Sensitive X Calculation
     const getX = (dateStr, isTimeSensitive = false) => {
         const dObj = new Date(dateStr);
         const dStr = dObj.toDateString();
         const idx = displayPoints.findIndex(p => p.toDateString() === dStr);
         if (idx === -1) return -1;
+        
         const baseX = leftMargin + 20 + (idx * pointWidth);
         let offset = 0;
+        
         if (isTimeSensitive) {
             const h = dObj.getHours();
             const m = dObj.getMinutes();
+            // Offset based on time of day (0-24h)
             offset = ((h + m/60) / 24) * pointWidth;
         }
         return baseX + offset;
@@ -193,10 +235,10 @@ const SmartVisualTimeline = ({ groupedDrugs, logs, feverOnset }) => {
     );
 };
 
-// --- 3. DETAILED DRUG ASSESSMENT CARD ---
+// --- 4. DETAILED DRUG ASSESSMENT CARD ---
 const DrugAssessmentCard = ({ drugGroup, logs, feverDate, onChangeCriteria, onDelete }) => {
     
-    // Auto Calculation Logic (Duplicated here for Display, but main logic is in parent now too)
+    // Auto Calculation Logic
     const isDrugActiveAt = (logDate) => {
         const logTime = new Date(logDate).getTime();
         return drugGroup.intervals.some(inv => {
@@ -396,6 +438,7 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
     const [drugEntries, setDrugEntries] = useState([]);
     const [dailyLogs, setDailyLogs] = useState([]);
     const [activeDrugKey, setActiveDrugKey] = useState(null); 
+    const [showCausesModal, setShowCausesModal] = useState(false); // ✅ Modal State Added Back
     
     // Inputs
     const [currentDrug, setCurrentDrug] = useState({ name: '', startDate: '', stopDate: '' });
@@ -581,6 +624,7 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
                                 <label className="text-[10px] text-slate-500 block mb-1">ชื่อยา</label>
                                 <input type="text" placeholder="Name" className="w-full border p-1 rounded text-xs" value={currentDrug.name} onChange={e=>setCurrentDrug({...currentDrug, name: e.target.value})} />
                             </div>
+                            {/* ✅ LABELS ADDED */}
                             <div className="flex-1">
                                 <label className="text-[10px] text-slate-500 block mb-1">วันที่เริ่มยา</label>
                                 <input type="date" className="w-full border p-1 rounded text-xs" value={currentDrug.startDate} onChange={e=>setCurrentDrug({...currentDrug, startDate: e.target.value})} />
@@ -678,6 +722,15 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
             <div className="space-y-2">
                 <div className="flex items-center justify-between border-b pb-2">
                     <h3 className="text-sm font-bold text-indigo-800 uppercase">Individual Drug Assessment Results</h3>
+                    
+                    {/* ✅ New Button for Common Causes (Added Back!) */}
+                    <button 
+                        onClick={() => setShowCausesModal(true)} 
+                        className="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-1 rounded border border-slate-200 print:hidden flex items-center gap-1"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        Show Common Causes
+                    </button>
                 </div>
                 
                 {groupedDrugs.length === 0 ? (
@@ -708,7 +761,7 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
                                     drugGroup={groupedDrugs.find(g => g.key === activeDrugKey)}
                                     logs={dailyLogs}
                                     feverDate={feverOnsetDate}
-                                    onChangeCriteria={updateDrugGroupCriteria} // ✅ Fix: Pass correct function
+                                    onChangeCriteria={updateDrugGroupCriteria}
                                     onDelete={handleDeleteDrug}
                                 />
                             )}
@@ -731,6 +784,9 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
                     </>
                 )}
             </div>
+
+            {/* ✅ Common Causes Modal (Added Back!) */}
+            <CommonCausesModal isOpen={showCausesModal} onClose={() => setShowCausesModal(false)} />
         </div>
     );
 };
