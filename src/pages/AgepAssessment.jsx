@@ -1,193 +1,462 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import {
+  Activity,
+  AlertTriangle,
+  Pill,
+  Droplet,
+  Trash2,
+  Scale,
+  Zap,
+  Info,
+  X
+} from 'lucide-react';
 
-// --- 1. CONFIGURATION: EuroSCAR Criteria ---
-const criteriaOptions = {
-    morphology: {
-        pustules: { 2: "Typical (Non-follicular)", 1: "Compatible", 0: "No / Unknown" },
-        erythema: { 2: "Typical", 1: "Compatible", 0: "No / Unknown" },
-        distribution: { 2: "Typical", 1: "Compatible", 0: "No / Unknown" },
-        desquamation: { 1: "Yes", 0: "No" }
-    },
-    clinical: {
-        mucosal: { 0: "No", '-2': "Yes (Mucosal Involvement)" }, // AGEP มักไม่มี mucosal
-        onset: { 2: "Acute (< 10 days)", '-2': "Not acute (> 10 days)" },
-        resolution: { 2: "Resolution < 15 days", '-2': "Prolonged" },
-        fever: { 1: "Yes (> 38°C)", '-1': "No" },
-        lab: { 1: "Neutrophils > 7,000", '-1': "Neutrophils ≤ 7,000" }
+// ✅ IMPORT รูปภาพจาก folder assets (ตรวจสอบชื่อไฟล์ให้ตรงกับที่มีใน src/assets)
+import agepAlgoImg from '../assets/agep_algo.png'; 
+
+// --- 1. TIMELINE COMPONENT (FIXED PRINT LINES) ---
+const AgepTimeline = ({ drugs, labs, onsetDate }) => {
+  const safeDrugs = Array.isArray(drugs) ? drugs : [];
+  const safeLabs = Array.isArray(labs) ? labs : [];
+  const LABEL_WIDTH_CLASS = "w-[140px]";
+
+  const timelineData = useMemo(() => {
+    let pivot = onsetDate ? new Date(onsetDate).getTime() : new Date().getTime();
+    const DAY = 86400000;
+    let minT = pivot - (21 * DAY);
+    let maxT = pivot + (7 * DAY);
+
+    const keyDates = [
+        ...safeLabs.map(l => new Date(l.date).getTime()),
+        ...safeDrugs.filter(d => d.endDate).map(d => new Date(d.endDate).getTime()), 
+        ...safeDrugs.map(d => new Date(d.startDate).getTime()).filter(t => t > pivot - (60 * DAY))
+    ];
+
+    if (keyDates.length > 0) {
+        const minKey = Math.min(...keyDates);
+        const maxKey = Math.max(...keyDates);
+        if (minKey < minT) minT = minKey - (2 * DAY);
+        if (maxKey > maxT) maxT = maxKey + (2 * DAY);
     }
-};
 
-// --- 2. SUB-COMPONENTS ---
-const AgepRow = ({ label, value, score }) => (
-    <tr className="border-b border-slate-100 last:border-0">
-        <td className="py-2 pl-4 w-[50%] font-bold text-slate-700 text-sm">{label}</td>
-        <td className="py-2 pr-4 w-[50%] text-right">
-            <span className="text-xs text-slate-500 mr-2">{value}</span>
-            <span className={`font-bold text-sm border px-2 rounded inline-block ${score >= 0 ? 'text-teal-700 bg-teal-50 border-teal-200' : 'text-red-500 bg-red-50 border-red-200'}`}>
-                {score > 0 ? `+${score}` : score}
-            </span>
-        </td>
-    </tr>
-);
+    const timeSpan = maxT - minT || 1;
+    let gridPoints = [];
+    const daysSpan = timeSpan / DAY;
+    const step = daysSpan > 45 ? 5 : (daysSpan > 20 ? 2 : 1);
+    const startGrid = Math.ceil(minT / DAY) * DAY;
+    for (let t = startGrid; t <= maxT; t += step * DAY) {
+        gridPoints.push(t);
+    }
 
-const AgepCard = ({ drug, result }) => (
-    <div className="print-section border-2 border-teal-500 rounded-xl overflow-hidden shadow-sm bg-white mb-6 break-inside-avoid">
-        <div className="bg-teal-600 text-white px-5 py-3 flex justify-between items-center print:text-black print:bg-white print:border-b-2 print:border-teal-600">
-            <div><h3 className="text-xl font-bold">{drug.name}</h3></div>
-            <div className="text-right">
-                <div className="text-3xl font-bold">{result.total}</div>
-                <div className="text-sm font-bold uppercase tracking-wide bg-black/20 px-2 py-1 rounded inline-block print:bg-slate-100 print:text-black">{result.text}</div>
-            </div>
-        </div>
-        <div className="bg-white p-2">
-            <table className="w-full table-fixed">
-                <tbody>
-                    <AgepRow label="1. Morphology (Pustules/Erythema)" value="Combined Score" score={result.breakdown.morphology} />
-                    <AgepRow label="2. Fever (>38°C)" value={`${result.maxTemp}°C`} score={result.breakdown.fever} />
-                    <AgepRow label="3. Neutrophils (>7,000)" value={result.maxNeutro} score={result.breakdown.neutro} />
-                    <AgepRow label="4. Mucosal Involvement" value={result.hasMucosal ? "Yes" : "No"} score={result.breakdown.mucosal} />
-                    <AgepRow label="5. Acute Onset (<10 days)" value={result.isAcute ? "Yes" : "No"} score={result.breakdown.onset} />
-                    <AgepRow label="6. Resolution (<15 days)" value={result.isResolved ? "Yes" : "No"} score={result.breakdown.resolution} />
-                </tbody>
-            </table>
-        </div>
-    </div>
-);
+    return {
+      minTime: minT, maxTime: maxT, timeSpan, gridPoints,
+      getPos: (dateStr) => {
+        if (!dateStr) return -999;
+        const t = new Date(dateStr).getTime();
+        return ((t - minT) / timeSpan) * 100;
+      },
+    };
+  }, [safeDrugs, safeLabs, onsetDate]);
 
-// --- 3. MAIN COMPONENT ---
-const AgepAssessment = ({ patientData, analyzeCount, onAnalysisComplete }) => {
-  // Inputs
-  const [labEntries, setLabEntries] = useState([]);
-  const [drugList, setDrugList] = useState([]);
-  const [currentEntry, setCurrentEntry] = useState({ date: '', temp: '', neutro: '' });
-  const [currentDrug, setCurrentDrug] = useState({ name: '', startDate: '', stopDate: '' });
-  const [symptomDate, setSymptomDate] = useState('');
-
-  // Manual Checks
-  const [manual, setManual] = useState({
-      pustules: 2, erythema: 2, distribution: 2, desquamation: 0, // Morphology
-      mucosal: false, resolution15d: true
-  });
-
-  const [result, setResult] = useState(null);
-
-  // Handlers
-  const handleAddEntry = () => {
-      if(!currentEntry.date) return alert("Date required");
-      setLabEntries([...labEntries, { ...currentEntry, id: Date.now() }].sort((a,b)=>new Date(a.date)-new Date(b.date)));
-      setCurrentEntry({ date: '', temp: '', neutro: '' });
-  };
-  const handleAddDrug = () => {
-      if(!currentDrug.name) return;
-      setDrugList([...drugList, { ...currentDrug, id: Date.now() }]);
-      setCurrentDrug({ name: '', startDate: '', stopDate: '' });
-  };
-
-  // --- CALCULATION LOGIC (EuroSCAR) ---
-  useEffect(() => {
-      if (analyzeCount > 0) {
-          // 1. Lab Peak
-          let maxTemp = 0, maxNeutro = 0;
-          labEntries.forEach(e => {
-              if (parseFloat(e.temp) > maxTemp) maxTemp = parseFloat(e.temp);
-              if (parseFloat(e.neutro) > maxNeutro) maxNeutro = parseFloat(e.neutro);
-          });
-
-          // 2. Timeline Check (Onset < 10 days?)
-          let isAcute = false;
-          if (symptomDate && drugList.length > 0) {
-              // Check if ANY drug started within 10 days before onset
-              isAcute = drugList.some(d => {
-                  const diff = (new Date(symptomDate) - new Date(d.startDate)) / 86400000;
-                  return diff >= 0 && diff <= 10;
-              });
-          }
-
-          // 3. Scoring
-          const bd = {
-              morphology: parseInt(manual.pustules) + parseInt(manual.erythema) + parseInt(manual.distribution) + parseInt(manual.desquamation),
-              fever: maxTemp > 38 ? 1 : -1,
-              neutro: maxNeutro > 7000 ? 1 : -1,
-              mucosal: manual.mucosal ? -2 : 0,
-              onset: isAcute ? 2 : -2,
-              resolution: manual.resolution15d ? 2 : -2
-          };
-
-          const total = Object.values(bd).reduce((a,b) => a+b, 0);
-
-          let text = "Excluded (≤ 0)";
-          if (total >= 1 && total <= 4) text = "Possible (1-4)";
-          else if (total >= 5 && total <= 7) text = "Probable (5-7)";
-          else if (total >= 8 && total <= 12) text = "Definite (8-12)";
-
-          const finalRes = { total, text, breakdown: bd, maxTemp, maxNeutro, hasMucosal: manual.mucosal, isAcute, isResolved: manual.resolution15d };
-          setResult(finalRes);
-
-          if (onAnalysisComplete) {
-              const ranked = drugList.map(d => ({ name: d.name, total }));
-              onAnalysisComplete({ 
-                  rFactor: total, type: text, rankedDrugs: ranked, 
-                  labEntries, drugList, symptomDate, manual, scores: bd 
-              });
-          }
-      }
-  }, [analyzeCount]);
+  if (safeDrugs.length === 0 && safeLabs.length === 0) 
+      return <div className="h-24 flex items-center justify-center text-slate-400 border-dashed border-2 rounded-lg bg-slate-50">Add data to generate timeline</div>;
 
   return (
-    <div className="space-y-8 animate-fade-in">
-        {/* SECTION 1: CLINICAL & LAB */}
-        <div className="print-section">
-            <h2 className="text-sm font-bold text-teal-600 uppercase tracking-wider mb-4 border-b border-teal-100 pb-2">2. Clinical & Morphology (EuroSCAR)</h2>
-            
-            {/* Manual Morphology */}
-            <div className="bg-teal-50 p-4 rounded-xl border border-teal-100 mb-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div><label className="text-[10px] text-slate-500 font-bold block mb-1">PUSTULES</label><select className="w-full text-xs border rounded p-1" value={manual.pustules} onChange={e=>setManual({...manual, pustules: e.target.value})}>{Object.entries(criteriaOptions.morphology.pustules).map(([k,v])=><option key={k} value={k}>{v} ({k})</option>)}</select></div>
-                <div><label className="text-[10px] text-slate-500 font-bold block mb-1">ERYTHEMA</label><select className="w-full text-xs border rounded p-1" value={manual.erythema} onChange={e=>setManual({...manual, erythema: e.target.value})}>{Object.entries(criteriaOptions.morphology.erythema).map(([k,v])=><option key={k} value={k}>{v} ({k})</option>)}</select></div>
-                <div><label className="text-[10px] text-slate-500 font-bold block mb-1">DISTRIBUTION</label><select className="w-full text-xs border rounded p-1" value={manual.distribution} onChange={e=>setManual({...manual, distribution: e.target.value})}>{Object.entries(criteriaOptions.morphology.distribution).map(([k,v])=><option key={k} value={k}>{v} ({k})</option>)}</select></div>
-                <div className="flex flex-col justify-end gap-2">
-                    <label className="flex items-center gap-2 text-xs cursor-pointer"><input type="checkbox" checked={manual.desquamation === 1} onChange={e=>setManual({...manual, desquamation: e.target.checked?1:0})} /> Post-pustular Desquamation (+1)</label>
-                    <label className="flex items-center gap-2 text-xs cursor-pointer text-red-600"><input type="checkbox" checked={manual.mucosal} onChange={e=>setManual({...manual, mucosal: e.target.checked})} /> Mucosal Involvement (-2)</label>
-                    <label className="flex items-center gap-2 text-xs cursor-pointer text-green-600"><input type="checkbox" checked={manual.resolution15d} onChange={e=>setManual({...manual, resolution15d: e.target.checked})} /> Resolution &lt; 15 days (+2)</label>
-                </div>
-            </div>
+    // ✅ เพิ่ม print:print-color-adjust-exact เพื่อบังคับให้ Browser พิมพ์สีพื้นหลังและเส้น
+    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8 print:border-0 print:shadow-none print:print-color-adjust-exact">
+      <div className="flex items-center gap-2 mb-6 border-b border-teal-100 pb-3 print:border-slate-400">
+        <Activity className="text-teal-600 print:text-black" size={24} />
+        <h3 className="font-bold text-teal-800 text-xl print:text-black">Clinical Timeline</h3>
+      </div>
 
-            {/* Lab Input */}
-            <div className="bg-white p-3 border rounded-lg mb-4 print:hidden">
-                <div className="flex gap-2 items-end">
-                    <div className="w-32"><label className="text-[10px] text-slate-500 font-bold">DATE</label><input type="date" className="border p-1 rounded w-full text-xs" value={currentEntry.date} onChange={e=>setCurrentEntry({...currentEntry, date: e.target.value})} /></div>
-                    <div className="w-24"><label className="text-[10px] text-slate-500 font-bold">TEMP (°C)</label><input type="number" className="border p-1 rounded w-full text-xs" placeholder="38.5" value={currentEntry.temp} onChange={e=>setCurrentEntry({...currentEntry, temp: e.target.value})} /></div>
-                    <div className="w-24"><label className="text-[10px] text-slate-500 font-bold">NEUTROPHIL</label><input type="number" className="border p-1 rounded w-full text-xs" placeholder="7500" value={currentEntry.neutro} onChange={e=>setCurrentEntry({...currentEntry, neutro: e.target.value})} /></div>
-                    <button onClick={handleAddEntry} className="bg-teal-600 text-white rounded px-3 py-1 text-xs font-bold hover:bg-teal-700 h-7">+ Add</button>
-                </div>
-            </div>
-            
-            {/* Lab Table */}
-            <div className="border rounded-lg overflow-hidden text-xs">
-                <table className="w-full text-left"><thead className="bg-slate-50"><tr><th className="p-2">Date</th><th className="p-2">Temp</th><th className="p-2">Neutrophils</th></tr></thead>
-                <tbody>{labEntries.map((e,i)=><tr key={i} className="border-t"><td className="p-2">{e.date}</td><td className={`p-2 font-bold ${e.temp>38?'text-red-500':''}`}>{e.temp}</td><td className={`p-2 font-bold ${e.neutro>7000?'text-red-500':''}`}>{e.neutro}</td></tr>)}</tbody></table>
+      <div className="relative w-full pb-8">
+        
+        {/* --- GRID LAYER (Fixed for Print Visibility) --- */}
+        <div className={`absolute inset-0 pl-[140px] pointer-events-none`}>
+            {/* ✅ เปลี่ยน border-slate-200 เป็น print:border-slate-400 เพื่อให้เส้นเข้มขึ้นตอนพิมพ์ */}
+            <div className="relative w-full h-full border-l border-slate-200 print:border-slate-400">
+                {timelineData.gridPoints.map((t, i) => {
+                    const pct = ((t - timelineData.minTime) / timelineData.timeSpan) * 100;
+                    if (pct < 0 || pct > 100) return null;
+                    return (
+                        <div key={i} className="absolute top-0 bottom-0 border-l border-slate-100 print:border-slate-300" style={{ left: `${pct}%` }}>
+                            <div className="absolute -bottom-6 -translate-x-1/2 text-[10px] text-slate-400 whitespace-nowrap print:text-black">
+                                {new Date(t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                            </div>
+                        </div>
+                    )
+                })}
             </div>
         </div>
 
-        {/* SECTION 2: DRUGS & ONSET */}
-        <div className="print-section">
-            <h2 className="text-sm font-bold text-teal-600 uppercase tracking-wider mb-4 border-b border-teal-100 pb-2">3. Timeline</h2>
-            <div className="flex items-center gap-4 mb-4"><label className="text-sm font-bold text-slate-700">Onset Date:</label><input type="date" value={symptomDate} onChange={e=>setSymptomDate(e.target.value)} className="border p-1 rounded font-bold text-teal-700" /></div>
+        {/* --- CONTENT LAYER --- */}
+        <div className="relative z-10 space-y-4">
             
-            <div className="bg-white p-3 border rounded-lg mb-4 print:hidden">
-                <div className="flex gap-2 items-end">
-                    <div className="flex-1"><label className="text-[10px] text-slate-500 font-bold">DRUG NAME</label><input type="text" className="border p-1 rounded w-full text-xs" value={currentDrug.name} onChange={e=>setCurrentDrug({...currentDrug, name: e.target.value})} /></div>
-                    <div className="w-32"><label className="text-[10px] text-slate-500 font-bold">START</label><input type="date" className="border p-1 rounded w-full text-xs" value={currentDrug.startDate} onChange={e=>setCurrentDrug({...currentDrug, startDate: e.target.value})} /></div>
-                    <div className="w-32"><label className="text-[10px] text-slate-500 font-bold">STOP</label><input type="date" className="border p-1 rounded w-full text-xs" value={currentDrug.stopDate} onChange={e=>setCurrentDrug({...currentDrug, stopDate: e.target.value})} /></div>
-                    <button onClick={handleAddDrug} className="bg-teal-600 text-white rounded px-3 py-1 text-xs font-bold hover:bg-teal-700 h-7">+ Add</button>
+            {/* ONSET LINE */}
+            {onsetDate && (
+                <div className={`absolute top-0 bottom-[-10px] left-[140px] right-0 pointer-events-none z-0`}>
+                    {/* ✅ เพิ่ม print:border-red-600 print:border-l-2 ให้เส้น Onset ชัดเจน */}
+                    <div className="absolute top-[-20px] bottom-0 w-0.5 bg-red-500 border-l border-dashed border-red-500 opacity-70 print:opacity-100 print:border-red-600 print:border-l-2" 
+                         style={{ left: `${timelineData.getPos(onsetDate)}%` }}>
+                        <div className="bg-red-600 text-white text-[9px] px-2 py-0.5 rounded absolute -top-5 left-1/2 -translate-x-1/2 font-bold shadow-sm whitespace-nowrap z-50 print:text-red-600 print:bg-white print:border print:border-red-600">
+                            ONSET
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* 1. HEADER ROW */}
+            <div className="flex h-6 items-end pb-1 border-b border-slate-100 print:border-slate-400">
+                <div className={`${LABEL_WIDTH_CLASS} shrink-0 font-bold text-xs text-right pr-6 text-slate-400 print:text-black`}>DRUG</div>
+                <div className="flex-1"></div>
+            </div>
+
+            {/* 2. DRUGS ROWS */}
+            <div className="space-y-2">
+                {Object.entries(safeDrugs.reduce((acc, d) => ({...acc, [d.name]: [...(acc[d.name]||[]), d]}), {})).map(([name, segs], i) => (
+                    <div key={i} className="flex h-8 items-center group hover:bg-slate-50 rounded relative z-10">
+                        <div className={`${LABEL_WIDTH_CLASS} shrink-0 pr-6 text-right text-xs font-bold text-slate-700 truncate print:text-black`} title={name}>
+                            {name}
+                        </div>
+                        
+                        <div className="flex-1 relative h-full">
+                            {segs.map((s, idx) => {
+                                const startPct = timelineData.getPos(s.startDate);
+                                const endPct = s.endDate ? timelineData.getPos(s.endDate) : 100;
+                                const displayStart = Math.max(0, startPct);
+                                const displayEnd = Math.min(100, endPct);
+                                if (displayStart >= 100 || displayEnd <= 0) return null;
+                                const width = Math.max(displayEnd - displayStart, 0.5);
+                                const isLongTerm = startPct < 0;
+
+                                return (
+                                    <React.Fragment key={idx}>
+                                        {/* ✅ ปรับสีแท่งยาตอนพิมพ์ (print:bg-slate-600) */}
+                                        <div className={`absolute h-1.5 top-[13px] bg-slate-400 opacity-70 group-hover:bg-teal-500 transition-colors
+                                            ${isLongTerm ? 'rounded-r-full' : 'rounded-full'} print:bg-slate-600 print:opacity-100
+                                        `} style={{ left: `${displayStart}%`, width: `${width}%` }}></div>
+
+                                        {!isLongTerm && (
+                                            <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-slate-500 border-2 border-white shadow-sm group-hover:bg-teal-600 z-10 print:bg-black print:border-black" 
+                                                 style={{ left: `${displayStart}%`, transform: 'translate(-50%, -50%)' }}></div>
+                                        )}
+
+                                        {s.endDate && (
+                                            <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-slate-500 border-2 border-white shadow-sm group-hover:bg-teal-600 z-10 print:bg-black print:border-black" 
+                                                 style={{ left: `${displayEnd}%`, transform: 'translate(-50%, -50%)' }}></div>
+                                        )}
+                                    </React.Fragment>
+                                )
+                            })}
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* 3. LABS ROW */}
+            <div className="pt-4">
+                <div className="flex h-6 items-end pb-1 border-b border-slate-100 mb-2 print:border-slate-400">
+                    <div className={`${LABEL_WIDTH_CLASS} shrink-0 font-bold text-xs text-right pr-6 text-slate-400 print:text-black`}>LAB DATA</div>
+                    <div className="flex-1"></div>
+                </div>
+                
+                <div className="flex h-12 items-center relative z-10">
+                    <div className={`${LABEL_WIDTH_CLASS} shrink-0 pr-6 text-right text-[10px] text-slate-500 print:text-black`}>
+                        <div>Temp / WBC / Neu</div>
+                    </div>
+                    <div className="flex-1 relative h-full">
+                        {safeLabs.map((l, i) => {
+                            const pos = timelineData.getPos(l.date);
+                            if (pos < 0 || pos > 100) return null;
+                            return (
+                                <div key={i} className="absolute top-1/2 -translate-y-1/2 flex flex-col items-center group" style={{ left: `${pos}%`, transform: 'translateX(-50%)' }}>
+                                    <div className="w-2.5 h-2.5 rounded-full bg-slate-400 border border-white shadow-sm group-hover:bg-teal-600 transition-colors print:bg-black print:border-black"></div>
+                                    <div className="absolute top-4 bg-white/90 border border-slate-200 shadow-sm p-1.5 rounded text-[9px] leading-tight whitespace-nowrap text-center z-20 print:border-slate-400 print:bg-white">
+                                        {l.temp && <div className={`${parseFloat(l.temp)>=38 ? 'text-red-600 font-bold' : 'text-slate-600'} print:text-black`}>T: {l.temp}</div>}
+                                        {l.wbc && <div className="text-teal-700 font-bold print:text-black">W: {l.wbc}</div>}
+                                        {l.neutrophil && <div className="text-emerald-600 font-bold print:text-black">N: {l.neutrophil}%</div>}
+                                    </div>
+                                </div>
+                            )
+                        })}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* --- 2. DRUG ANALYSIS (UPDATED LOGIC & WARNING) --- */
+const AgepDrugAnalysis = ({ drugs, onsetDate, onMoreInfo }) => {
+  const safeDrugs = Array.isArray(drugs) ? drugs : [];
+  
+  // ✅ รายชื่อยาที่มี Latency ยาวนาน (อ้างอิง AGEP 2026.pdf) 
+  const PROLONGED_DRUGS = [
+    'hydroxychloroquine', 'hcq', 'chloroquine', 
+    'ipilimumab', 'nivolumab', 'pembrolizumab', 'atezolizumab', 
+    'imatinib', 'icotinib', 'erlotinib', 'vemurafenib', 'gefitinib',
+    'pfizer', 'moderna', 'vaccine', 'bnt162b2', 'mrna-1273', 'astrazeneca'
+  ];
+
+  const isProlongedDrug = (name) => {
+      const n = name.toLowerCase();
+      return PROLONGED_DRUGS.some(d => n.includes(d));
+  };
+
+  if (safeDrugs.length === 0) return null;
+
+  return (
+    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8 print:border-slate-300">
+       <div className="flex items-center gap-3 mb-6 border-b border-teal-100 pb-3 print:border-slate-400">
+          <AlertTriangle className="text-teal-600 print:text-black" size={24} />
+          <h3 className="font-bold text-slate-800 text-xl print:text-black">Latency Analysis</h3>
+          <button 
+              onClick={onMoreInfo}
+              className="ml-auto flex items-center gap-1.5 text-xs font-bold text-teal-600 hover:text-teal-800 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-full transition-colors print:hidden"
+          >
+              <Info size={16} /> More Info
+          </button>
+       </div>
+       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {Object.entries(safeDrugs.reduce((acc,d)=>({...acc, [d.name]: d}), {})).map(([name, drug], i) => {
+             let risk = 'Unknown'; 
+             let style = 'bg-slate-50 text-slate-600';
+             
+             if (onsetDate && drug.startDate) {
+                 const diff = Math.ceil((new Date(onsetDate) - new Date(drug.startDate))/(86400000));
+                 
+                 // Standard AGEP Logic
+                 if (diff >= 0 && diff <= 4) { 
+                     risk = 'Very High (Antibiotics)'; 
+                     style = 'bg-teal-50 text-teal-900 border-teal-300 border font-bold'; 
+                 }
+                 else if (diff > 4 && diff <= 10) { 
+                     risk = 'High (≤10 days)'; 
+                     style = 'bg-teal-50 text-teal-800 border-teal-200 border'; 
+                 }
+                 // ✅ Logic ใหม่: 11-30 วัน + เป็น Prolonged Drug = High [cite: 200, 243]
+                 else if (diff > 10 && diff <= 30 && isProlongedDrug(name)) {
+                     risk = 'High (Prolonged Latency)';
+                     style = 'bg-teal-50 text-teal-800 border-teal-200 border font-bold';
+                 }
+                 // ถ้าเกิน 30 วัน = Low (แม้จะเป็น Prolonged ก็ตาม ตามที่คุณขอ)
+                 else if (diff > 10) { 
+                     risk = 'Low (>10 days)'; 
+                     style = 'bg-slate-50 text-slate-600 border-slate-200 border'; 
+                 }
+                 else {
+                     risk = 'Started After Onset';
+                 }
+             }
+             return (
+                 <div key={i} className={`p-4 rounded-lg flex justify-between items-center ${style} print:border-slate-300 print:bg-white print:text-black`}>
+                     <div>
+                        <div className="font-bold text-base">{name}</div>
+                        <div className="text-xs opacity-90 mt-1">Start: {drug.startDate} {drug.endDate ? ` ➝ End: ${drug.endDate}` : ''}</div>
+                     </div>
+                     <div className="text-right"><div className="text-sm font-bold uppercase tracking-wide">{risk}</div></div>
+                 </div>
+             )
+          })}
+       </div>
+       
+       {/* ✅ คำเตือนสีแดง + ไอคอนตกใจ */}
+       <div className="mt-4 pt-3 border-t border-slate-100 text-xs text-red-600 font-bold italic flex items-center gap-2 print:border-slate-300">
+           <AlertTriangle size={16} className="text-red-600" />
+           <span>คำเตือน: เป็นเพียงการประเมินเบื้องต้น มียาหลายชนิดที่มี Onset มากกว่า 10 วัน (เช่น Hydroxychloroquine, Targeted Therapies)</span>
+       </div>
+    </div>
+  );
+};
+
+/* --- 3. MAIN COMPONENT --- */
+const AgepAssessment = (props) => {
+  const drugs = props.drugList || [];
+  const setDrugs = props.setDrugList || (() => {});
+  const labs = props.labEntries || [];
+  const setLabs = props.setLabEntries || (() => {});
+  const onsetDate = props.symptomDate || '';
+  const setOnsetDate = props.setSymptomDate || (() => {});
+
+  const [analyzed, setAnalyzed] = useState(false);
+  const [bmi, setBmi] = useState('');
+  const [showInfo, setShowInfo] = useState(false);
+  
+  const [clinical, setClinical] = useState({ 
+      typicalPustules: false, 
+      noMucosalInvolvement: false,
+      acuteOnset: false, 
+      isObese: false 
+  });
+  
+  const [newLab, setNewLab] = useState({ date: '', temp: '', wbc: '', neutrophil: '' });
+  const [newDrug, setNewDrug] = useState({ name: '', startDate: '', endDate: '' });
+  const resultsRef = useRef(null);
+
+  useEffect(() => { setClinical(p => ({ ...p, isObese: parseFloat(bmi) >= 30 })); }, [bmi]);
+  useEffect(() => {
+     if (onsetDate && drugs.length > 0) {
+         const isAcute = drugs.some(d => {
+             const diff = (new Date(onsetDate) - new Date(d.startDate)) / 86400000;
+             return diff >= 0 && diff <= 10;
+         });
+         if (isAcute) setClinical(p => ({ ...p, acuteOnset: true }));
+     }
+  }, [drugs, onsetDate]);
+
+  const score = useMemo(() => {
+      let s = 0;
+      if (clinical.typicalPustules) s++;
+      if (clinical.noMucosalInvolvement) s++;
+      if (clinical.acuteOnset) s++;
+      if (clinical.isObese) s++;
+      
+      let interp = 'Unlikely';
+      if (s === 4) interp = 'Very likely case';
+      else if (s === 3) interp = 'Probable case';
+      else if (s === 2) interp = 'Possible case';
+      else if (s === 1) interp = 'Very improbable';
+      else interp = 'No AGEP';
+      
+      return { total: s, interpretation: interp };
+  }, [clinical]);
+
+  const handleAnalyze = () => {
+      setAnalyzed(true);
+      if (props.onAnalysisComplete) {
+          props.onAnalysisComplete({ type: 'Optimized AGEP 2025', score: score.total, interpretation: score.interpretation, rawData: { drugs, labs, onsetDate, clinical } });
+      }
+      setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+  };
+
+  return (
+    <div className="max-w-5xl mx-auto space-y-8 animate-fade-in font-sans">
+        {/* INPUT SECTION */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 print:hidden">
+            {/* Drugs & Onset */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <h3 className="font-bold text-teal-700 mb-4 flex items-center gap-2 text-lg"><Pill size={24}/> Drugs & Onset</h3>
+                <div className="mb-6">
+                    <label className="text-xs font-bold text-slate-500 mb-1 block">ONSET DATE</label>
+                    <input type="date" className="w-full border-2 border-slate-200 rounded-lg p-3 text-base font-bold text-teal-700 focus:border-teal-500 focus:ring-teal-200" value={onsetDate} onChange={e => setOnsetDate(e.target.value)} />
+                </div>
+                <div className="flex flex-col gap-3 mb-4 bg-teal-50 p-4 rounded-xl border border-teal-100">
+                    <div><label className="text-xs text-slate-500 font-bold block mb-1">DRUG NAME</label><input className="w-full border border-slate-300 rounded-lg p-2.5 text-base" placeholder="Enter Drug Name..." value={newDrug.name} onChange={e => setNewDrug({...newDrug, name: e.target.value})} /></div>
+                    <div className="flex gap-3">
+                        <div className="flex-1"><label className="text-xs text-slate-500 font-bold block mb-1">START DATE</label><input type="date" className="w-full border border-slate-300 rounded-lg p-2.5 text-base" value={newDrug.startDate} onChange={e => setNewDrug({...newDrug, startDate: e.target.value})} /></div>
+                        <div className="flex-1"><label className="text-xs text-slate-500 font-bold block mb-1">END DATE (Optional)</label><input type="date" className="w-full border border-slate-300 rounded-lg p-2.5 text-base" value={newDrug.endDate} onChange={e => setNewDrug({...newDrug, endDate: e.target.value})} /></div>
+                    </div>
+                    <button onClick={() => { if(newDrug.name && newDrug.startDate) { setDrugs([...drugs, {...newDrug, id: Date.now()}]); setNewDrug({name:'', startDate:'', endDate: ''}); } }} className="bg-teal-600 text-white py-3 rounded-lg text-base font-bold shadow-sm hover:bg-teal-700 mt-2 w-full">+ Add Drug</button>
+                </div>
+                <div className="max-h-[300px] overflow-y-auto bg-white p-1 rounded space-y-2">
+                    {drugs.length === 0 && <div className="text-center text-slate-300 py-6 italic">No drugs added yet</div>}
+                    {drugs.map(d => (
+                        <div key={d.id} className="flex justify-between border border-slate-100 p-3 rounded-lg items-center bg-slate-50">
+                            <div><span className="font-bold block text-slate-700 text-base">{d.name}</span><span className="text-sm text-slate-500">{d.startDate} {d.endDate ? `➝ ${d.endDate}` : '(Ongoing)'}</span></div>
+                            <button onClick={() => setDrugs(drugs.filter(x => x.id !== d.id))} className="text-slate-400 hover:text-red-500 p-2"><Trash2 size={18}/></button>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Labs */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <h3 className="font-bold text-teal-700 mb-4 flex items-center gap-2 text-lg"><Droplet size={24}/> Labs (WBC/Neutro)</h3>
+                <div className="bg-teal-50 p-4 rounded-xl border border-teal-100 mb-4">
+                    <div className="flex gap-3 mb-3 items-end">
+                        <div className="w-32"><label className="text-xs text-slate-500 font-bold block mb-1">DATE</label><input type="date" className="w-full border border-slate-300 rounded-lg p-2 text-sm" value={newLab.date} onChange={e => setNewLab({...newLab, date: e.target.value})} /></div>
+                        <div className="flex-1 grid grid-cols-3 gap-2">
+                            <div><label className="text-xs text-slate-500 font-bold block mb-1">TEMP</label><input type="number" className="w-full border border-slate-300 rounded-lg p-2 text-sm" placeholder="°C" value={newLab.temp} onChange={e => setNewLab({...newLab, temp: e.target.value})} /></div>
+                            <div><label className="text-xs text-slate-500 font-bold block mb-1">WBC</label><input type="number" className="w-full border border-slate-300 rounded-lg p-2 text-sm" placeholder="x10³" value={newLab.wbc} onChange={e => setNewLab({...newLab, wbc: e.target.value})} /></div>
+                            <div><label className="text-xs text-slate-500 font-bold block mb-1">NEU%</label><input type="number" className="w-full border border-slate-300 rounded-lg p-2 text-sm" placeholder="%" value={newLab.neutrophil} onChange={e => setNewLab({...newLab, neutrophil: e.target.value})} /></div>
+                        </div>
+                    </div>
+                    <button onClick={() => { if(newLab.date) { setLabs([...labs, {...newLab, id: Date.now()}].sort((a,b)=>new Date(a.date)-new Date(b.date))); setNewLab({date:'', temp:'', wbc:'', neutrophil:''}); } }} className="bg-teal-600 text-white py-2.5 w-full rounded-lg text-base font-bold shadow-sm hover:bg-teal-700">+ Add Lab Entry</button>
+                </div>
+                <div className="max-h-[300px] overflow-y-auto bg-white p-1 rounded space-y-2">
+                    {labs.length === 0 && <div className="text-center text-slate-300 py-6 italic">No labs added yet</div>}
+                    {labs.map(l => <div key={l.id} className="flex justify-between border border-slate-100 p-3 rounded-lg items-center bg-slate-50 text-base"><span><span className="font-mono text-slate-500 font-bold mr-2">{l.date}:</span> T{l.temp} W{l.wbc} N{l.neutrophil}</span> <button onClick={() => setLabs(labs.filter(x => x.id !== l.id))} className="text-slate-400 hover:text-red-500 p-2"><Trash2 size={18}/></button></div>)}
                 </div>
             </div>
         </div>
 
-        {/* SECTION 3: RESULT */}
-        {result && (
-            <div className="animate-slide-up">
-                <h2 className="text-sm font-bold text-teal-600 uppercase tracking-wider mb-4 border-b border-teal-100 pb-2">4. EuroSCAR Assessment</h2>
-                {drugList.map((drug, i) => <AgepCard key={i} drug={drug} result={result} />)}
+        {/* CRITERIA CHECKLIST */}
+        <div className="bg-white p-8 rounded-xl shadow-sm border border-slate-200 print:border-slate-300 print:p-4 print:mb-4 break-inside-avoid">
+            <h3 className="font-bold text-teal-800 mb-6 border-b border-teal-100 pb-3 text-xl print:text-black print:border-slate-400">Optimized AGEP Criteria (2025)</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 print:gap-4">
+                <div className="space-y-4">
+                    <label className="flex items-center gap-4 p-4 border border-slate-200 rounded-xl hover:bg-teal-50 cursor-pointer transition-colors bg-slate-50/50 print:bg-white print:border-slate-400 print:p-2">
+                        <input type="checkbox" className="accent-teal-600 w-6 h-6 print:w-4 print:h-4" checked={clinical.typicalPustules} onChange={e => setClinical({...clinical, typicalPustules: e.target.checked})} />
+                        <div><div className="font-bold text-lg text-slate-700 print:text-black print:text-sm">Typical Pustules (+1)</div><div className="text-sm text-slate-500 print:text-slate-700 print:text-xs">Non-follicular, &lt;5mm, numerous</div></div>
+                    </label>
+                    <div className="p-4 border border-slate-200 rounded-xl bg-slate-50 flex items-center justify-between print:bg-white print:border-slate-400 print:p-2">
+                        <div className="flex items-center gap-3 text-slate-700 print:text-black"><Scale size={24} className="print:w-5 print:h-5"/><span className="font-bold text-lg print:text-sm">BMI ≥ 30 (+1)</span></div>
+                        <input type="number" placeholder="Enter BMI" className="w-28 border-2 border-slate-300 rounded-lg p-2 text-lg text-center focus:border-teal-500 font-bold print:border-slate-400 print:text-sm print:w-20 print:p-1" value={bmi} onChange={e => setBmi(e.target.value)} />
+                    </div>
+                </div>
+                <div className="space-y-4">
+                    <label className="flex items-center gap-4 p-4 border border-slate-200 rounded-xl hover:bg-teal-50 cursor-pointer transition-colors bg-slate-50/50 print:bg-white print:border-slate-400 print:p-2">
+                        <input type="checkbox" className="accent-teal-600 w-6 h-6 print:w-4 print:h-4" checked={clinical.acuteOnset} onChange={e => setClinical({...clinical, acuteOnset: e.target.checked})} />
+                        <div><div className="font-bold text-lg text-slate-700 print:text-black print:text-sm">Acute Onset (+1)</div><div className="text-sm text-slate-500 print:text-slate-700 print:text-xs">≤ 10 days latency from drug start</div></div>
+                    </label>
+                    <label className="flex items-center gap-4 p-4 border border-slate-200 rounded-xl hover:bg-teal-50 cursor-pointer transition-colors bg-slate-50/50 print:bg-white print:border-slate-400 print:p-2">
+                        <input type="checkbox" className="accent-teal-600 w-6 h-6 print:w-4 print:h-4" checked={clinical.noMucosalInvolvement} onChange={e => setClinical({...clinical, noMucosalInvolvement: e.target.checked})} />
+                        <div><div className="font-bold text-lg text-slate-700 print:text-black print:text-sm">No Mucosal Involvement (+1)</div><div className="text-sm text-teal-600 font-bold print:text-teal-800 print:text-xs">Check if mucosa is SPARED (Not affected)</div></div>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        {/* ANALYZE BUTTON */}
+        <button onClick={handleAnalyze} className="w-full bg-gradient-to-r from-teal-600 to-emerald-500 text-white font-bold py-4 rounded-xl shadow-lg hover:scale-[1.01] transition-transform flex items-center justify-center gap-3 text-xl print:hidden">
+            <Zap size={28} /> Analyze Score
+        </button>
+
+        {analyzed && (
+            <div ref={resultsRef} className="space-y-8">
+                {/* Result Card */}
+                <div className="bg-white border-2 border-teal-100 p-8 rounded-xl text-center shadow-lg print:shadow-none print:border-slate-300 print:p-4 break-inside-avoid">
+                    <div className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3 print:mb-1 print:text-black">Final Diagnosis Score</div>
+                    <div className="text-7xl font-black text-teal-700 print:text-black print:text-5xl">{score.total} <span className="text-3xl text-slate-300 font-normal print:text-slate-500">/ 4</span></div>
+                    <div className="inline-block px-6 py-2 bg-teal-100 text-teal-900 rounded-full font-bold mt-4 text-lg border border-teal-200 print:bg-white print:border-slate-400 print:text-black print:text-sm print:mt-2">{score.interpretation}</div>
+                </div>
+
+                {/* Timeline - Force Page Break */}
+                <div className="print:break-before-page">
+                    <AgepTimeline drugs={drugs} labs={labs} onsetDate={onsetDate} />
+                </div>
+                
+                {/* Drug Analysis - Force Page Break */}
+                <div className="print:break-before-page">
+                    <AgepDrugAnalysis drugs={drugs} onsetDate={onsetDate} onMoreInfo={() => setShowInfo(true)} />
+                </div>
+            </div>
+        )}
+
+        {/* Modal Popup */}
+        {showInfo && (
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 print:hidden" onClick={() => setShowInfo(false)}>
+                <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-auto relative animate-fade-in-up" onClick={e => e.stopPropagation()}>
+                    <button onClick={() => setShowInfo(false)} className="absolute top-4 right-4 p-2 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-600 transition-colors z-10"><X size={24} /></button>
+                    <div className="p-8">
+                        <h3 className="font-bold text-2xl mb-6 text-teal-800 flex items-center gap-2 border-b pb-4"><Activity className="text-teal-600" /> AGEP Diagnostic Algorithm</h3>
+                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-2 flex items-center justify-center min-h-[300px]">
+                            {/* ✅ แสดงรูปภาพที่ Import มา */}
+                            <img 
+                                src={agepAlgoImg} 
+                                alt="AGEP Diagnostic Algorithm" 
+                                className="max-w-full h-auto rounded shadow-sm"
+                            />
+                        </div>
+                        <div className="mt-6 text-slate-500 text-sm border-t pt-4">
+                            <p className="font-bold mb-1">Reference:</p>
+                            <p>Optimizing the EuroSCAR criteria for acute generalized exanthematous pustulosis: A streamlined diagnostic model (JAAD 2025)</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         )}
     </div>
