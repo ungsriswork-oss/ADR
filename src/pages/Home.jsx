@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 const Home = () => {
   const navigate = useNavigate();
   const [savedCases, setSavedCases] = useState([]);
-  const currentUser = 'Dr. User';
+  const currentUser = 'Acute care';
 
   useEffect(() => {
     const data = JSON.parse(localStorage.getItem('dili_cases') || '[]');
@@ -164,7 +164,7 @@ const Home = () => {
               <div className="text-sm font-bold text-slate-700">
                 {currentUser}
               </div>
-              <div className="text-xs text-slate-500">Medical Department</div>
+              <div className="text-xs text-slate-500">Pharmacy Department</div>
             </div>
             <div className="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 font-bold">
               U
