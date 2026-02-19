@@ -11,7 +11,7 @@ import HemeAssessment from './HemeAssessment';
 import RashAssessment from './RashAssessment';
 import ElectroAssessment from './ElectroAssessment';
 import SamsAssessment from './SamsAssessment';
-import DrugFeverAssessment from './DrugFeverAssessment'; // ✅ 1. Import Drug Fever
+import DrugFeverAssessment from './DrugFeverAssessment';
 
 const AssessmentForm = () => {
   const { type } = useParams();
@@ -53,7 +53,7 @@ const AssessmentForm = () => {
     electro: { title: 'Electrolyte Imbalance', themeColor: 'yellow' },
     heme: { title: 'Hematologic Disorder', themeColor: 'rose' },
     sams: { title: 'SAMS-CI', themeColor: 'cyan' },
-    drugfever: { title: 'Drug Fever', themeColor: 'indigo' }, // ✅ 2. Config Theme สี Indigo
+    drugfever: { title: 'Drug Fever', themeColor: 'indigo' },
     default: { title: 'Assessment', themeColor: 'slate' },
   };
   const currentSetting = typeSettings[type] || typeSettings.default;
@@ -78,13 +78,15 @@ const AssessmentForm = () => {
       setPharmacistNote(loaded.pharmacistNote || src.pharmacistNote || '');
 
       // Load ข้อมูลเฉพาะ tool
-      if (['dili', 'dress', 'agep', 'heme'].includes(type)) {
-        setLabEntries(loaded.labEntries || []);
+      // ✅ เพิ่ม 'electro' ให้โหลดข้อมูล Lab
+      if (['dili', 'dress', 'agep', 'heme', 'electro'].includes(type)) {
+        setLabEntries(loaded.labEntries || src.labEntries || []);
       }
       if (['rash', 'sjs'].includes(type)) {
         setDailyLogs(src.dailyLogs || src.logs || []);
       }
-      if (type === 'rash') {
+      // ✅ เพิ่ม 'electro' ให้โหลดคะแนน Naranjo
+      if (['rash', 'electro'].includes(type)) {
         setNaranjoScores(src.naranjoScores || src.scores || {});
         setProdromeData(src.prodromeData || {});
       }
@@ -116,22 +118,26 @@ const AssessmentForm = () => {
     }
 
     // เตรียม Saved Data Object
-    // สำหรับ Drug Fever เราจะดึงข้อมูลจาก analysisResult (เพราะจัดการ State ภายใน component ลูก)
     const isDrugFever = type === 'drugfever';
     
     const savedDataObj = {
         // Shared fields
-        drugList: isDrugFever ? [] : drugList, // Drug Fever ใช้ drugEntries แทน
+        drugList: isDrugFever ? [] : drugList,
         symptomDate: isDrugFever ? (analysisResult?.feverOnsetDate || '') : symptomDate,
         pharmacistNote: isDrugFever ? (analysisResult?.pharmacistNote || '') : pharmacistNote,
         
         // Tool specific fields
-        labEntries: ['dili', 'dress', 'agep', 'heme'].includes(type) ? labEntries : undefined,
+        // ✅ เพิ่ม 'electro' ให้บันทึก Lab
+        labEntries: ['dili', 'dress', 'agep', 'heme', 'electro'].includes(type) ? labEntries : undefined,
+        
         dailyLogs: ['rash', 'sjs'].includes(type) ? dailyLogs : (isDrugFever ? analysisResult?.dailyLogs : undefined),
-        naranjoScores: type === 'rash' ? naranjoScores : undefined,
+        
+        // ✅ เพิ่ม 'electro' ให้บันทึก Score
+        naranjoScores: ['rash', 'electro'].includes(type) ? naranjoScores : undefined,
+        
         prodromeData: type === 'rash' ? prodromeData : undefined,
         
-        // ✅ Drug Fever Specifics (ดึงจากลูก)
+        // Drug Fever Specifics
         drugEntries: isDrugFever ? analysisResult?.drugEntries : undefined,
         feverOnsetDate: isDrugFever ? analysisResult?.feverOnsetDate : undefined,
         answers: isDrugFever ? analysisResult?.answers : undefined,
@@ -141,12 +147,11 @@ const AssessmentForm = () => {
       id: location.state?.caseData?.id || Date.now(),
       type: type,
       ...patientData,
-      // Top level fields for easy access
       drugList: isDrugFever && analysisResult?.drugEntries ? analysisResult.drugEntries : drugList,
       symptomDate: savedDataObj.symptomDate,
       pharmacistNote: savedDataObj.pharmacistNote,
       
-      savedData: savedDataObj, // เก็บ object ย่อย
+      savedData: savedDataObj,
 
       analysisResultFull: analysisResult,
       rFactor: analysisResult?.rFactor || analysisResult?.total || '-',
@@ -207,7 +212,6 @@ const AssessmentForm = () => {
         {/* TOOL RENDER AREA */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
           
-          {/* ✅ 3. Render Drug Fever Assessment */}
           {type === 'drugfever' && (
             <DrugFeverAssessment 
                 onAnalysisComplete={setAnalysisResult} 
@@ -215,7 +219,6 @@ const AssessmentForm = () => {
             />
           )}
 
-          {/* SAMS */}
           {type === 'sams' && (
             <SamsAssessment onAnalysisComplete={setAnalysisResult} />
           )}
@@ -264,7 +267,20 @@ const AssessmentForm = () => {
             />
           )}
           {type === 'heme' && <HemeAssessment onAnalysisComplete={setAnalysisResult} />}
-          {type === 'electro' && <ElectroAssessment onAnalysisComplete={setAnalysisResult} />}
+          
+          {/* ✅ แก้ไข: ส่ง Props ให้ครบถ้วน */}
+          {type === 'electro' && (
+            <ElectroAssessment 
+              drugList={drugList} setDrugList={setDrugList}
+              labList={labEntries} setLabList={setLabEntries}
+              onset={symptomDate} setOnset={setSymptomDate}
+              naranjoScores={naranjoScores} setNaranjoScores={setNaranjoScores}
+              pharmacistNote={pharmacistNote} setPharmacistNote={setPharmacistNote}
+              onAnalysisComplete={setAnalysisResult}
+              initialData={location.state?.caseData}
+            />
+          )}
+
           {type === 'rash' && (
             <RashAssessment
               drugList={drugList} setDrugList={setDrugList}
@@ -283,7 +299,6 @@ const AssessmentForm = () => {
         <div className="mt-8 flex justify-end gap-3 print:hidden">
           <button onClick={() => navigate('/')} className="px-6 py-2 rounded-lg border hover:bg-slate-50 transition">Cancel</button>
 
-          {/* ปุ่ม Analyze (ซ่อนสำหรับ Tools ที่คำนวณ Auto หรือมีปุ่มภายในตัว) */}
           {![ 'dili', 'sjs', 'rash', 'dress', 'agep', 'heme', 'electro', 'sams', 'drugfever' ].includes(type) && (
             <button onClick={() => setAnalyzeCount((c) => c + 1)} className={`px-6 py-2 rounded-lg bg-${theme}-500 hover:bg-${theme}-600 text-white shadow-sm transition`}>Analyze</button>
           )}
