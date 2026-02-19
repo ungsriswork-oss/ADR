@@ -42,7 +42,8 @@ const Home = () => {
     return [];
   };
 
-  // ✅ UPDATE: เพิ่ม Drug Fever ต่อท้าย Hematologic Disorder
+  // ✅ UPDATE: ปรับลำดับ Tools ตามที่คุณต้องการ
+  // ลำดับ: DILI, Rash, SJS, DRESS, AGEP, SAMS, Drug Fever, Electro, Heme(Inactive)
   const tools = [
     {
       id: 'dili',
@@ -92,6 +93,16 @@ const Home = () => {
       active: true,
       path: '/assess/sams',
     },
+    // ✅ 1. ย้าย Drug Fever มาแทนที่ตำแหน่ง Electrolyte เดิม
+    {
+      id: 'drugfever',
+      title: 'Drug Fever',
+      desc: 'Timeline & Criteria Check',
+      color: 'indigo',
+      active: true,
+      path: '/assess/drugfever',
+    },
+    // ✅ 2. ย้าย Electrolyte Imbalance มาแทนที่ตำแหน่ง Hematologic เดิม
     {
       id: 'electro',
       title: 'Electrolyte Imbalance',
@@ -100,22 +111,14 @@ const Home = () => {
       active: true,
       path: '/assess/electro',
     },
+    // ✅ 3. ย้าย Hematologic Disorder ไปขวาสุด และปิดการใช้งาน (Inactive)
     {
       id: 'heme',
       title: 'Hematologic Disorder',
       desc: 'Lab Monitoring + Naranjo',
       color: 'rose',
-      active: true,
+      active: false, // ❌ ปิดการใช้งาน (จะเป็นสีเทา + กดไม่ได้)
       path: '/assess/heme',
-    },
-    // ✅ เพิ่มส่วน Drug Fever ไว้ตรงนี้ ถัดจาก Heme
-    {
-      id: 'drugfever',
-      title: 'Drug Fever',
-      desc: 'Timeline & Criteria Check',
-      color: 'indigo', // ใช้สี indigo เพื่อให้ดูแตกต่างและเข้ากับระบบ
-      active: true,
-      path: '/assess/drugfever',
     },
   ];
 
@@ -136,7 +139,7 @@ const Home = () => {
         return 'bg-cyan-100 text-cyan-700 border-cyan-200';
       case 'heme':
         return 'bg-rose-100 text-rose-700 border-rose-200';
-      case 'drugfever': // ✅ เพิ่ม Case นี้สำหรับแสดงผลตอนบันทึก
+      case 'drugfever':
         return 'bg-indigo-100 text-indigo-700 border-indigo-200';
       default:
         return 'bg-slate-100 text-slate-700 border-slate-200';
@@ -153,7 +156,7 @@ const Home = () => {
               Rx
             </div>
             <span className="text-xl font-bold text-slate-800">
-              ADR assessment tools
+             Yommarat ADR assessment tools
             </span>
           </div>
           <div className="flex items-center gap-3">

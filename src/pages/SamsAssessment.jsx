@@ -36,7 +36,7 @@ const samsCriteria = {
     }
 };
 
-const SamsAssessment = ({ onAnalysisComplete }) => {
+const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
     // --- STATE: Clinical Data ---
     const [clinicalData, setClinicalData] = useState({
         suspectedDrug: '',
@@ -64,11 +64,54 @@ const SamsAssessment = ({ onAnalysisComplete }) => {
     const [isAnalyzed, setIsAnalyzed] = useState(false);
     const [result, setResult] = useState(null);
 
+    // --- EFFECT: Load Initial Data (For View/Edit Mode) ---
+    useEffect(() => {
+        if (initialData) {
+            // ดึงข้อมูลจาก savedData หรือ structure ที่ส่งเข้ามา
+            const src = initialData.savedData || initialData;
+            
+            // 1. Clinical Data
+            if (src.clinicalData) {
+                setClinicalData(prev => ({ ...prev, ...src.clinicalData }));
+            } else {
+                // Fallback กรณีข้อมูลกระจัดกระจาย
+                setClinicalData(prev => ({
+                    ...prev,
+                    suspectedDrug: src.suspectedDrug || '',
+                    startDate: src.startDate || '',
+                    symptomDate: src.symptomDate || '',
+                    stopDate: src.stopDate || '',
+                    improvementDate: src.improvementDate || '',
+                    hasRechallenge: src.hasRechallenge || false,
+                    restartDate: src.restartDate || '',
+                    recurrenceDate: src.recurrenceDate || ''
+                }));
+            }
+
+            // 2. CPK Data
+            if (src.cpkData && Array.isArray(src.cpkData)) {
+                setCpkEntries(src.cpkData);
+            }
+
+            // 3. Answers & Result
+            if (src.answers) {
+                setAnswers(src.answers);
+                // ถ้ามีคำตอบอยู่แล้ว ให้คำนวณผลลัพธ์เพื่อแสดงผลทันที
+                setTimeout(() => handleAnalyze(src.answers, src.clinicalData), 100);
+            } else if (initialData.analysisResultFull) {
+                 // กรณีโหลดจาก analysisResultFull
+                 setResult(initialData.analysisResultFull);
+                 setIsAnalyzed(true);
+            }
+        }
+    }, [initialData]);
+
     // --- HELPER: Date Diff ---
     const getDaysDiff = (d1, d2) => {
         if (!d1 || !d2) return null;
         const date1 = new Date(d1);
         const date2 = new Date(d2);
+        if (isNaN(date1.getTime()) || isNaN(date2.getTime())) return null;
         const diffTime = Math.abs(date2 - date1);
         return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     };
@@ -79,7 +122,7 @@ const SamsAssessment = ({ onAnalysisComplete }) => {
             const updated = [...cpkEntries, newCpk].sort((a,b) => new Date(a.date) - new Date(b.date));
             setCpkEntries(updated);
             setNewCpk({ date: '', value: '' });
-            setIsAnalyzed(false); // Reset analysis to force update timeline
+            setIsAnalyzed(false);
         }
     };
 
@@ -91,41 +134,48 @@ const SamsAssessment = ({ onAnalysisComplete }) => {
     };
 
     // --- HANDLER: Auto-Calculate & Analyze ---
-    const handleAnalyze = () => {
-        let newAnswers = { ...answers };
+    // รับ parameters แบบ optional เพื่อรองรับการเรียกจาก useEffect
+    const handleAnalyze = (manualAnswers = null, manualClinical = null) => {
+        const currentData = manualClinical || clinicalData;
+        let newAnswers = manualAnswers ? { ...manualAnswers } : { ...answers };
 
-        // Logic 1: Onset
-        const onsetDays = getDaysDiff(clinicalData.startDate, clinicalData.symptomDate);
-        if (onsetDays !== null) {
-            if (onsetDays < 28) newAnswers.onset = 3;
-            else if (onsetDays <= 84) newAnswers.onset = 2; 
-            else newAnswers.onset = 1;
-        }
-
-        // Logic 2: Dechallenge
-        if (clinicalData.stopDate && clinicalData.improvementDate) {
-            const dechallengeDays = getDaysDiff(clinicalData.stopDate, clinicalData.improvementDate);
-            if (dechallengeDays !== null) {
-                if (dechallengeDays < 14) newAnswers.dechallenge = 2;
-                else if (dechallengeDays <= 28) newAnswers.dechallenge = 1; 
-                else newAnswers.dechallenge = 0;
+        // ถ้าไม่ได้ Manual Answers มา ให้คำนวณใหม่จากวันที่
+        if (!manualAnswers) {
+            // Logic 1: Onset
+            const onsetDays = getDaysDiff(currentData.startDate, currentData.symptomDate);
+            if (onsetDays !== null) {
+                if (onsetDays < 28) newAnswers.onset = 3;
+                else if (onsetDays <= 84) newAnswers.onset = 2; 
+                else newAnswers.onset = 1;
             }
-        }
 
-        // Logic 3: Rechallenge
-        if (clinicalData.hasRechallenge && clinicalData.restartDate && clinicalData.recurrenceDate) {
-            const rechallengeDays = getDaysDiff(clinicalData.restartDate, clinicalData.recurrenceDate);
-            if (rechallengeDays !== null) {
-                if (rechallengeDays < 28) newAnswers.rechallenge = 3;
-                else if (rechallengeDays <= 84) newAnswers.rechallenge = 1;
-                else newAnswers.rechallenge = 0;
+            // Logic 2: Dechallenge
+            if (currentData.stopDate && currentData.improvementDate) {
+                const dechallengeDays = getDaysDiff(currentData.stopDate, currentData.improvementDate);
+                if (dechallengeDays !== null) {
+                    if (dechallengeDays < 14) newAnswers.dechallenge = 2;
+                    else if (dechallengeDays <= 28) newAnswers.dechallenge = 1; 
+                    else newAnswers.dechallenge = 0;
+                }
             }
-        } else if (!clinicalData.hasRechallenge) {
-            newAnswers.rechallenge = 0;
+
+            // Logic 3: Rechallenge
+            if (currentData.hasRechallenge && currentData.restartDate && currentData.recurrenceDate) {
+                const rechallengeDays = getDaysDiff(currentData.restartDate, currentData.recurrenceDate);
+                if (rechallengeDays !== null) {
+                    if (rechallengeDays < 28) newAnswers.rechallenge = 3;
+                    else if (rechallengeDays <= 84) newAnswers.rechallenge = 1;
+                    else newAnswers.rechallenge = 0;
+                }
+            } else if (!currentData.hasRechallenge) {
+                newAnswers.rechallenge = 0;
+            }
+            
+            setAnswers(newAnswers);
         }
 
-        setAnswers(newAnswers);
-        
+        // Calculate Total Score
+        // หมายเหตุ: Math.floor ใช้จัดการกรณีคะแนนเป็นทศนิยม เช่น 2.1 ให้คิดเป็น 2 แต้มตามเกณฑ์ทั่วไป (หรือเอาออกถ้าต้องการทศนิยม)
         const getScore = (val) => Math.floor(parseFloat(val));
         const breakdown = {
             distribution: getScore(newAnswers.distribution),
@@ -145,18 +195,16 @@ const SamsAssessment = ({ onAnalysisComplete }) => {
             colorClass = "bg-yellow-500";
         }
 
-        const calculatedResult = { total, text, breakdown, colorClass };
+        const calculatedResult = { total, text, breakdown, colorClass, type: 'SAMS-CI' };
         setResult(calculatedResult);
         setIsAnalyzed(true);
 
         if (onAnalysisComplete) {
             onAnalysisComplete({
-                score: total,
-                interpretation: text,
+                ...calculatedResult,
                 answers: newAnswers,
-                breakdown: breakdown,
-                clinicalData: clinicalData,
-                cpkData: cpkEntries // Send CPK data back
+                clinicalData: currentData, // ส่งข้อมูล Clinical กลับไปบันทึก
+                cpkData: cpkEntries // ส่งข้อมูล CPK กลับไปบันทึก
             });
         }
     };
@@ -168,6 +216,8 @@ const SamsAssessment = ({ onAnalysisComplete }) => {
 
     const handleScoreChange = (field, value) => {
         setAnswers(prev => ({ ...prev, [field]: value }));
+        // เมื่อเปลี่ยนคะแนน Manual ให้ Analyzed ใหม่แต่ใช้ค่า Date เดิม
+        setIsAnalyzed(false); 
     };
 
     // --- TIMELINE COMPONENT (With CPK) ---
@@ -183,27 +233,28 @@ const SamsAssessment = ({ onAnalysisComplete }) => {
             clinicalData.restartDate,
             clinicalData.recurrenceDate,
             ...cpkEntries.map(c => c.date)
-        ].filter(Boolean).map(d => new Date(d).getTime());
+        ].filter(d => d && !isNaN(new Date(d).getTime())).map(d => new Date(d).getTime());
 
         if (eventDates.length === 0) return null;
 
         const minTime = Math.min(...eventDates);
         const maxTime = Math.max(...eventDates);
-        const totalDuration = maxTime - minTime || 1; // Avoid div/0
-        // Add buffer (5% on each side)
-        const buffer = totalDuration * 0.05;
+        const totalDuration = maxTime - minTime || 86400000; // Avoid div/0, default 1 day
+        // Add buffer (10% on each side)
+        const buffer = totalDuration * 0.1;
         const timelineStart = minTime - buffer;
         const timelineEnd = maxTime + buffer;
         const timelineRange = timelineEnd - timelineStart;
 
         const getPos = (dateStr) => {
-            if (!dateStr) return -1;
+            if (!dateStr) return -999;
             const time = new Date(dateStr).getTime();
+            if (isNaN(time)) return -999;
             return ((time - timelineStart) / timelineRange) * 100;
         };
 
         return (
-            <div className="mt-8 mb-8 p-6 bg-white rounded-xl border border-slate-200 shadow-sm print:shadow-none print:border">
+            <div className="mt-8 mb-8 p-6 bg-white rounded-xl border border-slate-200 shadow-sm print:shadow-none print:border break-inside-avoid">
                 <h3 className="text-sm font-bold text-slate-700 mb-6 flex items-center gap-2">
                     <Activity className="w-4 h-4 text-teal-600" /> CLINICAL TIMELINE & CPK TREND
                 </h3>
@@ -217,13 +268,14 @@ const SamsAssessment = ({ onAnalysisComplete }) => {
                     {/* 1. Drug Duration Bar (Main Statin) */}
                     {clinicalData.startDate && (
                         <div 
-                            className="absolute h-3 bg-teal-200 rounded-full top-10 opacity-80"
+                            className="absolute h-3 bg-teal-200 rounded-full top-10 opacity-80 print:bg-teal-300 print:opacity-100"
                             style={{ 
-                                left: `${getPos(clinicalData.startDate)}%`, 
-                                right: clinicalData.stopDate ? `${100 - getPos(clinicalData.stopDate)}%` : '0%'
+                                left: `${Math.max(0, getPos(clinicalData.startDate))}%`, 
+                                right: clinicalData.stopDate ? `${Math.max(0, 100 - getPos(clinicalData.stopDate))}%` : '0%',
+                                minWidth: '4px'
                             }}
                         >
-                             <span className="absolute -top-5 left-0 text-[10px] font-bold text-teal-700 whitespace-nowrap">
+                             <span className="absolute -top-5 left-0 text-[10px] font-bold text-teal-700 whitespace-nowrap print:text-black">
                                 {clinicalData.suspectedDrug || 'Suspected Drug'}
                              </span>
                         </div>
@@ -237,15 +289,15 @@ const SamsAssessment = ({ onAnalysisComplete }) => {
                         { date: clinicalData.improvementDate, icon: CheckCircle, color: 'text-blue-500', label: 'Improved' },
                     ].map((ev, i) => {
                         const pos = getPos(ev.date);
-                        if (pos < 0) return null;
+                        if (pos < 0 || pos > 100) return null;
                         const Icon = ev.icon;
                         return (
                             <div key={i} className="absolute top-8 flex flex-col items-center group z-10" style={{ left: `${pos}%`, transform: 'translateX(-50%)' }}>
-                                <Icon className={`w-5 h-5 bg-white rounded-full ${ev.color} shadow-sm`} />
-                                <div className="text-[9px] font-bold text-slate-500 mt-1 uppercase">{ev.label}</div>
-                                <div className="text-[9px] text-slate-400">{new Date(ev.date).toLocaleDateString(undefined, {month:'short', day:'numeric'})}</div>
+                                <Icon className={`w-5 h-5 bg-white rounded-full ${ev.color} shadow-sm print:text-black print:border print:border-black`} />
+                                <div className="text-[9px] font-bold text-slate-500 mt-1 uppercase print:text-black">{ev.label}</div>
+                                <div className="text-[9px] text-slate-400 print:hidden">{new Date(ev.date).toLocaleDateString(undefined, {month:'short', day:'numeric'})}</div>
                                 {/* Tooltip Line */}
-                                <div className="h-24 w-px border-l border-dashed border-slate-300 absolute top-5 -z-10"></div>
+                                <div className="h-24 w-px border-l border-dashed border-slate-300 absolute top-5 -z-10 print:border-slate-400"></div>
                             </div>
                         );
                     })}
@@ -253,21 +305,21 @@ const SamsAssessment = ({ onAnalysisComplete }) => {
                     {/* 3. CPK Graph Points */}
                     {cpkEntries.map((cpk, i) => {
                         const pos = getPos(cpk.date);
-                        if (pos < 0) return null;
+                        if (pos < 0 || pos > 100) return null;
                         return (
                             <div key={`cpk-${i}`} className="absolute top-28 flex flex-col items-center z-20" style={{ left: `${pos}%`, transform: 'translateX(-50%)' }}>
-                                <div className="w-3 h-3 bg-purple-500 rounded-full border-2 border-white shadow-md hover:scale-125 transition-transform cursor-pointer"></div>
-                                <div className="bg-purple-100 text-purple-800 text-[10px] font-bold px-1.5 py-0.5 rounded mt-1 shadow-sm whitespace-nowrap">
+                                <div className="w-3 h-3 bg-purple-500 rounded-full border-2 border-white shadow-md hover:scale-125 transition-transform cursor-pointer print:bg-black print:border-black"></div>
+                                <div className="bg-purple-100 text-purple-800 text-[10px] font-bold px-1.5 py-0.5 rounded mt-1 shadow-sm whitespace-nowrap print:bg-white print:border print:border-black print:text-black">
                                     {cpk.value} <span className="text-[8px] opacity-70">U/L</span>
                                 </div>
-                                <div className="text-[8px] text-slate-400 mt-0.5">{new Date(cpk.date).toLocaleDateString(undefined, {month:'short', day:'numeric'})}</div>
+                                <div className="text-[8px] text-slate-400 mt-0.5 print:hidden">{new Date(cpk.date).toLocaleDateString(undefined, {month:'short', day:'numeric'})}</div>
                             </div>
                         );
                     })}
                     
                     {/* Label for CPK Row */}
                     {cpkEntries.length > 0 && (
-                        <div className="absolute top-32 left-0 text-[10px] font-bold text-purple-400 -translate-x-full pr-2">
+                        <div className="absolute top-32 left-0 text-[10px] font-bold text-purple-400 -translate-x-full pr-2 print:text-black">
                             CPK Level
                         </div>
                     )}
@@ -280,12 +332,12 @@ const SamsAssessment = ({ onAnalysisComplete }) => {
         <div className="space-y-6 animate-fade-in">
             
             {/* 1. CLINICAL DATA FORM */}
-            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm print:shadow-none">
-                <h2 className="text-sm font-bold text-teal-600 uppercase tracking-wider mb-4 border-b border-teal-100 pb-2 flex items-center gap-2">
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm print:shadow-none print:border-0 print:p-0">
+                <h2 className="text-sm font-bold text-teal-600 uppercase tracking-wider mb-4 border-b border-teal-100 pb-2 flex items-center gap-2 print:text-black print:border-black">
                     <Calendar className="w-4 h-4" /> 1. Clinical Data & Dates
                 </h2>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print:grid-cols-2">
                     {/* Suspected Drug */}
                     <div className="md:col-span-2">
                         <label className="text-xs text-slate-500 font-bold block mb-1">SUSPECTED STATIN / DRUG</label>
@@ -299,8 +351,8 @@ const SamsAssessment = ({ onAnalysisComplete }) => {
                     </div>
 
                     {/* Onset Phase */}
-                    <div className="bg-teal-50/50 p-4 rounded-lg border border-teal-100 space-y-3">
-                        <div className="flex items-center gap-2 text-teal-700 font-bold text-xs mb-2">
+                    <div className="bg-teal-50/50 p-4 rounded-lg border border-teal-100 space-y-3 print:bg-white print:border-slate-300">
+                        <div className="flex items-center gap-2 text-teal-700 font-bold text-xs mb-2 print:text-black">
                             <PlayCircle className="w-4 h-4" /> ONSET PHASE
                         </div>
                         <div>
@@ -314,8 +366,8 @@ const SamsAssessment = ({ onAnalysisComplete }) => {
                     </div>
 
                     {/* Dechallenge Phase */}
-                    <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-3">
-                        <div className="flex items-center gap-2 text-slate-600 font-bold text-xs mb-2">
+                    <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-3 print:bg-white print:border-slate-300">
+                        <div className="flex items-center gap-2 text-slate-600 font-bold text-xs mb-2 print:text-black">
                             <StopCircle className="w-4 h-4" /> DECHALLENGE PHASE
                         </div>
                         <div>
@@ -329,14 +381,14 @@ const SamsAssessment = ({ onAnalysisComplete }) => {
                     </div>
 
                     {/* CPK Data Entry */}
-                    <div className="md:col-span-2 bg-purple-50 p-4 rounded-lg border border-purple-100">
+                    <div className="md:col-span-2 bg-purple-50 p-4 rounded-lg border border-purple-100 print:bg-white print:border-slate-300">
                          <div className="flex items-center justify-between mb-3">
-                            <label className="text-xs font-bold text-purple-700 flex items-center gap-2">
+                            <label className="text-xs font-bold text-purple-700 flex items-center gap-2 print:text-black">
                                 <Activity className="w-4 h-4" /> CPK DATA (Creatine Phosphokinase)
                             </label>
                          </div>
                          
-                         <div className="flex gap-3 mb-3 items-end">
+                         <div className="flex gap-3 mb-3 items-end print:hidden">
                             <div className="flex-1">
                                 <label className="text-[10px] text-slate-400 block mb-1">Date</label>
                                 <input 
@@ -367,21 +419,21 @@ const SamsAssessment = ({ onAnalysisComplete }) => {
 
                          {/* CPK List */}
                          {cpkEntries.length > 0 && (
-                             <div className="bg-white rounded border border-purple-100 overflow-hidden">
+                             <div className="bg-white rounded border border-purple-100 overflow-hidden print:border-slate-300">
                                  <table className="w-full text-xs text-left">
-                                     <thead className="bg-purple-100/50 text-purple-700 font-bold">
+                                     <thead className="bg-purple-100/50 text-purple-700 font-bold print:bg-slate-200 print:text-black">
                                          <tr>
                                              <th className="p-2">Date</th>
                                              <th className="p-2">Value (U/L)</th>
-                                             <th className="p-2 text-right">Action</th>
+                                             <th className="p-2 text-right print:hidden">Action</th>
                                          </tr>
                                      </thead>
-                                     <tbody className="divide-y divide-purple-50">
+                                     <tbody className="divide-y divide-purple-50 print:divide-slate-200">
                                          {cpkEntries.map((cpk, i) => (
                                              <tr key={i}>
                                                  <td className="p-2 text-slate-600">{new Date(cpk.date).toLocaleDateString()}</td>
-                                                 <td className="p-2 font-mono font-bold text-purple-600">{cpk.value}</td>
-                                                 <td className="p-2 text-right">
+                                                 <td className="p-2 font-mono font-bold text-purple-600 print:text-black">{cpk.value}</td>
+                                                 <td className="p-2 text-right print:hidden">
                                                      <button onClick={() => removeCpk(i)} className="text-slate-400 hover:text-red-500">
                                                          <Trash2 className="w-3 h-3" />
                                                      </button>
@@ -410,7 +462,7 @@ const SamsAssessment = ({ onAnalysisComplete }) => {
                         </div>
                         
                         {clinicalData.hasRechallenge && (
-                            <div className="grid grid-cols-2 gap-4 bg-orange-50 p-4 rounded-lg border border-orange-100 animate-fade-in">
+                            <div className="grid grid-cols-2 gap-4 bg-orange-50 p-4 rounded-lg border border-orange-100 animate-fade-in print:bg-white print:border-slate-300">
                                 <div>
                                     <label className="text-xs text-slate-500 font-bold block mb-1">Date Restarted</label>
                                     <input type="date" className="w-full text-sm border-slate-300 rounded-md" value={clinicalData.restartDate} onChange={e => handleChange('restartDate', e.target.value)} />
@@ -424,10 +476,10 @@ const SamsAssessment = ({ onAnalysisComplete }) => {
                     </div>
                 </div>
 
-                {/* ANALYZE BUTTON */}
-                <div className="mt-6 flex justify-center">
+                {/* ANALYZE BUTTON (Hidden on Print) */}
+                <div className="mt-6 flex justify-center print:hidden">
                     <button 
-                        onClick={handleAnalyze}
+                        onClick={() => handleAnalyze()}
                         className="bg-teal-600 text-white px-8 py-3 rounded-full shadow-md hover:bg-teal-700 hover:shadow-lg transition-all flex items-center gap-2 font-bold text-sm"
                     >
                         <Activity className="w-4 h-4" /> ANALYZE & CALCULATE SCORE
@@ -442,16 +494,16 @@ const SamsAssessment = ({ onAnalysisComplete }) => {
             {isAnalyzed && (
                 <div className="animate-slide-up space-y-6">
                      <div className="print-section">
-                        <h2 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-4 border-b border-slate-200 pb-2 flex items-center gap-2">
+                        <h2 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-4 border-b border-slate-200 pb-2 flex items-center gap-2 print:text-black print:border-black">
                             <CheckCircle className="w-4 h-4" /> 2. SAMS-CI Scoring Criteria
                         </h2>
                         
-                        <div className="bg-white p-6 rounded-xl border border-slate-200 mb-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="bg-white p-6 rounded-xl border border-slate-200 mb-6 grid grid-cols-1 md:grid-cols-2 gap-6 print:border-0 print:p-0">
                             {/* Q1: Distribution */}
                             <div className="md:col-span-2">
                                 <label className="text-xs text-slate-500 font-bold block mb-1">1. DISTRIBUTION OF SYMPTOMS (Manual Select)</label>
                                 <select 
-                                    className="w-full text-sm border-slate-300 rounded-md p-2 bg-yellow-50 focus:ring-teal-500 focus:border-teal-500" 
+                                    className="w-full text-sm border-slate-300 rounded-md p-2 bg-yellow-50 focus:ring-teal-500 focus:border-teal-500 print:appearance-none print:bg-white print:border-0 print:p-0 print:font-bold" 
                                     value={answers.distribution} 
                                     onChange={e => handleScoreChange('distribution', e.target.value)}
                                 >
@@ -459,17 +511,17 @@ const SamsAssessment = ({ onAnalysisComplete }) => {
                                         <option key={score} value={score}>{label} ({Math.floor(score)} pts)</option>
                                     ))}
                                 </select>
-                                <p className="text-[10px] text-slate-400 mt-1">* This criteria depends on physical location, please select manually.</p>
+                                <p className="text-[10px] text-slate-400 mt-1 print:hidden">* This criteria depends on physical location, please select manually.</p>
                             </div>
 
                             {/* Q2: Onset */}
                             <div>
                                 <label className="text-xs text-slate-500 font-bold block mb-1">2. ONSET (Auto-calculated)</label>
-                                <div className="p-2 bg-slate-100 rounded text-sm text-slate-700 font-medium mb-1 border border-slate-200">
+                                <div className="p-2 bg-slate-100 rounded text-sm text-slate-700 font-medium mb-1 border border-slate-200 print:hidden">
                                     Duration: {getDaysDiff(clinicalData.startDate, clinicalData.symptomDate) ?? '-'} days
                                 </div>
                                 <select 
-                                    className="w-full text-sm border-slate-300 rounded-md p-2 focus:ring-teal-500 focus:border-teal-500" 
+                                    className="w-full text-sm border-slate-300 rounded-md p-2 focus:ring-teal-500 focus:border-teal-500 print:appearance-none print:bg-white print:border-0 print:p-0 print:font-bold" 
                                     value={answers.onset} 
                                     onChange={e => handleScoreChange('onset', e.target.value)}
                                 >
@@ -482,11 +534,11 @@ const SamsAssessment = ({ onAnalysisComplete }) => {
                             {/* Q3: Dechallenge */}
                             <div>
                                 <label className="text-xs text-slate-500 font-bold block mb-1">3. DECHALLENGE (Auto-calculated)</label>
-                                <div className="p-2 bg-slate-100 rounded text-sm text-slate-700 font-medium mb-1 border border-slate-200">
+                                <div className="p-2 bg-slate-100 rounded text-sm text-slate-700 font-medium mb-1 border border-slate-200 print:hidden">
                                     Improvement within: {getDaysDiff(clinicalData.stopDate, clinicalData.improvementDate) ?? '-'} days
                                 </div>
                                 <select 
-                                    className="w-full text-sm border-slate-300 rounded-md p-2 focus:ring-teal-500 focus:border-teal-500" 
+                                    className="w-full text-sm border-slate-300 rounded-md p-2 focus:ring-teal-500 focus:border-teal-500 print:appearance-none print:bg-white print:border-0 print:p-0 print:font-bold" 
                                     value={answers.dechallenge} 
                                     onChange={e => handleScoreChange('dechallenge', e.target.value)}
                                 >
@@ -500,7 +552,7 @@ const SamsAssessment = ({ onAnalysisComplete }) => {
                             <div>
                                 <label className="text-xs text-slate-500 font-bold block mb-1">4. RECHALLENGE (Auto-calculated)</label>
                                 <select 
-                                    className="w-full text-sm border-slate-300 rounded-md p-2 focus:ring-teal-500 focus:border-teal-500" 
+                                    className="w-full text-sm border-slate-300 rounded-md p-2 focus:ring-teal-500 focus:border-teal-500 print:appearance-none print:bg-white print:border-0 print:p-0 print:font-bold" 
                                     value={answers.rechallenge} 
                                     onChange={e => handleScoreChange('rechallenge', e.target.value)}
                                 >
@@ -515,8 +567,8 @@ const SamsAssessment = ({ onAnalysisComplete }) => {
                     {/* RESULT CARD */}
                     {result && (
                         <div className="print-section break-inside-avoid">
-                            <div className="border-2 border-teal-500 rounded-xl overflow-hidden shadow-md bg-white">
-                                <div className={`${result.colorClass} text-white px-5 py-6 flex justify-between items-center print:text-black print:bg-white print:border-b-2 print:border-teal-600`}>
+                            <div className="border-2 border-teal-500 rounded-xl overflow-hidden shadow-md bg-white print:border-black">
+                                <div className={`${result.colorClass} text-white px-5 py-6 flex justify-between items-center print:text-black print:bg-white print:border-b-2 print:border-black`}>
                                     <div>
                                         <h3 className="text-2xl font-bold flex items-center gap-2">
                                             <AlertCircle className="w-6 h-6" /> SAMS-CI Score
@@ -532,7 +584,7 @@ const SamsAssessment = ({ onAnalysisComplete }) => {
                                 </div>
                                 <div className="bg-white p-4">
                                     <table className="w-full table-auto text-sm">
-                                        <thead className="bg-slate-50 text-slate-500 border-b">
+                                        <thead className="bg-slate-50 text-slate-500 border-b print:bg-slate-200 print:text-black">
                                             <tr>
                                                 <th className="py-2 px-3 text-left">Criteria</th>
                                                 <th className="py-2 px-3 text-right">Points</th>
