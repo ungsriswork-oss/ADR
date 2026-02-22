@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 const Home = () => {
   const navigate = useNavigate();
   const [savedCases, setSavedCases] = useState([]);
-  const currentUser = ' Medication Safety Management System';
+  const currentUser = 'Dr. User';
 
   useEffect(() => {
     const data = JSON.parse(localStorage.getItem('dili_cases') || '[]');
@@ -43,7 +43,7 @@ const Home = () => {
   };
 
   // ✅ UPDATE: ปรับลำดับ Tools ตามที่คุณต้องการ
-  // ลำดับ: DILI, Rash, SJS, DRESS, AGEP, SAMS, Drug Fever, Electro, Heme(Inactive)
+  // ลำดับ: DILI, Rash, SJS, DRESS, AGEP, SAMS, Drug Fever, Electro, Heme(Active)
   const tools = [
     {
       id: 'dili',
@@ -93,7 +93,6 @@ const Home = () => {
       active: true,
       path: '/assess/sams',
     },
-    // ✅ 1. ย้าย Drug Fever มาแทนที่ตำแหน่ง Electrolyte เดิม
     {
       id: 'drugfever',
       title: 'Drug Fever',
@@ -102,7 +101,6 @@ const Home = () => {
       active: true,
       path: '/assess/drugfever',
     },
-    // ✅ 2. ย้าย Electrolyte Imbalance มาแทนที่ตำแหน่ง Hematologic เดิม
     {
       id: 'electro',
       title: 'Electrolyte Imbalance',
@@ -111,13 +109,13 @@ const Home = () => {
       active: true,
       path: '/assess/electro',
     },
-    // ✅ 3. ย้าย Hematologic Disorder ไปขวาสุด และปิดการใช้งาน (Inactive)
+    // ✅ อัปเดต: เปลี่ยนชื่อและเปิดการใช้งานกลับมาเป็น true
     {
       id: 'heme',
-      title: 'Hematologic Disorder',
+      title: 'Drug induce Hematologic disorder', 
       desc: 'Lab Monitoring + Naranjo',
       color: 'rose',
-      active: false, // ❌ ปิดการใช้งาน (จะเป็นสีเทา + กดไม่ได้)
+      active: true, // ✅ เปลี่ยนจาก false เป็น true เพื่อให้กดใช้งานได้
       path: '/assess/heme',
     },
   ];
@@ -164,7 +162,7 @@ const Home = () => {
               <div className="text-sm font-bold text-slate-700">
                 {currentUser}
               </div>
-              <div className="text-xs text-slate-500">Man Ung</div>
+              <div className="text-xs text-slate-500">Medical Department</div>
             </div>
             <div className="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 font-bold">
               U

@@ -1,123 +1,646 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 
-// Naranjo Logic (Embedded for Hematologic)
-const naranjoQuestions = [
-    { id: 1, q: "1. Previous conclusive reports?", y: 1, n: 0, u: 0 },
-    { id: 2, q: "2. Appeared after suspected drug?", y: 2, n: -1, u: 0 },
-    { id: 3, q: "3. Improved on discontinuation (Dechallenge)?", y: 1, n: 0, u: 0 },
-    { id: 4, q: "4. Reappeared on readministration (Rechallenge)?", y: 2, n: -1, u: 0 },
-    { id: 5, q: "5. Alternative causes excluded?", y: -1, n: 2, u: 0 },
-    { id: 6, q: "6. Reappeared with placebo?", y: -1, n: 1, u: 0 },
-    { id: 7, q: "7. Drug detected in toxic concentration?", y: 1, n: 0, u: 0 },
-    { id: 8, q: "8. Severity changed with dose?", y: 1, n: 0, u: 0 },
-    { id: 9, q: "9. Previous similar reaction?", y: 1, n: 0, u: 0 },
-    { id: 10, q: "10. Confirmed by objective evidence?", y: 1, n: 0, u: 0 }
+// --- 1. CONFIGURATION & REFERENCE RANGES ---
+const QUESTIONS = [
+    { id: 1, text: "1. มีรายงานสรุปเกี่ยวกับปฏิกิริยานี้มาก่อนหรือไม่?", scores: [1, 0, 0], required: true },
+    { id: 2, text: "2. อาการไม่พึงประสงค์เกิดขึ้นหลังจากได้รับยาที่สงสัยหรือไม่?", scores: [2, -1, 0], auto: true },
+    { id: 3, text: "3. อาการไม่พึงประสงค์ดีขึ้นเมื่อหยุดยาหรือไม่ (Dechallenge)?", scores: [1, 0, 0], auto: true },
+    { id: 4, text: "4. อาการไม่พึงประสงค์กลับมาเป็นซ้ำเมื่อได้รับยาอีกครั้งหรือไม่ (Rechallenge)?", scores: [2, -1, 0], auto: true },
+    { id: 5, text: "5. มีสาเหตุอื่น (นอกจากยา) ที่ทำให้เกิดปฏิกิริยานี้ได้หรือไม่?", scores: [-1, 2, 0], required: true },
+    { id: 6, text: "6. ปฏิกิริยากลับมาเป็นซ้ำเมื่อได้รับยาหลอก (Placebo) หรือไม่?", scores: [-1, 1, 0], auto: true },
+    { id: 7, text: "7. ตรวจพบยาในเลือด (หรือของเหลวอื่น) ในระดับที่เป็นพิษหรือไม่?", scores: [1, 0, 0], auto: true },
+    { id: 8, text: "8. ปฏิกิริยารุนแรงขึ้นเมื่อเพิ่มขนาดยา หรือลดลงเมื่อลดขนาดยาหรือไม่?", scores: [1, 0, 0], auto: true },
+    { id: 9, text: "9. ผู้ป่วยเคยมีปฏิกิริยาคล้ายกันกับยาเดิมหรือยาที่คล้ายกันมาก่อนหรือไม่?", scores: [1, 0, 0], required: true },
+    { id: 10, text: "10. อาการไม่พึงประสงค์ได้รับการยืนยันด้วยหลักฐานเชิงประจักษ์หรือไม่?", scores: [1, 0, 0], required: true }
 ];
 
-const HemeAssessment = ({ onAnalysisComplete }) => {
-    // 1. Lab Monitoring
-    const [labEntries, setLabEntries] = useState([]);
-    const [currentEntry, setCurrentEntry] = useState({ date: '', hb: '', wbc: '', plt: '' });
+// ✅ Reference Ranges (Hematologic Parameters)
+const LAB_CONFIG = {
+    Hb: { label: "Hemoglobin (Hb)", min: 12.0, max: 16.0, unit: "g/dL" },
+    Hct: { label: "Hematocrit (Hct)", min: 36.0, max: 50.0, unit: "%" },
+    WBC: { label: "White Blood Cells", min: 4.0, max: 10.0, unit: "x10^3/µL" },
+    Plt: { label: "Platelets (Plt)", min: 150, max: 450, unit: "x10^3/µL" },
+    ANC: { label: "Abs Neutrophil Count", min: 1500, max: 8000, unit: "cells/µL" },
+    Retic: { label: "Reticulocyte", min: 0.5, max: 2.5, unit: "%" },
+    LDH: { label: "Lactate Dehydrogenase", min: 140, max: 280, unit: "U/L" }
+};
 
-    // 2. Causality (Naranjo)
-    const [answers, setAnswers] = useState({});
-    const [drugName, setDrugName] = useState('');
-    const [totalScore, setTotalScore] = useState(0);
+// ✅ Types of Drug-Induced Hematologic Disorders
+const DISORDER_TYPES = [
+    "Immune Hemolytic Anemia (DIIHA)",
+    "Immune Thrombocytopenia (DITP)",
+    "Neutropenia / Agranulocytosis",
+    "Aplastic Anemia",
+    "Megaloblastic Anemia",
+    "Methemoglobinemia",
+    "Other Hematologic Disorder"
+];
 
-    const handleAddLab = () => {
-        if(!currentEntry.date) return alert("Please select date");
-        setLabEntries([...labEntries, {...currentEntry, id: Date.now()}].sort((a,b)=>new Date(a.date)-new Date(b.date)));
-        setCurrentEntry({ date: '', hb: '', wbc: '', plt: '' });
+// --- HELPER ---
+const formatDate = (d) => new Date(d).toLocaleDateString('th-TH', {day: 'numeric', month: 'short'});
+const formatFullDate = (d) => new Date(d).toLocaleDateString('th-TH', {day: 'numeric', month: 'short', year: '2-digit'});
+
+// Function to check lab value against reference (Return deviation info)
+const analyzeLabValue = (type, value) => {
+    const conf = LAB_CONFIG[type];
+    if (!conf || !value || value === "") return { status: 'Unknown', deviation: 0, text: '-', color: 'text-slate-400', bg: 'bg-slate-50', border: 'border-slate-200' };
+    
+    const num = parseFloat(value);
+    if (isNaN(num)) return { status: 'Unknown', deviation: 0, text: '-', color: 'text-slate-400', bg: 'bg-slate-50', border: 'border-slate-200' };
+
+    // Deviation: ยิ่งมากยิ่งผิดปกติ (0 = ปกติ)
+    if (num < conf.min) {
+        return { 
+            status: 'Low', 
+            deviation: conf.min - num, 
+            text: `Low (${num})`, 
+            color: 'text-red-700 font-bold', 
+            bg: 'bg-red-50',
+            border: 'border-red-200'
+        };
+    }
+    if (num > conf.max) {
+        return { 
+            status: 'High', 
+            deviation: num - conf.max, 
+            text: `High (${num})`, 
+            color: 'text-red-700 font-bold', 
+            bg: 'bg-red-50',
+            border: 'border-red-200'
+        };
+    }
+    return { 
+        status: 'Normal', 
+        deviation: 0, 
+        text: `Normal (${num})`, 
+        color: 'text-green-700', 
+        bg: 'bg-green-50',
+        border: 'border-green-200'
     };
+};
 
-    const handleAnswer = (qid, val) => {
-        setAnswers(prev => ({ ...prev, [qid]: val }));
-    };
+// --- CORE LOGIC (AUTOMATED SCORE CALCULATION) ---
+const calculateScores = (drugs, labs, onset, currentScores) => {
+    const newScores = { ...currentScores };
+    const groups = {};
+    drugs.forEach(d => {
+        const k = d.name.trim().toLowerCase();
+        if(!groups[k]) groups[k] = { key: k, periods: [] };
+        groups[k].periods.push(d);
+    });
 
-    // Calculate Score & Send to Parent
-    useEffect(() => {
-        const score = Object.values(answers).reduce((a, b) => a + b, 0);
-        setTotalScore(score);
+    Object.values(groups).forEach(g => {
+        g.periods.sort((a,b)=>new Date(a.startDate)-new Date(b.startDate));
+        const start = new Date(g.periods[0].startDate);
+        const on = new Date(onset);
+        const existing = newScores[g.key] || {};
+        
+        let s2=0, s3=0, s4=0;
 
-        let interp = "Doubtful";
-        if (score >= 9) interp = "Definite";
-        else if (score >= 5) interp = "Probable";
-        else if (score >= 1) interp = "Possible";
-
-        if(onAnalysisComplete) {
-            onAnalysisComplete({
-                rFactor: score,
-                type: interp,
-                rankedDrugs: [{ name: drugName || 'Suspected Drug', total: score }],
-                labEntries // Save Lab Data too
-            });
+        // Q2: Onset
+        if(onset && g.periods[0].startDate) {
+            s2 = start.getTime() <= on.getTime() ? 2 : -1;
         }
-    }, [answers, drugName, labEntries]);
+        
+        // --- 🧠 AUTOMATED LOGIC FROM LAB VALUES ---
+        
+        const drugPeriodLabs = labs.filter(l => {
+            const lDate = new Date(l.date).getTime();
+            const pStart = new Date(g.periods[0].startDate).getTime();
+            const pEnd = g.periods[g.periods.length-1].stopDate ? new Date(g.periods[g.periods.length-1].stopDate).getTime() : new Date().getTime();
+            return lDate >= pStart && lDate <= pEnd;
+        });
+
+        // หา Max Deviation ของแต่ละ Type ในช่วงได้รับยา
+        const maxDeviations = {};
+        drugPeriodLabs.forEach(l => {
+            const analysis = analyzeLabValue(l.type, l.value);
+            if (analysis.status !== 'Normal') {
+                if (!maxDeviations[l.type] || analysis.deviation > maxDeviations[l.type]) {
+                    maxDeviations[l.type] = analysis.deviation;
+                }
+            }
+        });
+
+        // Q3: Dechallenge (หยุดยาแล้วดีขึ้นไหม?)
+        const stoppedPeriods = g.periods.filter(p => p.stopDate);
+        if (stoppedPeriods.length > 0) {
+            const lastStopDate = new Date(stoppedPeriods[stoppedPeriods.length-1].stopDate).getTime();
+            const afterLabs = labs.filter(l => new Date(l.date).getTime() > lastStopDate);
+            
+            let improved = false;
+            Object.keys(maxDeviations).forEach(type => {
+                const maxDev = maxDeviations[type];
+                const improvedLab = afterLabs.find(l => {
+                    if (l.type !== type) return false;
+                    const ans = analyzeLabValue(l.type, l.value);
+                    return ans.status === 'Normal' || ans.deviation < (maxDev * 0.5); 
+                });
+                if (improvedLab) improved = true;
+            });
+            if (improved) s3 = 1;
+        }
+
+        // Q4: Rechallenge (ได้รับยาซ้ำแล้วแย่ลงไหม?)
+        if (g.periods.length > 1) {
+            let recurred = false;
+            for (let i = 1; i < g.periods.length; i++) {
+                const period = g.periods[i];
+                const pStart = new Date(period.startDate).getTime();
+                const pEnd = period.stopDate ? new Date(period.stopDate).getTime() : new Date().getTime();
+                
+                const reLabs = labs.filter(l => {
+                    const t = new Date(l.date).getTime();
+                    return t >= pStart && t <= pEnd;
+                });
+
+                reLabs.forEach(l => {
+                    const ans = analyzeLabValue(l.type, l.value);
+                    if (ans.status !== 'Normal') recurred = true;
+                });
+            }
+            
+            if (recurred) s4 = 2;
+            else {
+                 let hasLabCheck = false;
+                 for (let i = 1; i < g.periods.length; i++) {
+                    const period = g.periods[i];
+                    const pStart = new Date(period.startDate).getTime();
+                    const pEnd = period.stopDate ? new Date(period.stopDate).getTime() : new Date().getTime();
+                    if (labs.some(l => {const t=new Date(l.date).getTime(); return t>=pStart && t<=pEnd;})) hasLabCheck = true;
+                 }
+                 if (hasLabCheck) s4 = -1;
+            }
+        }
+
+        newScores[g.key] = { 
+            ...existing, 
+            2: s2, 3: s3, 4: s4,
+            6: existing[6] || 0, 7: existing[7] || 0, 8: existing[8] || 0 
+        };
+    });
+    return newScores;
+};
+
+// --- UI COMPONENTS ---
+const NaranjoRow = ({ q, value, onChange }) => {
+    let bgClass = "border-b border-slate-100 last:border-0 break-inside-avoid";
+    if (q.required) bgClass += " bg-red-50 print:bg-red-50"; 
 
     return (
-        <div className="space-y-8 animate-fade-in">
-            {/* PART 1: LAB MONITORING */}
-            <div className="print-section">
-                <h2 className="text-sm font-bold text-rose-600 uppercase tracking-wider mb-4 border-b border-rose-100 pb-2">1. Serial Hematologic Monitoring</h2>
-                
-                <div className="bg-rose-50 p-4 rounded-xl border border-rose-100 mb-4 print:hidden">
-                    <div className="grid grid-cols-4 gap-2 items-end">
-                        <div><label className="text-[10px] font-bold text-slate-500">Date</label><input type="date" className="w-full border p-1 rounded text-xs" value={currentEntry.date} onChange={e=>setCurrentEntry({...currentEntry, date: e.target.value})} /></div>
-                        <div><label className="text-[10px] font-bold text-slate-500">Hb (g/dL)</label><input type="number" className="w-full border p-1 rounded text-xs" placeholder="12.0" value={currentEntry.hb} onChange={e=>setCurrentEntry({...currentEntry, hb: e.target.value})} /></div>
-                        <div><label className="text-[10px] font-bold text-slate-500">WBC</label><input type="number" className="w-full border p-1 rounded text-xs" placeholder="5000" value={currentEntry.wbc} onChange={e=>setCurrentEntry({...currentEntry, wbc: e.target.value})} /></div>
-                        <div><label className="text-[10px] font-bold text-slate-500">Platelet</label><input type="number" className="w-full border p-1 rounded text-xs" placeholder="150000" value={currentEntry.plt} onChange={e=>setCurrentEntry({...currentEntry, plt: e.target.value})} /></div>
+        <tr className={bgClass}>
+            <td className="py-3 pl-4 w-[65%] align-top text-left print:py-1.5">
+                <div className="font-medium text-slate-700 text-sm print:text-xs">{q.text}</div>
+                <div className="flex gap-2 mt-1">
+                    {q.auto && (<span className="text-[10px] text-slate-700 font-bold flex items-center gap-1 bg-slate-100 px-1 rounded print:text-black print:bg-transparent">✨ Auto-calculated</span>)}
+                    {q.required && (<span className="text-[10px] text-red-600 font-bold flex items-center gap-1 bg-red-100/50 px-1 rounded print:text-red-600 print:bg-transparent">* Required</span>)}
+                </div>
+            </td>
+            <td className="py-3 pr-4 w-[35%] align-top text-right print:py-1.5">
+                <select 
+                    className={`w-full text-right font-bold bg-transparent focus:outline-none cursor-pointer text-sm print:text-black print:text-xs ${value > 0 ? 'text-green-600' : value < 0 ? 'text-red-500' : 'text-slate-400'}`}
+                    value={value || 0} onChange={onChange}
+                >
+                    <option value={0}>Unknown (0)</option>
+                    <option value={q.scores[0]}>Yes ({q.scores[0] > 0 ? `+${q.scores[0]}` : q.scores[0]})</option>
+                    <option value={q.scores[1]}>No ({q.scores[1]})</option>
+                </select>
+            </td>
+        </tr>
+    );
+};
+
+const NaranjoCard = ({ group, scoreMap, total, onScoreChange }) => {
+    let interp = 'Doubtful'; let color = 'bg-slate-500'; let border = 'border-slate-500';
+    const isExcluded = scoreMap && scoreMap[4] === -1;
+
+    if (isExcluded) {
+        interp = 'EXCLUDED'; color = 'bg-slate-400'; border = 'border-slate-400';
+    } else {
+        if (total >= 9) { interp = 'Definite'; color = 'bg-rose-900'; border = 'border-rose-900'; } 
+        else if (total >= 5) { interp = 'Probable'; color = 'bg-rose-600'; border = 'border-rose-600'; }
+        else if (total >= 1) { interp = 'Possible'; color = 'bg-rose-400'; border = 'border-rose-400'; }
+    }
+
+    return (
+        <div className={`print-section border-2 ${border} rounded-xl overflow-hidden shadow-sm bg-white mb-6 break-inside-avoid page-break-inside-avoid print:break-before-page`}>
+            <div className={`${color} text-white px-5 py-3 flex justify-between items-center print:text-black print:border-b-2 print:border-black print:py-2`} style={{WebkitPrintColorAdjust: 'exact'}}>
+                <div><h3 className="text-xl font-bold print:text-lg">{group.name}</h3><div className="text-xs opacity-90 mt-1"><span className="bg-white/20 px-2 py-0.5 rounded border border-white/20 print:border-black print:text-black">Start: {group.periods[0]?.startDate || '-'}</span></div></div>
+                <div className="text-right"><div className="text-3xl font-bold print:text-2xl">{total}</div><div className="text-sm font-bold uppercase bg-black/20 px-2 py-1 rounded inline-block mt-1 print:bg-transparent print:border print:border-black">{interp}</div></div>
+            </div>
+            <div className="bg-white p-2 print:p-1">
+                <table className="w-full table-fixed border-collapse"><tbody>{QUESTIONS.map(q => (<NaranjoRow key={q.id} q={q} value={(scoreMap || {})[q.id] || 0} onChange={(e) => onScoreChange(group.key, q.id, e.target.value)}/>))}</tbody></table>
+            </div>
+        </div>
+    );
+};
+
+// --- MAIN COMPONENT ---
+const HemeAssessment = (props) => {
+    const [drugs, setDrugs] = useState([]);
+    const [labs, setLabs] = useState([]); 
+    const [onset, setOnset] = useState('');
+    const [disorderType, setDisorderType] = useState(DISORDER_TYPES[0]); // ✅ New State for Disorder Type
+    const [scores, setScores] = useState({});
+    const [note, setNote] = useState('');
+    const [hasAutoAnalyzed, setHasAutoAnalyzed] = useState(false);
+
+    // Inputs
+    const [currentDrug, setCurrentDrug] = useState({ name: '', startDate: '', stopDate: '' });
+    
+    // Batch Input State
+    const [batchDate, setBatchDate] = useState('');
+    const [batchValues, setBatchValues] = useState({}); 
+
+    const [isAnalyzed, setIsAnalyzed] = useState(false);
+    const [activeTab, setActiveTab] = useState(null);
+
+    useEffect(() => {
+        const src = props.initialData?.savedData || props.initialData || {};
+        const initDrugs = props.drugList || src.drugs || src.drugList || [];
+        const initLabs = props.labList || src.labs || src.labList || [];
+        const initOnset = props.onset || src.onset || src.symptomDate || ''; 
+        const initScores = props.naranjoScores || src.naranjoScores || src.scoresMap || {};
+        const initNote = props.pharmacistNote || src.pharmacistNote || '';
+        const initDisorderType = src.disorderType || DISORDER_TYPES[0]; // Load saved disorder type
+
+        setDrugs(initDrugs); setLabs(initLabs); setOnset(initOnset); setScores(initScores); setNote(initNote); setDisorderType(initDisorderType);
+
+        if (!hasAutoAnalyzed && initDrugs.length > 0) {
+            const newScores = calculateScores(initDrugs, initLabs, initOnset, initScores);
+            setScores(newScores);
+            setIsAnalyzed(true);
+            setHasAutoAnalyzed(true);
+            if (!activeTab && initDrugs.length > 0) setActiveTab(initDrugs[0].name.trim().toLowerCase());
+        }
+    }, [props.initialData, props.drugList, props.labList, props.onset, props.naranjoScores, props.pharmacistNote]);
+
+    const syncToParent = (newDrugs, newLabs, newOnset, newScores, newDisorder) => {
+        if(newDrugs!==undefined) { setDrugs(newDrugs); if(props.setDrugList) props.setDrugList(newDrugs); }
+        if(newLabs!==undefined) { setLabs(newLabs); if(props.setLabList) props.setLabList(newLabs); }
+        if(newOnset!==undefined) { setOnset(newOnset); if(props.setOnset) props.setOnset(newOnset); }
+        if(newScores!==undefined) { setScores(newScores); if(props.setNaranjoScores) props.setNaranjoScores(newScores); }
+        if(newDisorder!==undefined) { setDisorderType(newDisorder); }
+
+        if (props.onAnalysisComplete) {
+            const d = newDrugs || drugs; const s = newScores || scores; const l = newLabs || labs; const dt = newDisorder || disorderType;
+            const groups = {};
+            d.forEach(obj => {
+                const k = obj.name.trim().toLowerCase();
+                if(!groups[k]) groups[k] = { name: obj.name, key: k, total: 0 };
+                const sc = s[k] || {};
+                groups[k].total = Object.values(sc).reduce((a,b)=>a+(parseInt(b)||0),0);
+            });
+            const ranked = Object.values(groups).sort((a,b)=>b.total-a.total);
+            props.onAnalysisComplete({
+                rFactor: ranked[0]?.total || 0, type: 'Naranjo', rankedDrugs: ranked,
+                rawData: { drugs: d, labs: l, onset: newOnset || onset, naranjoScores: s, pharmacistNote: note, disorderType: dt }
+            });
+        }
+    };
+
+    const performAnalysis = () => {
+        const newScores = calculateScores(drugs, labs, onset, scores);
+        syncToParent(undefined, undefined, undefined, newScores, undefined);
+        setIsAnalyzed(true);
+        if(drugs.length > 0) setActiveTab(drugs[0].name.trim().toLowerCase());
+    };
+
+    const addDrug = () => { if(!currentDrug.name || !currentDrug.startDate) return; const n=[...drugs, {...currentDrug, id:Date.now()}]; syncToParent(n,undefined,undefined,undefined,undefined); setCurrentDrug({name:'',startDate:'',stopDate:''}); setIsAnalyzed(false); };
+    const removeDrug = (id) => { const n=drugs.filter(d=>d.id!==id); syncToParent(n,undefined,undefined,undefined,undefined); setIsAnalyzed(false); };
+    
+    // ADD BATCH LABS
+    const addBatchLabs = () => {
+        if (!batchDate) return alert("กรุณาระบุวันที่เจาะเลือด");
+        
+        const newEntries = [];
+        Object.entries(batchValues).forEach(([type, value]) => {
+            if (value && value.trim() !== "") {
+                newEntries.push({
+                    id: Date.now() + Math.random(),
+                    date: batchDate,
+                    type: type,
+                    value: value
+                });
+            }
+        });
+
+        if (newEntries.length === 0) return alert("กรุณากรอกค่า Lab อย่างน้อย 1 ค่า");
+
+        const combinedLabs = [...labs, ...newEntries].sort((a,b)=>new Date(a.date)-new Date(b.date));
+        syncToParent(undefined, combinedLabs, undefined, undefined, undefined);
+        
+        setBatchValues({});
+        setIsAnalyzed(false);
+    };
+
+    const removeLab = (id) => { const n=labs.filter(l=>l.id!==id); syncToParent(undefined,n,undefined,undefined,undefined); setIsAnalyzed(false); };
+
+    const changeScore = (k,q,v) => { const n={...scores, [k]:{...(scores[k]||{}), [q]:parseInt(v)}}; syncToParent(undefined,undefined,undefined,n,undefined); };
+    const handleNoteChange = (e) => { const val = e.target.value; setNote(val); if(props.setPharmacistNote) props.setPharmacistNote(val); };
+
+    // Timeline Data
+    const timelineData = useMemo(() => {
+        if(!onset && drugs.length===0 && labs.length===0) return null;
+        const msArr = [
+            onset ? new Date(onset).getTime() : null,
+            ...drugs.map(d => new Date(d.startDate).getTime()),
+            ...drugs.map(d => d.stopDate ? new Date(d.stopDate).getTime() : new Date().getTime()),
+            ...labs.map(l => new Date(l.date).getTime())
+        ].filter(t => t && !isNaN(t));
+
+        if(msArr.length === 0) return null;
+        const points = [...new Set(msArr)].sort((a, b) => a - b);
+        const totalPoints = points.length;
+        const safeTotal = totalPoints > 1 ? totalPoints - 1 : 1;
+
+        return {
+            points, totalPoints,
+            getPos: (d) => {
+                if(!d) return 0;
+                const t = new Date(d).getTime();
+                const index = points.indexOf(t);
+                if (index === -1) return 0;
+                return (index / safeTotal) * 100;
+            },
+            getDateAtIndex: (i) => points[i]
+        };
+    }, [onset, drugs, labs]);
+
+    const groupedLabs = useMemo(() => {
+        const groups = {};
+        labs.forEach(l => {
+            if (!groups[l.date]) groups[l.date] = [];
+            groups[l.date].push(l);
+        });
+        return groups;
+    }, [labs]);
+
+    const uniqueDrugs = useMemo(()=> [...new Set(drugs.map(d=>d.name.trim().toLowerCase()))].map(k=>drugs.find(d=>d.name.trim().toLowerCase()===k)), [drugs]);
+
+    return (
+        <div className="space-y-8 animate-fade-in pb-20">
+            {/* INPUTS */}
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6 print:border-black print:shadow-none break-inside-avoid">
+                <div className="text-sm font-bold text-slate-700 border-b pb-3 mb-4 flex justify-between print:text-black print:border-black">
+                    <span>🩸 Hematologic & Drug Data</span>
+                    {onset && <span className="text-rose-600 bg-rose-50 px-2 rounded border border-rose-100 print:text-black print:border-black print:bg-transparent">Imbalance Onset: {formatDate(onset)}</span>}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                    {/* Drug Input & Disorder Type */}
+                    <div className="md:col-span-6 space-y-4">
+                        
+                        {/* ✅ Disorder Type Selector */}
+                        <div className="flex flex-col gap-1 mb-4 bg-rose-50/50 p-3 rounded-lg border border-rose-100 print:border-black print:bg-transparent">
+                            <label className="text-xs font-bold text-rose-700 uppercase print:text-black">Disorder Type:</label>
+                            <select 
+                                className="border border-rose-200 rounded px-2 py-1.5 text-sm font-bold text-slate-700 focus:outline-rose-500"
+                                value={disorderType}
+                                onChange={(e) => {
+                                    setDisorderType(e.target.value);
+                                    syncToParent(undefined, undefined, undefined, undefined, e.target.value);
+                                }}
+                            >
+                                {DISORDER_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
+                            </select>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <label className="text-xs font-bold text-rose-600 uppercase w-28 print:text-black">ONSET DATE:</label>
+                            <input type="date" value={onset} onChange={e=>{syncToParent(undefined,undefined,e.target.value,undefined,undefined); setIsAnalyzed(false);}} className="border rounded px-2 py-1 text-sm font-bold print:border-black"/>
+                        </div>
+                        <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 print:bg-transparent print:border-black">
+                            <div className="grid grid-cols-12 gap-2 mb-2 items-end print:hidden">
+                                <input className="col-span-5 border rounded px-2 py-1 text-sm" placeholder="Drug Name" value={currentDrug.name} onChange={e=>setCurrentDrug({...currentDrug,name:e.target.value})}/>
+                                <div className="col-span-3"><label className="text-[10px] font-bold text-slate-400 block mb-1">Start</label><input type="date" className="border rounded w-full px-1 py-1 text-sm" value={currentDrug.startDate} onChange={e=>setCurrentDrug({...currentDrug,startDate:e.target.value})}/></div>
+                                <div className="col-span-3"><label className="text-[10px] font-bold text-slate-400 block mb-1">Stop</label><input type="date" className="border rounded w-full px-1 py-1 text-sm" value={currentDrug.stopDate} onChange={e=>setCurrentDrug({...currentDrug,stopDate:e.target.value})}/></div>
+                                <button onClick={addDrug} className="col-span-1 bg-slate-800 text-white rounded font-bold h-8 flex items-center justify-center pb-0.5">+</button>
+                            </div>
+                            <div className="space-y-1">
+                                {drugs.map(d=>(
+                                    <div key={d.id} className="flex justify-between items-center bg-white border px-2 py-1 rounded text-xs print:border-black print:bg-transparent">
+                                        <span className="font-bold w-1/3 truncate">{d.name}</span>
+                                        <span className="text-slate-500 print:text-black">{formatDate(d.startDate)} - {d.stopDate?formatDate(d.stopDate):'Ongoing'}</span>
+                                        <button onClick={()=>removeDrug(d.id)} className="text-red-500 font-bold px-2 print:hidden">×</button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
-                    <button onClick={handleAddLab} className="mt-2 w-full bg-rose-600 text-white rounded py-1.5 text-xs font-bold shadow hover:bg-rose-700">+ Add Lab Value</button>
-                </div>
 
-                <div className="border border-slate-200 rounded-lg overflow-hidden text-sm">
-                    <table className="w-full text-left">
-                        <thead className="bg-slate-50 text-slate-500 font-bold text-xs uppercase"><tr><th className="p-3">Date</th><th className="p-3">Hb</th><th className="p-3">WBC</th><th className="p-3">Platelet</th><th className="p-3 text-center">Act</th></tr></thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {labEntries.length === 0 ? <tr><td colSpan="5" className="p-4 text-center text-slate-400 italic">No lab data recorded.</td></tr> : 
-                            labEntries.map(e => (
-                                <tr key={e.id}>
-                                    <td className="p-3">{e.date}</td>
-                                    <td className={`p-3 font-bold ${e.hb<10?'text-red-500':''}`}>{e.hb}</td>
-                                    <td className={`p-3 font-bold ${e.wbc<4000?'text-red-500':''}`}>{e.wbc}</td>
-                                    <td className={`p-3 font-bold ${e.plt<100000?'text-red-500':''}`}>{e.plt}</td>
-                                    <td className="p-3 text-center text-red-400 cursor-pointer font-bold" onClick={()=>setLabEntries(labEntries.filter(x=>x.id!==e.id))}>×</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                    {/* Practical Lab Input Panel */}
+                    <div className="md:col-span-6 bg-rose-50/30 p-4 rounded border border-rose-100 print:bg-transparent print:border-black">
+                        <div className="text-xs font-bold text-rose-600 mb-2 print:text-black uppercase flex justify-between items-center">
+                            <span>Hematologic Panel Entry</span>
+                        </div>
+                        
+                        {/* Batch Entry Form */}
+                        <div className="print:hidden mb-4 border-b border-rose-200 pb-4">
+                            <div className="flex items-center gap-2 mb-3">
+                                <label className="text-xs font-bold w-20">Date:</label>
+                                <input type="date" className="border rounded px-2 py-1 text-sm w-full font-bold" value={batchDate} onChange={e=>setBatchDate(e.target.value)}/>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-3 mb-3">
+                                {Object.entries(LAB_CONFIG).map(([key, conf]) => {
+                                    const val = batchValues[key] || '';
+                                    const analysis = analyzeLabValue(key, val);
+                                    return (
+                                        <div key={key} className={`flex flex-col p-2 rounded border ${val ? `${analysis.border} ${analysis.bg}` : 'border-slate-200 bg-white'}`}>
+                                            <div className="flex justify-between items-center mb-1">
+                                                <label className="text-[10px] font-bold text-slate-600">{key}</label>
+                                                <span className="text-[9px] text-slate-400">({conf.min}-{conf.max})</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <input 
+                                                    type="number" step="0.1" 
+                                                    className={`border rounded px-1 py-0.5 text-sm w-full text-center font-bold ${val ? analysis.color : ''}`}
+                                                    placeholder="-" 
+                                                    value={val}
+                                                    onChange={e => setBatchValues({...batchValues, [key]: e.target.value})}
+                                                />
+                                                <span className="text-[10px] text-slate-500 w-10">{conf.unit}</span>
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+
+                            <button onClick={addBatchLabs} className="w-full bg-rose-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-rose-700 shadow-sm">
+                                Record CBC/Lab Results
+                            </button>
+                        </div>
+
+                        {/* Lab History Table */}
+                        <div className="max-h-60 overflow-y-auto print:max-h-none bg-white rounded border border-slate-200">
+                            <table className="w-full text-xs text-left">
+                                <thead className="bg-slate-50 text-slate-500 font-bold sticky top-0">
+                                    <tr>
+                                        <th className="p-2 border-b">Date</th>
+                                        <th className="p-2 border-b">Values Recorded</th>
+                                        <th className="p-2 border-b w-8 print:hidden"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {Object.entries(groupedLabs).sort((a,b)=>new Date(b[0])-new Date(a[0])).map(([date, items]) => (
+                                        <tr key={date} className="border-b last:border-0 hover:bg-slate-50">
+                                            <td className="p-2 font-mono align-top w-20">{formatDate(date)}</td>
+                                            <td className="p-2 align-top">
+                                                <div className="flex flex-wrap gap-1">
+                                                    {items.map(l => {
+                                                        const analysis = analyzeLabValue(l.type, l.value);
+                                                        return (
+                                                            <span key={l.id} className={`px-1.5 py-0.5 rounded border text-[10px] font-bold ${analysis.color} ${analysis.bg} ${analysis.border}`}>
+                                                                {l.type}: {l.value}
+                                                            </span>
+                                                        )
+                                                    })}
+                                                </div>
+                                            </td>
+                                            <td className="p-2 text-right align-top print:hidden">
+                                                <button onClick={() => items.forEach(i => removeLab(i.id))} className="text-slate-300 hover:text-red-500 font-bold">×</button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {labs.length === 0 && <tr><td colSpan="3" className="p-4 text-center text-slate-300">No lab data recorded</td></tr>}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {/* PART 2: NARANJO ASSESSMENT */}
-            <div className="print-section">
-                <h2 className="text-sm font-bold text-rose-600 uppercase tracking-wider mb-2 border-b border-rose-100 pb-2 flex justify-between">
-                    <span>2. Causality Assessment</span>
-                    <span className={`px-2 py-0.5 rounded text-white text-xs ${totalScore>=5?'bg-green-500':'bg-slate-400'}`}>Score: {totalScore}</span>
-                </h2>
-                
-                <div className="mb-4">
-                    <input type="text" className="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-rose-200 outline-none" value={drugName} onChange={e=>setDrugName(e.target.value)} placeholder="Suspected Drug Name..." />
-                </div>
-
-                <div className="bg-white border rounded-xl overflow-hidden shadow-sm">
-                    <table className="w-full text-xs">
-                        <thead className="bg-rose-50 text-rose-700 font-bold">
-                            <tr><th className="p-3 text-left w-2/3">Question</th><th className="p-3 text-center">Yes</th><th className="p-3 text-center">No</th><th className="p-3 text-center">Unk</th></tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {naranjoQuestions.map((q) => (
-                                <tr key={q.id} className="hover:bg-slate-50">
-                                    <td className="p-3">{q.q}</td>
-                                    <td className="p-3 text-center"><input type="radio" name={`h_q${q.id}`} checked={answers[q.id]===q.y} onChange={()=>handleAnswer(q.id, q.y)} className="accent-rose-500"/> <span className="text-[9px] text-slate-400">({q.y})</span></td>
-                                    <td className="p-3 text-center"><input type="radio" name={`h_q${q.id}`} checked={answers[q.id]===q.n} onChange={()=>handleAnswer(q.id, q.n)} className="accent-rose-500"/> <span className="text-[9px] text-slate-400">({q.n})</span></td>
-                                    <td className="p-3 text-center"><input type="radio" name={`h_q${q.id}`} checked={answers[q.id]===q.u} onChange={()=>handleAnswer(q.id, q.u)} className="accent-rose-500"/> <span className="text-[9px] text-slate-400">({q.u})</span></td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+            {/* BUTTON */}
+            <div className="mb-6 print:hidden">
+                <button onClick={performAnalysis} className="w-full bg-rose-600 text-white py-2 rounded shadow font-bold hover:bg-rose-700">
+                    Run Naranjo Analysis
+                </button>
             </div>
+
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6 print:border-black print:shadow-none break-inside-avoid">
+                <div className="text-sm font-bold text-slate-700 border-b pb-3 mb-4 print:text-black print:border-black text-left">📝 Pharmacist Note</div>
+                <textarea className="w-full h-32 border rounded p-3 text-sm focus:outline-rose-500 print:border-black print:h-auto" placeholder="Enter clinical assessment notes..." value={note} onChange={handleNoteChange}></textarea>
+            </div>
+
+            {/* RESULTS & TIMELINE */}
+            {isAnalyzed && timelineData && (
+                <div className="animate-fade-in space-y-8">
+                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 overflow-hidden break-inside-avoid page-break-inside-avoid print:break-before-page print:border-black print:shadow-none relative flex flex-col">
+                        <div className="text-xs font-bold text-slate-400 uppercase mb-4 tracking-wider flex items-center gap-2 print:text-black"><span className="w-2 h-4 bg-rose-500 rounded-sm print:bg-black"></span> Timeline Visualization</div>
+                        <div className="relative w-full pb-8 mt-8">
+                            {/* Grid Lines */}
+                            <div className="absolute inset-0 pl-[150px] pointer-events-none">
+                                <div className="relative w-full h-full border-l border-slate-100 print:border-black">
+                                    {timelineData.points.map((t, i) => {
+                                        const pct = (i / (timelineData.totalPoints > 1 ? timelineData.totalPoints - 1 : 1)) * 100;
+                                        return (
+                                            <div key={i} className="absolute top-0 bottom-0 border-l border-slate-100 print:border-slate-300" style={{left:`${pct}%`}}>
+                                                <div className="absolute -bottom-6 -translate-x-1/2 text-[9px] text-slate-400 print:text-black whitespace-nowrap">{formatFullDate(new Date(t))}</div>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* (1) DRUG SECTION */}
+                            <div className="relative z-10 border-b border-slate-100 pb-4 mb-4">
+                                <div className="flex h-6 items-end pb-1">
+                                    <div className="w-[150px] shrink-0 font-bold text-xs text-right pr-4 text-slate-400 print:text-black">DRUG</div>
+                                    <div className="flex-1"></div>
+                                </div>
+                                
+                                {/* Onset Line */}
+                                {onset && (
+                                    <div className="absolute top-0 bottom-0 left-[150px] right-0 pointer-events-none z-0">
+                                        <div className="absolute top-[-30px] bottom-0 w-0.5 bg-rose-500 border-l border-dashed border-rose-500 print:border-black -translate-x-1/2" style={{left:`${timelineData.getPos(onset)}%`}}>
+                                            <div className="absolute -top-6 -left-0 -translate-x-1/2 bg-rose-600 text-white text-[9px] px-2 py-0.5 rounded shadow-sm font-bold whitespace-nowrap print:bg-transparent print:text-black print:border print:border-black" style={{WebkitPrintColorAdjust:'exact'}}>Onset {formatDate(onset)}</div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {uniqueDrugs.map(g => {
+                                    const periods = drugs.filter(d => d.name.trim().toLowerCase() === g.name.trim().toLowerCase());
+                                    return (
+                                        <div key={g.id} className="flex h-6 items-center group relative hover:bg-slate-50 rounded">
+                                            <div className="w-[150px] shrink-0 pr-4 text-right text-xs font-bold text-slate-600 truncate print:text-black">{g.name}</div>
+                                            <div className="flex-1 relative h-full">
+                                                {periods.map((p, i) => { 
+                                                    const s = timelineData.getPos(p.startDate); 
+                                                    const e = p.stopDate ? timelineData.getPos(p.stopDate) : 100; 
+                                                    const width = Math.max(0.5, e - s); 
+                                                    return (
+                                                        <div key={i} className="absolute h-1 top-2.5 bg-slate-500 print:bg-black opacity-80" style={{left:`${s}%`, width:`${width}%`, WebkitPrintColorAdjust:'exact'}}>
+                                                            <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-slate-500 print:bg-black" style={{left: '0%'}}></div>
+                                                            {p.stopDate && <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-slate-500 print:bg-black" style={{left: '100%'}}></div>}
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+
+                            {/* (2) LAB VALUES SECTION (Stacking Logic without Dots) */}
+                            <div className="relative z-10">
+                                <div className="flex h-6 items-end pb-1">
+                                    <div className="w-[150px] shrink-0 pr-4 text-right text-[10px] text-slate-400 print:text-black font-bold">LAB VALUES</div>
+                                    <div className="flex-1"></div>
+                                </div>
+                                <div className="flex items-center mt-12 h-16">
+                                    <div className="w-[150px] shrink-0"></div> 
+                                    <div className="flex-1 relative h-full">
+                                        {Object.entries(groupedLabs).map(([date, dateLabs]) => {
+                                            let pos = timelineData.getPos(date);
+                                            if (pos < 0 || pos > 100) return null;
+                                            
+                                            return (
+                                                <div key={date} className="absolute top-0 -translate-x-1/2 flex flex-col items-center group cursor-pointer print:z-50" style={{left:`${pos}%`}}>
+                                                    {/* Values Stack */}
+                                                    <div className="absolute bottom-2 flex flex-col-reverse gap-1 items-center">
+                                                        {dateLabs.map((l, i) => {
+                                                             const analysis = analyzeLabValue(l.type, l.value);
+                                                             return (
+                                                                <div key={i} className={`text-[9px] font-bold px-1 border rounded shadow-sm whitespace-nowrap print:border-black print:shadow-none opacity-90 hover:opacity-100 hover:scale-110 transition-transform ${analysis.bg} ${analysis.color} ${analysis.border}`}>
+                                                                    {l.type}: {l.value}
+                                                                </div>
+                                                             )
+                                                        })}
+                                                    </div>
+                                                    
+                                                    {/* ✅ Single Neutral Anchor (No Colored Dots) */}
+                                                    <div className="w-2 h-2 rounded-full bg-slate-300 ring-2 ring-white print:bg-black"></div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* SCORES */}
+                    <div className="print:break-before-auto">
+                        <div className="flex flex-wrap gap-2 mb-4 border-b pb-1 print:hidden">{uniqueDrugs.map(d=>{
+                            const k = d.name.trim().toLowerCase(); const total=Object.values(scores[k]||{}).reduce((a,b)=>a+(parseInt(b)||0),0);
+                            return <button key={d.id} onClick={()=>setActiveTab(k)} className={`px-4 py-2 rounded-t-lg border-t border-x border-b-0 text-sm font-bold ${activeTab===k?'bg-white text-rose-600 -mb-px z-10':'bg-slate-50 text-slate-500'}`}>{d.name} ({total})</button>
+                        })}</div>
+                        <div className="hidden print:block space-y-4">
+                            {uniqueDrugs.map(d => {
+                                const k = d.name.trim().toLowerCase();
+                                const grp = {name: d.name, key: k, periods: drugs.filter(x=>x.name.trim().toLowerCase()===k)};
+                                const tot = Object.values(scores[k]||{}).reduce((a,b)=>a+(parseInt(b)||0),0);
+                                return <div key={k} style={{ pageBreakBefore: 'always' }} className="break-inside-avoid"><NaranjoCard key={k} group={grp} scoreMap={scores[k]} total={tot} onScoreChange={()=>{}} /></div>
+                            })}
+                        </div>
+                        <div className="print:hidden">
+                            {activeTab && (
+                                <NaranjoCard group={{name: uniqueDrugs.find(d=>d.name.trim().toLowerCase()===activeTab)?.name, key:activeTab, periods:drugs.filter(d=>d.name.trim().toLowerCase()===activeTab)}} scoreMap={scores[activeTab]||{}} total={Object.values(scores[activeTab]||{}).reduce((a,b)=>a+(parseInt(b)||0),0)} onScoreChange={changeScore}/>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
