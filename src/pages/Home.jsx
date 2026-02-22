@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 const Home = () => {
   const navigate = useNavigate();
   const [savedCases, setSavedCases] = useState([]);
-  const currentUser = 'Dr. User';
+  const currentUser = 'งานพัฒนาระบบยา กลุ่มงานเภสัชกรรม';
 
   useEffect(() => {
     const data = JSON.parse(localStorage.getItem('dili_cases') || '[]');
@@ -162,7 +162,7 @@ const Home = () => {
               <div className="text-sm font-bold text-slate-700">
                 {currentUser}
               </div>
-              <div className="text-xs text-slate-500">Medical Department</div>
+              <div className="text-xs text-slate-500">Man Ung</div>
             </div>
             <div className="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 font-bold">
               U
@@ -217,14 +217,14 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Disclaimer */}
+        {/* Disclaimer กล่องสีแดง */}
         <div
           style={{
             backgroundColor: '#fff1f0',
             border: '1px solid #ffa39e',
             borderRadius: '8px',
             padding: '12px 20px',
-            marginBottom: '32px',
+            marginBottom: '16px', // ปรับระยะห่างให้ชิดกล่องเหลืองด้านล่าง
             color: '#c02a2a',
             fontSize: '14px',
             fontWeight: '500',
@@ -256,7 +256,47 @@ const Home = () => {
             เครื่องมือนี้เป็นเพียงระบบช่วยสนับสนุนข้อมูลเท่านั้น
             การตัดสินใจทางการแพทย์ทั้งหมดต้องขึ้นอยู่กับดุลยพินิจของบุคลากรทางการแพทย์ผู้ใช้งาน
             โดยผู้พัฒนาจะไม่รับผิดชอบต่อผลลัพธ์ใดๆ
-            ที่เกิดขึ้นจากการนำข้อมูลไปใช้
+            ที่เกิดขึ้นจากการนำข้อมูลไปใช้ และไม่อนุญาตให้นำข้อมูลไปใช้อ้างอิงก่อนได้รับสิทธิ์ในการเผยแพร่ในทุกกรณี
+          </span>
+        </div>
+
+        {/* Local Storage Warning กล่องสีเหลือง */}
+        <div
+          style={{
+            backgroundColor: '#fef9c3', // สีเหลืองอ่อน
+            border: '1px solid #fde047', // กรอบสีเหลือง
+            borderRadius: '8px',
+            padding: '12px 20px',
+            marginBottom: '32px', // ระยะห่างจากตารางด้านล่าง
+            color: '#854d0e', // ตัวหนังสือสีเหลืองเข้มโทนน้ำตาล
+            fontSize: '14px',
+            fontWeight: '500',
+            textAlign: 'center',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '12px',
+          }}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{ flexShrink: 0 }}
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <span style={{ textAlign: 'left' }}>
+            <strong>ข้อควรระวัง:</strong>{' '}
+            ระบบจัดเก็บข้อมูลแบบ Local Storage เฉพาะในอุปกรณ์นี้เท่านั้น ข้อมูลจะสูญหายหากมีการล้างข้อมูลการท่องเว็บหรือแคชของเบราว์เซอร์
           </span>
         </div>
 
