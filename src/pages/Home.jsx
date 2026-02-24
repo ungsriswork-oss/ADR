@@ -101,7 +101,7 @@ const Home = () => {
     },
     {
       id: 'electro',
-      title: 'Electrolyte Imbalance',
+      title: 'Drug induced Electrolyte Imbalance',
       desc: 'Naranjo Scale',
       color: 'yellow',
       active: true,
