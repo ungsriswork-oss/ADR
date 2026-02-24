@@ -93,7 +93,7 @@ const Home = () => {
     },
     {
       id: 'drugfever',
-      title: 'Drug Fever',
+      title: 'Drug induced Fever',
       desc: 'Timeline & Criteria Check',
       color: 'indigo',
       active: true,
@@ -109,7 +109,7 @@ const Home = () => {
     },
     {
       id: 'heme',
-      title: 'Drug induce Hematologic disorder', 
+      title: 'Drug induced Hematologic disorder', 
       desc: 'Lab Monitoring + Naranjo',
       color: 'rose',
       active: true, 
@@ -118,7 +118,7 @@ const Home = () => {
     // ✅ ย้ายมาไว้ตรงนี้แล้วครับ
     {
       id: 'pancreatitis',
-      title: 'Drug induce Pancreatitis',
+      title: 'Drug induced Pancreatitis',
       desc: 'Pancreatitis probability scale',
       color: 'amber',
       active: true, 
