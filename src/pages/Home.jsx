@@ -54,7 +54,7 @@ const Home = () => {
     {
       id: 'rash',
       title: 'Drug Rash',
-      desc: 'Naranjo Scale for Exanthema',
+      desc: 'Naranjo Scale',
       color: 'pink',
       active: true,
       path: '/assess/rash',
@@ -86,7 +86,7 @@ const Home = () => {
     {
       id: 'sams',
       title: 'SAMS-CI',
-      desc: 'Statin-Associated Muscle Sx',
+      desc: 'Statin-Associated Muscle Symptoms',
       color: 'cyan',
       active: true,
       path: '/assess/sams',
@@ -102,7 +102,7 @@ const Home = () => {
     {
       id: 'electro',
       title: 'Electrolyte Imbalance',
-      desc: 'Naranjo Scale for lytes',
+      desc: 'Naranjo Scale',
       color: 'yellow',
       active: true,
       path: '/assess/electro',
@@ -119,7 +119,7 @@ const Home = () => {
     {
       id: 'pancreatitis',
       title: 'Drug induce Pancreatitis',
-      desc: 'Assessment & Criteria Check',
+      desc: 'Pancreatitis probability scale',
       color: 'amber',
       active: true, 
       path: '/assess/pancreatitis',
