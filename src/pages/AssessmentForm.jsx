@@ -12,6 +12,7 @@ import RashAssessment from './RashAssessment';
 import ElectroAssessment from './ElectroAssessment';
 import SamsAssessment from './SamsAssessment';
 import DrugFeverAssessment from './DrugFeverAssessment';
+import PancreatitisAssessment from './PancreatitisAssessment'; // ✅ เพิ่ม Import ของ Pancreatitis
 
 const AssessmentForm = () => {
   const { type } = useParams();
@@ -37,6 +38,7 @@ const AssessmentForm = () => {
   const [dailyLogs, setDailyLogs] = useState([]);
   const [naranjoScores, setNaranjoScores] = useState({});
   const [prodromeData, setProdromeData] = useState({}); // ของ Rash
+  const [apCriteria, setApCriteria] = useState({ pain: false, lab: false, imaging: false }); // ✅ State สำหรับ Checklist ของ Pancreatitis
 
   // --- State: Results ---
   const [analysisResult, setAnalysisResult] = useState(null);
@@ -54,6 +56,7 @@ const AssessmentForm = () => {
     heme: { title: 'Hematologic Disorder', themeColor: 'rose' },
     sams: { title: 'SAMS-CI', themeColor: 'cyan' },
     drugfever: { title: 'Drug Fever', themeColor: 'indigo' },
+    pancreatitis: { title: 'Acute Pancreatitis', themeColor: 'rose' }, // ✅ เพิ่มการตั้งค่าสีและชื่อของ Pancreatitis
     default: { title: 'Assessment', themeColor: 'slate' },
   };
   const currentSetting = typeSettings[type] || typeSettings.default;
@@ -78,17 +81,20 @@ const AssessmentForm = () => {
       setPharmacistNote(loaded.pharmacistNote || src.pharmacistNote || '');
 
       // Load ข้อมูลเฉพาะ tool
-      // ✅ เพิ่ม 'electro' ให้โหลดข้อมูล Lab
-      if (['dili', 'dress', 'agep', 'heme', 'electro'].includes(type)) {
+      // ✅ เพิ่ม 'pancreatitis' ให้โหลดข้อมูล Lab
+      if (['dili', 'dress', 'agep', 'heme', 'electro', 'pancreatitis'].includes(type)) {
         setLabEntries(loaded.labEntries || src.labEntries || []);
       }
       if (['rash', 'sjs'].includes(type)) {
         setDailyLogs(src.dailyLogs || src.logs || []);
       }
-      // ✅ เพิ่ม 'electro' ให้โหลดคะแนน Naranjo
-      if (['rash', 'electro'].includes(type)) {
+      // ✅ เพิ่ม 'pancreatitis' ให้โหลดคะแนน Naranjo
+      if (['rash', 'electro', 'pancreatitis'].includes(type)) {
         setNaranjoScores(src.naranjoScores || src.scores || {});
         setProdromeData(src.prodromeData || {});
+        if (type === 'pancreatitis') {
+            setApCriteria(src.apCriteria || { pain: false, lab: false, imaging: false });
+        }
       }
       
       // Load ผลวิเคราะห์
@@ -127,13 +133,14 @@ const AssessmentForm = () => {
         pharmacistNote: isDrugFever ? (analysisResult?.pharmacistNote || '') : pharmacistNote,
         
         // Tool specific fields
-        // ✅ เพิ่ม 'electro' ให้บันทึก Lab
-        labEntries: ['dili', 'dress', 'agep', 'heme', 'electro'].includes(type) ? labEntries : undefined,
+        // ✅ เพิ่ม 'pancreatitis' ให้บันทึก Lab
+        labEntries: ['dili', 'dress', 'agep', 'heme', 'electro', 'pancreatitis'].includes(type) ? labEntries : undefined,
         
         dailyLogs: ['rash', 'sjs'].includes(type) ? dailyLogs : (isDrugFever ? analysisResult?.dailyLogs : undefined),
         
-        // ✅ เพิ่ม 'electro' ให้บันทึก Score
-        naranjoScores: ['rash', 'electro'].includes(type) ? naranjoScores : undefined,
+        // ✅ เพิ่ม 'pancreatitis' ให้บันทึก Score และตัว Checklist
+        naranjoScores: ['rash', 'electro', 'pancreatitis'].includes(type) ? naranjoScores : undefined,
+        apCriteria: type === 'pancreatitis' ? (analysisResult?.rawData?.apCriteria || apCriteria) : undefined,
         
         prodromeData: type === 'rash' ? prodromeData : undefined,
         
@@ -223,7 +230,6 @@ const AssessmentForm = () => {
             <SamsAssessment onAnalysisComplete={setAnalysisResult} />
           )}
 
-          {/* Tools อื่นๆ */}
           {type === 'dili' && (
             <DiliAssessment
               patientData={patientData}
@@ -268,7 +274,6 @@ const AssessmentForm = () => {
           )}
           {type === 'heme' && <HemeAssessment onAnalysisComplete={setAnalysisResult} />}
           
-          {/* ✅ แก้ไข: ส่ง Props ให้ครบถ้วน */}
           {type === 'electro' && (
             <ElectroAssessment 
               drugList={drugList} setDrugList={setDrugList}
@@ -278,6 +283,19 @@ const AssessmentForm = () => {
               pharmacistNote={pharmacistNote} setPharmacistNote={setPharmacistNote}
               onAnalysisComplete={setAnalysisResult}
               initialData={location.state?.caseData}
+            />
+          )}
+
+          {/* ✅ Component ของ Pancreatitis ที่เพิ่มเข้ามาใหม่ */}
+          {type === 'pancreatitis' && (
+            <PancreatitisAssessment
+              drugList={drugList} setDrugList={setDrugList}
+              labList={labEntries} setLabList={setLabEntries}
+              onset={symptomDate} setOnset={setSymptomDate}
+              naranjoScores={naranjoScores} setNaranjoScores={setNaranjoScores}
+              pharmacistNote={pharmacistNote} setPharmacistNote={setPharmacistNote}
+              onAnalysisComplete={setAnalysisResult}
+              initialData={{ savedData: { drugs: drugList, labs: labEntries, onsetDate: symptomDate, pharmacistNote, naranjoScores, apCriteria } }}
             />
           )}
 
@@ -299,7 +317,8 @@ const AssessmentForm = () => {
         <div className="mt-8 flex justify-end gap-3 print:hidden">
           <button onClick={() => navigate('/')} className="px-6 py-2 rounded-lg border hover:bg-slate-50 transition">Cancel</button>
 
-          {![ 'dili', 'sjs', 'rash', 'dress', 'agep', 'heme', 'electro', 'sams', 'drugfever' ].includes(type) && (
+          {/* ✅ เพิ่ม 'pancreatitis' ในกลุ่มเครื่องมือที่ซ่อนปุ่ม Analyze (เพราะมันรันผลอัตโนมัติ/มีปุ่มในตัวเอง) */}
+          {![ 'dili', 'sjs', 'rash', 'dress', 'agep', 'heme', 'electro', 'sams', 'drugfever', 'pancreatitis' ].includes(type) && (
             <button onClick={() => setAnalyzeCount((c) => c + 1)} className={`px-6 py-2 rounded-lg bg-${theme}-500 hover:bg-${theme}-600 text-white shadow-sm transition`}>Analyze</button>
           )}
 

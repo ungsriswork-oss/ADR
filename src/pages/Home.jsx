@@ -24,7 +24,6 @@ const Home = () => {
     navigate(`/assess/${caseData.type || 'dili'}`, { state: { caseData } });
   };
 
-  // ✅ HELPER: ฟังก์ชันเดิม ดึงข้อมูลยาให้ครบทุกแบบ
   const getSuspectedDrugs = (c) => {
     if (Array.isArray(c.rankedDrugs) && c.rankedDrugs.length > 0) {
       return c.rankedDrugs;
@@ -42,8 +41,7 @@ const Home = () => {
     return [];
   };
 
-  // ✅ UPDATE: ปรับลำดับ Tools ตามที่คุณต้องการ
-  // ลำดับ: DILI, Rash, SJS, DRESS, AGEP, SAMS, Drug Fever, Electro, Heme(Active)
+  // ✅ UPDATE: ย้าย Pancreatitis มาไว้ล่างสุดต่อจาก Heme
   const tools = [
     {
       id: 'dili',
@@ -109,18 +107,25 @@ const Home = () => {
       active: true,
       path: '/assess/electro',
     },
-    // ✅ อัปเดต: เปลี่ยนชื่อและเปิดการใช้งานกลับมาเป็น true
     {
       id: 'heme',
       title: 'Drug induce Hematologic disorder', 
       desc: 'Lab Monitoring + Naranjo',
       color: 'rose',
-      active: true, // ✅ เปลี่ยนจาก false เป็น true เพื่อให้กดใช้งานได้
+      active: true, 
       path: '/assess/heme',
+    },
+    // ✅ ย้ายมาไว้ตรงนี้แล้วครับ
+    {
+      id: 'pancreatitis',
+      title: 'Drug induce Pancreatitis',
+      desc: 'Assessment & Criteria Check',
+      color: 'amber',
+      active: false, 
+      path: '/assess/pancreatitis',
     },
   ];
 
-  // ✅ HELPER: เพิ่มการรองรับสีของ drugfever ใน Case Follow-up
   const getADRBadgeClass = (type) => {
     switch (type?.toLowerCase()) {
       case 'dili':
@@ -139,6 +144,8 @@ const Home = () => {
         return 'bg-rose-100 text-rose-700 border-rose-200';
       case 'drugfever':
         return 'bg-indigo-100 text-indigo-700 border-indigo-200';
+      case 'pancreatitis':
+        return 'bg-amber-100 text-amber-700 border-amber-200';
       default:
         return 'bg-slate-100 text-slate-700 border-slate-200';
     }
@@ -146,7 +153,6 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
-      {/* Navigation */}
       <nav className="bg-white border-b border-slate-200 px-6 py-4 shadow-sm sticky top-0 z-20">
         <div className="max-w-5xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-2">
@@ -172,22 +178,21 @@ const Home = () => {
       </nav>
 
       <div className="max-w-5xl mx-auto px-6 py-8">
-        {/* Tools Grid */}
         <div className="mb-10">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {tools.map((tool) => (
               <div
                 key={tool.id}
                 onClick={() => tool.active && navigate(tool.path)}
-                className={`relative p-6 rounded-xl border transition duration-200 flex flex-col h-full ${
+                className={`relative p-6 rounded-xl border transition duration-200 flex flex-col h-full text-left ${
                   tool.active
                     ? 'bg-white shadow-sm border-slate-200 hover:shadow-md hover:border-blue-400 cursor-pointer group'
                     : 'bg-slate-50 border-slate-200 opacity-80 cursor-not-allowed grayscale-[0.2]'
                 }`}
               >
-                <div className="flex justify-between items-start mb-2">
+                <div className="flex justify-between items-start mb-2 w-full">
                   <h3
-                    className={`text-lg font-bold ${
+                    className={`text-lg font-bold pr-2 ${
                       tool.active
                         ? 'text-slate-800 group-hover:text-blue-600'
                         : 'text-slate-500'
@@ -196,12 +201,12 @@ const Home = () => {
                     {tool.title}
                   </h3>
                   {!tool.active && (
-                    <span className="bg-slate-200 text-slate-500 text-[10px] px-2 py-1 rounded font-bold uppercase">
+                    <span className="bg-slate-200 text-slate-500 text-[10px] px-2 py-1 rounded font-bold uppercase shrink-0">
                       Coming Soon
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-slate-500 flex-grow">{tool.desc}</p>
+                <p className="text-sm text-slate-500 flex-grow text-left w-full">{tool.desc}</p>
                 {tool.active && (
                   <div
                     className={`mt-4 text-xs font-bold uppercase tracking-wide flex items-center gap-1 text-${tool.color}-600`}
@@ -217,14 +222,13 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Disclaimer กล่องสีแดง */}
         <div
           style={{
             backgroundColor: '#fff1f0',
             border: '1px solid #ffa39e',
             borderRadius: '8px',
             padding: '12px 20px',
-            marginBottom: '16px', // ปรับระยะห่างให้ชิดกล่องเหลืองด้านล่าง
+            marginBottom: '16px', 
             color: '#c02a2a',
             fontSize: '14px',
             fontWeight: '500',
@@ -260,15 +264,14 @@ const Home = () => {
           </span>
         </div>
 
-        {/* Local Storage Warning กล่องสีเหลือง */}
         <div
           style={{
-            backgroundColor: '#fef9c3', // สีเหลืองอ่อน
-            border: '1px solid #fde047', // กรอบสีเหลือง
+            backgroundColor: '#fef9c3',
+            border: '1px solid #fde047',
             borderRadius: '8px',
             padding: '12px 20px',
-            marginBottom: '32px', // ระยะห่างจากตารางด้านล่าง
-            color: '#854d0e', // ตัวหนังสือสีเหลืองเข้มโทนน้ำตาล
+            marginBottom: '32px',
+            color: '#854d0e',
             fontSize: '14px',
             fontWeight: '500',
             textAlign: 'center',
@@ -300,7 +303,6 @@ const Home = () => {
           </span>
         </div>
 
-        {/* Case Follow-up Table */}
         <div>
           <div className="flex justify-between items-center mb-4">
             <div>
