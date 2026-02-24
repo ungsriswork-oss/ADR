@@ -121,7 +121,7 @@ const Home = () => {
       title: 'Drug induce Pancreatitis',
       desc: 'Assessment & Criteria Check',
       color: 'amber',
-      active: false, 
+      active: true, 
       path: '/assess/pancreatitis',
     },
   ];
