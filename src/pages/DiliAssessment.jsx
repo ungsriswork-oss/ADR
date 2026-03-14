@@ -359,11 +359,31 @@ const DiliAssessment = ({
       usedALP = 0;
 
     if (labEntries.length > 0) {
-      usedALT = Math.max(...labEntries.map((l) => parseFloat(l.alt || 0)));
-      const maxALP = Math.max(...labEntries.map((l) => parseFloat(l.alp || 0)));
-      usedALP = maxALP;
+      // ค้นหา Lab ที่ใกล้เคียงกับวันที่ Onset มากที่สุด
+      if (symptomDate) {
+        const onsetTime = new Date(symptomDate).getTime();
+        let minDiff = Infinity;
+        let targetLab = labEntries[0];
+
+        labEntries.forEach((l) => {
+          const diff = Math.abs(new Date(l.date).getTime() - onsetTime);
+          if (diff < minDiff) {
+            minDiff = diff;
+            targetLab = l;
+          }
+        });
+
+        usedALT = parseFloat(targetLab.alt || 0);
+        usedALP = parseFloat(targetLab.alp || 0);
+      } else {
+        // Fallback กลับไปใช้ค่า Max หากไม่ได้กำหนด symptomDate
+        usedALT = Math.max(...labEntries.map((l) => parseFloat(l.alt || 0)));
+        usedALP = Math.max(...labEntries.map((l) => parseFloat(l.alp || 0)));
+      }
+
       altRatio = (usedALT / 40).toFixed(2);
-      alpRatio = (maxALP / 120).toFixed(2);
+      alpRatio = (usedALP / 120).toFixed(2);
+
       if (parseFloat(alpRatio) > 0) {
         rFactor = (altRatio / alpRatio).toFixed(2);
         if (rFactor >= 5) type = 'Hepatocellular';
@@ -451,6 +471,7 @@ const DiliAssessment = ({
         }
       }
 
+      // ยังคงใช้ Peak ALT ตามเดิมสำหรับ Dechallenge/Adaptation
       const peakALT = Math.max(
         ...labEntries.map((l) => parseFloat(l.alt || 0))
       );
