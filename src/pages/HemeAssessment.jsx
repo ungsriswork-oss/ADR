@@ -272,8 +272,9 @@ const HemeAssessment = (props) => {
     const [isAnalyzed, setIsAnalyzed] = useState(false);
     const [activeTab, setActiveTab] = useState(null);
 
+    // ✅ ฟังก์ชัน useEffect ถูกแก้ไขให้ดึงข้อมูลจาก rawData ได้อย่างถูกต้อง
     useEffect(() => {
-        const src = props.initialData?.savedData || props.initialData || {};
+        const src = props.initialData?.rawData || props.initialData?.savedData || props.initialData || {};
         const initDrugs = props.drugList || src.drugs || src.drugList || [];
         const initLabs = props.labList || src.labs || src.labList || [];
         const initOnset = props.onset || src.onset || src.symptomDate || ''; 
@@ -281,15 +282,25 @@ const HemeAssessment = (props) => {
         const initNote = props.pharmacistNote || src.pharmacistNote || '';
         const initDisorderType = src.disorderType || DISORDER_TYPES[0]; // Load saved disorder type
 
-        setDrugs(initDrugs); setLabs(initLabs); setOnset(initOnset); setScores(initScores); setNote(initNote); setDisorderType(initDisorderType);
+        setDrugs(initDrugs); 
+        setLabs(initLabs); 
+        setOnset(initOnset); 
+        setScores(initScores); 
+        setNote(initNote); 
+        setDisorderType(initDisorderType);
 
-        if (!hasAutoAnalyzed && initDrugs.length > 0) {
-            // ✅ ส่ง initDisorderType เข้าไปด้วย
-            const newScores = calculateScores(initDrugs, initLabs, initOnset, initScores, initDisorderType);
-            setScores(newScores);
+        // ✅ ถ้ามีข้อมูลยาโหลดขึ้นมา ให้สั่งแสดงผลหน้าจอ (isAnalyzed) เสมอ
+        if (initDrugs.length > 0) {
             setIsAnalyzed(true);
-            setHasAutoAnalyzed(true);
-            if (!activeTab && initDrugs.length > 0) setActiveTab(initDrugs[0].name.trim().toLowerCase());
+            
+            if (!hasAutoAnalyzed) {
+                const newScores = calculateScores(initDrugs, initLabs, initOnset, initScores, initDisorderType);
+                setScores(newScores);
+                setHasAutoAnalyzed(true);
+            }
+            if (!activeTab) {
+                setActiveTab(initDrugs[0].name.trim().toLowerCase());
+            }
         }
     }, [props.initialData, props.drugList, props.labList, props.onset, props.naranjoScores, props.pharmacistNote]);
 
