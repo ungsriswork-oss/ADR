@@ -80,7 +80,8 @@ const analyzeLabValue = (type, value) => {
 };
 
 // --- CORE LOGIC (AUTOMATED SCORE CALCULATION) ---
-const calculateScores = (drugs, labs, onset, currentScores) => {
+// ✅ เพิ่มพารามิเตอร์ disorderType
+const calculateScores = (drugs, labs, onset, currentScores, disorderType) => {
     const newScores = { ...currentScores };
     const groups = {};
     drugs.forEach(d => {
@@ -122,11 +123,27 @@ const calculateScores = (drugs, labs, onset, currentScores) => {
             }
         });
 
+        // ✅ กำหนดกรอบเวลา Dechallenge ตามชนิดของโรค
+        let dechallengeWindowDays = 14; // ค่าเริ่มต้น
+        if (disorderType && (disorderType.includes("DITP") || disorderType.includes("Thrombocytopenia"))) {
+            dechallengeWindowDays = 7;
+        } else if (disorderType && (disorderType.includes("Aplastic") || disorderType.includes("Megaloblastic"))) {
+            dechallengeWindowDays = 30;
+        } else if (disorderType && disorderType.includes("Hemolytic")) {
+            dechallengeWindowDays = 14;
+        }
+
         // Q3: Dechallenge (หยุดยาแล้วดีขึ้นไหม?)
         const stoppedPeriods = g.periods.filter(p => p.stopDate);
         if (stoppedPeriods.length > 0) {
             const lastStopDate = new Date(stoppedPeriods[stoppedPeriods.length-1].stopDate).getTime();
-            const afterLabs = labs.filter(l => new Date(l.date).getTime() > lastStopDate);
+            
+            // ✅ กรอง Lab เฉพาะที่อยู่ใน Window ที่กำหนด
+            const afterLabs = labs.filter(l => {
+                const labTime = new Date(l.date).getTime();
+                const diffDays = (labTime - lastStopDate) / (1000 * 60 * 60 * 24);
+                return diffDays > 0 && diffDays <= dechallengeWindowDays; 
+            });
             
             let improved = false;
             Object.keys(maxDeviations).forEach(type => {
@@ -267,7 +284,8 @@ const HemeAssessment = (props) => {
         setDrugs(initDrugs); setLabs(initLabs); setOnset(initOnset); setScores(initScores); setNote(initNote); setDisorderType(initDisorderType);
 
         if (!hasAutoAnalyzed && initDrugs.length > 0) {
-            const newScores = calculateScores(initDrugs, initLabs, initOnset, initScores);
+            // ✅ ส่ง initDisorderType เข้าไปด้วย
+            const newScores = calculateScores(initDrugs, initLabs, initOnset, initScores, initDisorderType);
             setScores(newScores);
             setIsAnalyzed(true);
             setHasAutoAnalyzed(true);
@@ -300,7 +318,8 @@ const HemeAssessment = (props) => {
     };
 
     const performAnalysis = () => {
-        const newScores = calculateScores(drugs, labs, onset, scores);
+        // ✅ ส่ง disorderType เข้าไปด้วย
+        const newScores = calculateScores(drugs, labs, onset, scores, disorderType);
         syncToParent(undefined, undefined, undefined, newScores, undefined);
         setIsAnalyzed(true);
         if(drugs.length > 0) setActiveTab(drugs[0].name.trim().toLowerCase());
@@ -581,13 +600,14 @@ const HemeAssessment = (props) => {
                                 })}
                             </div>
 
-                            {/* (2) LAB VALUES SECTION (Stacking Logic without Dots) */}
+                            {/* (2) LAB VALUES SECTION (Stacking Logic downwards) */}
                             <div className="relative z-10">
                                 <div className="flex h-6 items-end pb-1">
                                     <div className="w-[150px] shrink-0 pr-4 text-right text-[10px] text-slate-400 print:text-black font-bold">LAB VALUES</div>
                                     <div className="flex-1"></div>
                                 </div>
-                                <div className="flex items-center mt-12 h-16">
+                                {/* ✅ ปรับเพิ่ม min-h และลบ mt-12 เดิมออก เพื่อให้มีที่งอกลงล่าง */}
+                                <div className="flex items-start mt-2 min-h-[120px]">
                                     <div className="w-[150px] shrink-0"></div> 
                                     <div className="flex-1 relative h-full">
                                         {Object.entries(groupedLabs).map(([date, dateLabs]) => {
@@ -596,8 +616,12 @@ const HemeAssessment = (props) => {
                                             
                                             return (
                                                 <div key={date} className="absolute top-0 -translate-x-1/2 flex flex-col items-center group cursor-pointer print:z-50" style={{left:`${pos}%`}}>
-                                                    {/* Values Stack */}
-                                                    <div className="absolute bottom-2 flex flex-col-reverse gap-1 items-center">
+                                                    
+                                                    {/* ✅ Single Neutral Anchor อยู่ด้านบนสุดของ Lab (ติดแกน x) */}
+                                                    <div className="w-2 h-2 rounded-full bg-slate-300 ring-2 ring-white print:bg-black z-10"></div>
+                                                    
+                                                    {/* ✅ Values Stack งอกลงด้านล่างแทน */}
+                                                    <div className="mt-1.5 flex flex-col gap-1 items-center">
                                                         {dateLabs.map((l, i) => {
                                                              const analysis = analyzeLabValue(l.type, l.value);
                                                              return (
@@ -608,8 +632,6 @@ const HemeAssessment = (props) => {
                                                         })}
                                                     </div>
                                                     
-                                                    {/* ✅ Single Neutral Anchor (No Colored Dots) */}
-                                                    <div className="w-2 h-2 rounded-full bg-slate-300 ring-2 ring-white print:bg-black"></div>
                                                 </div>
                                             );
                                         })}
