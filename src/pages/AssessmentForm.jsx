@@ -38,8 +38,8 @@ const inputStyle = {
   transition: 'border-color 0.15s, box-shadow 0.15s',
 };
 const onFocus = e => {
-  e.target.style.borderColor = '#0071e3';               /* Apple blue */
-  e.target.style.boxShadow = '0 0 0 3px rgba(0,113,227,0.18)';
+  e.target.style.borderColor = '#2a9d8f';               /* Apple blue */
+  e.target.style.boxShadow = '0 0 0 3px rgba(42,157,143,0.18)';
 };
 const onBlur  = e => {
   e.target.style.borderColor = '#d6d0c8';
@@ -145,7 +145,7 @@ export default function AssessmentForm() {
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         borderBottom: '1px solid rgba(0,0,0,0.08)',
-        padding: '0 24px', height: 52,
+        padding: '0 clamp(16px, 4vw, 48px)', height: 52,
         display: 'flex', alignItems: 'center', gap: 12,
         position: 'sticky', top: 0, zIndex: 20,
       }}>
@@ -160,16 +160,29 @@ export default function AssessmentForm() {
             <span style={{ padding: '2px 8px', borderRadius: 99, fontSize: 10, fontWeight: 600, letterSpacing: '0.04em', background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}>{cfg.scale}</span>
             <span style={{ fontSize: 15, fontWeight: 600, color: '#2d2926', letterSpacing: '-0.01em' }}>{cfg.title}</span>
           </div>
-          <div style={{ fontSize: 11, color: '#a8a099', marginTop: 1 }}>{isSaved ? 'Viewing saved case' : 'New clinical entry'}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
+            <span style={{
+              display: 'inline-block', fontSize: 10, fontWeight: 600,
+              padding: '1px 7px', borderRadius: 99,
+              background: isSaved ? '#fff0e4' : '#e6f4f1',
+              color: isSaved ? '#c4620a' : '#1a6b62',
+              border: `1px solid ${isSaved ? '#f5cfa8' : '#b2ddd7'}`,
+              letterSpacing: '0.03em'
+            }}>
+              {isSaved ? 'Saved case' : 'New entry'}
+            </span>
+          </div>
         </div>
       </nav>
 
-      <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 24px 0' }}>
+      <div style={{ maxWidth: 1400, margin: '0 auto', padding: 'clamp(16px, 4vw, 48px)', paddingTop: 24, paddingBottom: 0 }}>
 
         {/* ── PATIENT CARD ── */}
         <div style={{ background: '#fff', border: '1px solid #ebe8e2', borderRadius: 10, padding: '18px 20px', marginBottom: 14 }}>
           <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: '#a8a099', marginBottom: 12, paddingBottom: 8, borderBottom: '1px solid #f4f2ee' }}>Patient data</div>
-          <div style={{ display: 'grid', gridTemplateColumns: patFields.map(f => f.col).join(' '), gap: 12 }}>
+          <div style={{ display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 140px), 1fr))',
+            gap: 12 }}>
             {patFields.map(f => (
               <div key={f.key}>
                 <label style={{ fontSize: 10, fontWeight: 600, color: '#6b6360', marginBottom: 4, display: 'block', letterSpacing: '0.03em' }}>{f.label}</label>
@@ -185,7 +198,7 @@ export default function AssessmentForm() {
         </div>
 
         {/* ── TOOL AREA ── */}
-        <div style={{ background: '#fff', border: '1px solid #ebe8e2', borderRadius: 10, padding: '20px 20px', marginBottom: 14 }}>
+        <div style={{ marginBottom: 14 }}>
           {type==='drugfever'    && <DrugFeverAssessment    onAnalysisComplete={setAnalysisResult} initialData={location.state?.caseData} />}
           {type==='sams'         && <SamsAssessment         onAnalysisComplete={setAnalysisResult} />}
           {type==='dili'         && <DiliAssessment         patientData={patientData} labEntries={labEntries} setLabEntries={setLabEntries} drugList={drugList} setDrugList={setDrugList} symptomDate={symptomDate} setSymptomDate={setSymptomDate} initialAnalysisResult={loadedResult} analyzeCount={analyzeCount} onAnalysisComplete={setAnalysisResult} pharmacistNote={pharmacistNote} onPharmacistNoteChange={setPharmacistNote} />}
@@ -199,7 +212,7 @@ export default function AssessmentForm() {
         </div>
 
         {/* ── FOOTER BUTTONS ── */}
-        <div className="no-print" style={{ display: 'flex', justifyContent: 'flex-end', gap: 7, marginTop: 4, paddingTop: 16, borderTop: '1px solid #f4f2ee' }}>
+        <div className="no-print" style={{ display: 'flex', justifyContent: 'flex-end', gap: 7, marginTop: 4, paddingTop: 16, borderTop: '1px solid #f4f2ee', position: 'sticky', bottom: 0, background: 'rgba(250,249,247,0.95)', backdropFilter: 'blur(10px)', padding: '12px clamp(16px,4vw,48px)', marginLeft: 'calc(-1 * clamp(16px,4vw,48px))', marginRight: 'calc(-1 * clamp(16px,4vw,48px))', zIndex: 10 }}>
           <button
             onClick={() => navigate('/')}
             style={{ padding: '7px 16px', borderRadius: 7, border: '1px solid #d6d0c8', background: '#fff', fontSize: 13, fontWeight: 400, color: '#6b6360', cursor: 'pointer', fontFamily: "'Inter', system-ui, sans-serif" }}
@@ -211,15 +224,15 @@ export default function AssessmentForm() {
             <button
               onClick={() => setAnalyzeCount(c => c+1)}
               style={{ padding: '7px 16px', borderRadius: 7, border: `1px solid ${cfg.border}`, background: cfg.bg, fontSize: 13, fontWeight: 500, color: cfg.color, cursor: 'pointer', fontFamily: "'Inter', system-ui, sans-serif" }}
-            >⚡ Analyze</button>
+            >View Timeline & Score</button>
           )}
 
           {/* Save — Apple blue */}
           <button
             onClick={handleSave}
-            style={{ padding: '7px 18px', borderRadius: 7, border: '1px solid #0071e3', background: '#0071e3', fontSize: 13, fontWeight: 500, color: '#fff', cursor: 'pointer', fontFamily: "'Inter', system-ui, sans-serif", display: 'flex', alignItems: 'center', gap: 5, transition: 'background 0.15s' }}
-            onMouseEnter={e => e.currentTarget.style.background = '#0077ed'}
-            onMouseLeave={e => e.currentTarget.style.background = '#0071e3'}
+            style={{ padding: '7px 18px', borderRadius: 7, border: '1px solid #2a9d8f', background: '#2a9d8f', fontSize: 13, fontWeight: 500, color: '#fff', cursor: 'pointer', fontFamily: "'Inter', system-ui, sans-serif", display: 'flex', alignItems: 'center', gap: 5, transition: 'background 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.background = '#238f82'}
+            onMouseLeave={e => e.currentTarget.style.background = '#2a9d8f'}
           >↓ Save</button>
 
           <button

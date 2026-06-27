@@ -333,7 +333,7 @@ const AgepAssessment = (props) => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 animate-fade-in font-[Inter,system-ui,sans-serif]">
+    <div className="w-full space-y-6 animate-fade-in font-[Inter,system-ui,sans-serif]">
         {/* INPUT SECTION */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 print:hidden">
             {/* Drugs & Onset */}
@@ -341,7 +341,7 @@ const AgepAssessment = (props) => {
                 <h3 className="font-bold text-[#1a6b62] mb-4 flex items-center gap-2 text-lg"><Pill size={24}/> Drugs & Onset</h3>
                 <div className="mb-6">
                     <label className="text-xs font-bold text-[#a8a099] mb-1 block">ONSET DATE</label>
-                    <input type="date" className="w-full border-2 border-[#ebe8e2] rounded-[8px] p-3 text-base font-bold text-[#1a6b62] focus:border-[#0071e3] focus:ring-[rgba(0,113,227,0.18)]" value={onsetDate} onChange={e => setOnsetDate(e.target.value)} />
+                    <input type="date" className="w-full border-2 border-[#ebe8e2] rounded-[8px] p-3 text-base font-bold text-[#1a6b62] focus:border-[#2a9d8f] focus:ring-[rgba(42,157,143,0.18)]" value={onsetDate} onChange={e => setOnsetDate(e.target.value)} />
                 </div>
                 <div className="flex flex-col gap-3 mb-4 bg-[#e6f4f1] p-4 rounded-[10px] border border-[#b2ddd7]">
                     <div><label className="text-xs text-[#a8a099] font-bold block mb-1">DRUG NAME</label><input className="w-full border border-[#d6d0c8] rounded-[8px] p-2.5 text-base" placeholder="Enter Drug Name..." value={newDrug.name} onChange={e => setNewDrug({...newDrug, name: e.target.value})} /></div>
@@ -394,7 +394,7 @@ const AgepAssessment = (props) => {
                     </label>
                     <div className="p-4 border border-[#ebe8e2] rounded-[10px] bg-[#faf9f7] flex items-center justify-between print:bg-white print:border-slate-400 print:p-2">
                         <div className="flex items-center gap-3 text-[#2d2926] print:text-black"><Scale size={24} className="print:w-5 print:h-5"/><span className="font-bold text-lg print:text-sm">BMI ≥ 30 (+1)</span></div>
-                        <input type="number" placeholder="Enter BMI" className="w-28 border-2 border-[#d6d0c8] rounded-[8px] p-2 text-lg text-center focus:border-[#0071e3] font-bold print:border-slate-400 print:text-sm print:w-20 print:p-1" value={bmi} onChange={e => setBmi(e.target.value)} />
+                        <input type="number" placeholder="Enter BMI" className="w-28 border-2 border-[#d6d0c8] rounded-[8px] p-2 text-lg text-center focus:border-[#2a9d8f] font-bold print:border-slate-400 print:text-sm print:w-20 print:p-1" value={bmi} onChange={e => setBmi(e.target.value)} />
                     </div>
                 </div>
                 <div className="space-y-4">
@@ -411,9 +411,39 @@ const AgepAssessment = (props) => {
         </div>
 
         {/* ANALYZE BUTTON */}
-        <button onClick={handleAnalyze} className="w-full bg-bg-[#2a9d8f] text-white font-bold py-4 rounded-[10px] shadow-[0_4px_16px_rgba(0,0,0,0.08)] hover:scale-[1.01] transition-transform flex items-center justify-center gap-3 text-xl print:hidden">
-            <Zap size={28} /> Analyze Score
-        </button>
+        {/* Live score counter */}
+        <div className="flex items-center gap-4 bg-white border border-[#ebe8e2] rounded-[10px] p-4 print:hidden">
+          <div>
+            <div className="text-[10px] font-semibold text-[#a8a099] uppercase tracking-wider mb-1">AGEP score</div>
+            <div className="flex items-baseline gap-1">
+              <span className="text-3xl font-bold text-[#2a9d8f]">{score.total}</span>
+              <span className="text-lg text-[#d6d0c8] font-light">/ 4</span>
+            </div>
+          </div>
+          <div className="flex gap-1.5">
+            {[0,1,2,3].map(i => (
+              <div key={i} className="w-8 h-2 rounded-full transition-all duration-200"
+                style={{ background: i < score.total ? '#2a9d8f' : '#ebe8e2' }} />
+            ))}
+          </div>
+          <div className={`px-3 py-1.5 rounded-[7px] text-sm font-semibold ${
+            score.total === 4 ? 'bg-[#e6f4f1] text-[#1a6b62] border border-[#b2ddd7]' :
+            score.total === 3 ? 'bg-[#fff0e4] text-[#c4620a] border border-[#f5cfa8]' :
+            score.total === 2 ? 'bg-[#fef6e4] text-[#9b6e00] border border-[#f0d98a]' :
+            'bg-[#f4f2ee] text-[#a8a099] border border-[#ebe8e2]'
+          }`}>
+            {score.interpretation}
+          </div>
+          <div className="flex-1" />
+          <button onClick={() => setShowInfo(true)}
+            className="text-xs font-semibold text-[#2a9d8f] hover:text-[#1a6b62] bg-[#e6f4f1] border border-[#b2ddd7] px-3 py-2 rounded-[7px] transition print:hidden">
+            Algorithm info
+          </button>
+          <button onClick={handleAnalyze}
+            className="bg-[#1a6b62] hover:bg-[#145a52] text-white font-[500] py-2.5 px-6 rounded-[8px] text-sm flex-shrink-0 transition">
+            View Timeline & Score
+          </button>
+        </div>
 
         {analyzed && (
             <div ref={resultsRef} className="space-y-8">
@@ -439,7 +469,7 @@ const AgepAssessment = (props) => {
         {/* Modal Popup */}
         {showInfo && (
             <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 print:hidden" onClick={() => setShowInfo(false)}>
-                <div className="bg-white rounded-[14px] shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-auto relative animate-fade-in-up" onClick={e => e.stopPropagation()}>
+                <div className="bg-white rounded-[14px] shadow-[0_4px_16px_rgba(0,0,0,0.10)] max-w-4xl w-full max-h-[90vh] overflow-auto relative animate-fade-in-up" onClick={e => e.stopPropagation()}>
                     <button onClick={() => setShowInfo(false)} className="absolute top-4 right-4 p-2 bg-[#f4f2ee] hover:bg-[#ebe8e2] rounded-full text-[#6b6360] transition-colors z-10"><X size={24} /></button>
                     <div className="p-8">
                         <h3 className="font-bold text-2xl mb-6 text-[#1a6b62] flex items-center gap-2 border-b pb-4"><Activity className="text-[#2a9d8f]" /> AGEP Diagnostic Algorithm</h3>

@@ -43,54 +43,47 @@ const criteriaOptions = {
 };
 
 // --- 2. SUB-COMPONENTS ---
-const RucamRow = ({
-  label,
-  subLabel,
-  value,
-  onChange,
-  optionsArr,
-  isRequired,
-}) => {
-  const selectedOption = optionsArr.find(
-    (o) => o.value === (parseInt(value) ?? 0)
-  );
+const scoreColor = (v) => {
+  const n = parseInt(v);
+  if (n > 0) return { text: '#1a6b62', bg: '#e6f4f1', border: '#b2ddd7' };
+  if (n < 0) return { text: '#8c3322', bg: '#fdf0ee', border: '#f5b8b8' };
+  return { text: '#a8a099', bg: '#f4f2ee', border: '#ebe8e2' };
+};
+
+const RucamRow = ({ label, subLabel, value, onChange, optionsArr, isRequired }) => {
+  const selectedOption = optionsArr.find((o) => o.value === (parseInt(value) ?? 0));
   const displayValue = selectedOption ? selectedOption.label : 'Unknown';
   const safeValue = value ?? 0;
+  const sc = scoreColor(safeValue);
 
   return (
-    <tr
-      className={`border-b border-[#f4f2ee] last:border-0 break-inside-avoid ${
-        isRequired ? 'bg-[#fef6e4]' : ''
-      }`}
-    >
-      <td className="py-2 pl-4 w-[35%] align-top font-bold text-[#2d2926] text-sm text-left">
-        {label} {isRequired && <span className="text-[#e07060] ml-1">*</span>}
+    <tr className={`border-b border-[#f4f2ee] last:border-0 break-inside-avoid ${isRequired ? 'bg-[#fef9f5]' : ''}`}>
+      <td className="py-3 pl-4 w-[36%] align-middle text-[#2d2926] text-sm">
+        <span className="font-semibold">{label}</span>
+        {isRequired && (
+          <span className="ml-1.5 text-[9px] font-bold text-[#c4620a] bg-[#fff0e4] border border-[#f5cfa8] px-1.5 py-0.5 rounded uppercase tracking-wide">required</span>
+        )}
+        {subLabel && <div className="text-[11px] text-[#a8a099] mt-0.5 font-normal">{subLabel}</div>}
       </td>
-      <td className="py-2 px-2 w-[25%] align-top text-[#a8a099] text-xs text-left">
-        {subLabel}
+      <td className="py-3 px-3 align-middle print:hidden">
+        <select
+          className="w-full text-sm text-[#2d2926] bg-white border border-[#d6d0c8] rounded-[6px] px-2 py-1.5 focus:outline-none focus:border-[#2a9d8f] cursor-pointer"
+          value={safeValue}
+          onChange={onChange}
+        >
+          {optionsArr.map((opt) => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
       </td>
-      <td className="py-2 pr-4 w-[40%] align-top text-right">
-        <div className="hidden print:flex flex-col items-end w-full">
-          <span className="text-[10px] text-[#a8a099] text-right w-full whitespace-normal break-words leading-tight">
-            {displayValue}
-          </span>
-          <span className="font-bold text-[#2d2926] text-sm mt-1 border border-[#ebe8e2] px-2 rounded inline-block">
-            {safeValue > 0 ? `+${safeValue}` : safeValue}
-          </span>
-        </div>
-        <div className="w-full print:hidden">
-          <select
-            className="w-full text-right font-bold bg-transparent focus:outline-none cursor-pointer text-sm truncate"
-            value={safeValue}
-            onChange={onChange}
-          >
-            {optionsArr.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label} ({opt.value > 0 ? `+${opt.value}` : opt.value})
-              </option>
-            ))}
-          </select>
-        </div>
+      <td className="py-3 pr-4 w-[12%] align-middle text-center print:hidden">
+        <span className="inline-flex items-center justify-center min-w-[36px] px-2 py-1 rounded-[5px] text-xs font-bold border"
+          style={{ color: sc.text, background: sc.bg, borderColor: sc.border }}>
+          {parseInt(safeValue) > 0 ? `+${safeValue}` : safeValue}
+        </span>
+      </td>
+      <td className="hidden print:table-cell py-2 pr-4 text-right text-xs">
+        {displayValue} ({parseInt(safeValue) > 0 ? `+${safeValue}` : safeValue})
       </td>
     </tr>
   );
@@ -138,9 +131,9 @@ const RucamCard = ({
         </div>
         <div className="text-right">
           {!result.isExcluded && (
-            <div className="text-3xl font-bold">{total}</div>
+            <div className="text-4xl font-bold leading-none">{total > 0 ? `+${total}` : total}</div>
           )}
-          <div className="text-sm font-bold uppercase tracking-wide opacity-95 bg-black/20 px-2 py-1 rounded inline-block mt-1">
+          <div className="text-xs font-semibold uppercase tracking-widest opacity-90 bg-black/20 px-3 py-1 rounded-full inline-block mt-2">
             {result.text}
           </div>
         </div>
@@ -757,7 +750,7 @@ const DiliAssessment = ({
             Serial Lab Monitoring
           </h3>
           <div
-            className="grid grid-cols-1 md:grid-cols-6 gap-2 mb-2 no-print"
+            className="flex flex-wrap gap-2 mb-2 no-print"
             data-html2canvas-ignore
           >
             <input
@@ -929,7 +922,7 @@ const DiliAssessment = ({
             </table>
           </div>
           <div
-            className="grid grid-cols-4 gap-2 mb-2 no-print items-end"
+            className="flex flex-wrap gap-2 mb-2 no-print items-end"
             data-html2canvas-ignore
           >
             <div>
@@ -967,7 +960,7 @@ const DiliAssessment = ({
             </div>
             <button
               onClick={handleAddDrug}
-              className="bg-slate-700 text-white rounded font-bold hover:bg-[#2d2926] py-1.5 h-auto"
+              className="bg-white text-[#2a9d8f] border border-[#b2ddd7] rounded-[6px] font-[500] py-1.5 h-auto hover:bg-[#e6f4f1]"
             >
               + Add Drug
             </button>
@@ -976,9 +969,9 @@ const DiliAssessment = ({
           <div className="mt-6 flex flex-col gap-4 no-print">
             <button
               onClick={performAnalysis}
-              className="w-full bg-[#0071e3] hover:bg-[#0077ed] text-white text-lg px-8 py-3 rounded-[8px] font-bold shadow hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-all transform active:scale-95 flex items-center justify-center gap-2"
+              className="w-full bg-[#2a9d8f] hover:bg-[#238f82] text-white text-lg px-8 py-3 rounded-[8px] font-bold shadow hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-all transform active:scale-95 flex items-center justify-center gap-2"
             >
-              <span className="text-xl">⚡</span> Analyze Assessment
+              <span className="text-xl"></span> View Timeline & Score
             </button>
 
             {/* --- Pharmacist Note Section --- */}
@@ -988,7 +981,7 @@ const DiliAssessment = ({
                 <h3 className="font-bold text-[#2d2926]">Pharmacist Note</h3>
               </div>
               <textarea
-                className="w-full p-3 border border-[#ebe8e2] rounded-[8px] text-sm text-[#2d2926] focus:outline-none focus:outline-none focus:ring-[3px] focus:ring-[rgba(0,113,227,0.18)] focus:border-[#0071e3] focus:border-[#0071e3] transition-all placeholder:text-[#a8a099] resize-none"
+                className="w-full p-3 border border-[#ebe8e2] rounded-[8px] text-sm text-[#2d2926] focus:outline-none focus:outline-none focus:ring-[3px] focus:ring-[rgba(42,157,143,0.18)] focus:border-[#2a9d8f] focus:border-[#2a9d8f] transition-all placeholder:text-[#a8a099] resize-none"
                 rows="4"
                 placeholder="Enter additional notes..."
                 value={pharmacistNote}

@@ -179,28 +179,39 @@ const calculateScores = (drugs, labs, onset, currentScores, isApConfirmed) => {
 
 // --- UI COMPONENTS ---
 const WeissmanScoreRow = ({ q, value, onChange }) => {
-    let bgClass = "border-b border-[#f4f2ee] last:border-0 break-inside-avoid";
-    if (q.required) bgClass += " bg-red-50 print:bg-red-50"; 
+    const n = parseInt(value) || 0;
+    const sc = n > 0
+        ? { text: '#1a6b62', bg: '#e6f4f1', border: '#b2ddd7' }
+        : n < 0
+        ? { text: '#8c3322', bg: '#fdf0ee', border: '#f5b8b8' }
+        : { text: '#a8a099', bg: '#f4f2ee', border: '#ebe8e2' };
 
     return (
-        <tr className={bgClass}>
-            <td className="py-3 pl-4 w-[65%] align-top text-left print:py-1.5">
-                <div className="font-medium text-[#2d2926] text-sm print:text-xs">{q.text}</div>
+        <tr className={`border-b border-[#f4f2ee] last:border-0 ${q.required ? 'bg-[#fef9f5]' : ''}`}>
+            <td className="py-3 pl-4 align-middle text-left">
+                <div className="font-medium text-[#2d2926] text-sm leading-snug">{q.text}</div>
                 <div className="flex gap-2 mt-1">
-                    {q.auto && (<span className="text-[10px] text-[#2d2926] font-bold flex items-center gap-1 bg-[#f4f2ee] px-1 rounded print:text-black print:bg-transparent">✨ Auto-calculated</span>)}
-                    {q.required && (<span className="text-[10px] text-[#b83232] font-bold flex items-center gap-1 bg-red-100/50 px-1 rounded print:text-[#b83232] print:bg-transparent">* Required</span>)}
+                    {q.auto && <span className="text-[9px] font-semibold text-[#1a6b62] bg-[#e6f4f1] border border-[#b2ddd7] px-1.5 py-0.5 rounded uppercase tracking-wide">Auto</span>}
+                    {q.required && <span className="text-[9px] font-semibold text-[#c4620a] bg-[#fff0e4] border border-[#f5cfa8] px-1.5 py-0.5 rounded uppercase tracking-wide">Required</span>}
                 </div>
             </td>
-            <td className="py-3 pr-4 w-[35%] align-top text-right print:py-1.5">
-                <select 
-                    className={`w-full text-right font-bold bg-transparent focus:outline-none cursor-pointer text-sm print:text-black print:text-xs ${value > 0 ? 'text-green-600' : value < 0 ? 'text-[#e07060]' : 'text-[#a8a099]'}`}
+            <td className="py-3 px-3 align-middle w-[38%] print:hidden">
+                <select
+                    className="w-full text-sm text-[#2d2926] bg-white border border-[#d6d0c8] rounded-[6px] px-2 py-1.5 focus:outline-none focus:border-[#2a9d8f] cursor-pointer"
                     value={value !== undefined ? value : 0} onChange={onChange}
                 >
-                    <option value={0}>Unknown (0)</option>
-                    <option value={q.scores[0]}>Yes ({q.scores[0] > 0 ? `+${q.scores[0]}` : q.scores[0]})</option>
-                    <option value={q.scores[1]}>No ({q.scores[1] > 0 ? `+${q.scores[1]}` : q.scores[1]})</option>
+                    <option value={0}>Unknown — 0</option>
+                    <option value={q.scores[0]}>Yes — {q.scores[0] > 0 ? `+${q.scores[0]}` : q.scores[0]}</option>
+                    <option value={q.scores[1]}>No — {q.scores[1] > 0 ? `+${q.scores[1]}` : q.scores[1]}</option>
                 </select>
             </td>
+            <td className="py-3 pr-4 w-[10%] align-middle text-center print:hidden">
+                <span className="inline-flex items-center justify-center min-w-[32px] px-1.5 py-1 rounded-[5px] text-xs font-bold border"
+                    style={{ color: sc.text, background: sc.bg, borderColor: sc.border }}>
+                    {n > 0 ? `+${n}` : n}
+                </span>
+            </td>
+            <td className="hidden print:table-cell py-2 pr-4 text-right text-xs">{n > 0 ? `+${n}` : n}</td>
         </tr>
     );
 };
@@ -398,9 +409,9 @@ const PancreatitisAssessment = (props) => {
                     <span>Pancreatitis & Drug Data</span>
                     {onset && <span className="text-rose-600 bg-rose-50 px-2 rounded border border-rose-100 print:text-black print:border-black print:bg-transparent">Pancreatitis Onset: {formatDate(onset)}</span>}
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Drug Input & Disorder Type */}
-                    <div className="md:col-span-6 space-y-4">
+                    <div className="space-y-4">
                         
                         {/* AP Criteria Checklist */}
                         <div className="flex flex-col gap-2 mb-4 bg-rose-50/50 p-4 rounded-[8px] border border-rose-100 print:border-black print:bg-transparent">
@@ -430,20 +441,20 @@ const PancreatitisAssessment = (props) => {
                             <input type="date" value={onset} onChange={e=>{syncToParent(undefined,undefined,e.target.value,undefined,undefined); setIsAnalyzed(false);}} className="border rounded px-2 py-1 text-sm font-bold print:border-black"/>
                         </div>
                         <div className="bg-[#faf9f7] p-3 rounded-[8px] border border-[#ebe8e2] print:bg-transparent print:border-black">
-                            <div className="grid grid-cols-12 gap-2 mb-2 items-end print:hidden">
-                                <div className="col-span-5">
+                            <div className="flex flex-wrap gap-2 mb-2 print:hidden">
+                                <div className="flex-1 min-w-[140px]">
                                     <label className="text-[10px] font-bold text-[#a8a099] block mb-1 uppercase">Culprit Drug</label>
                                     <input className="border rounded w-full px-2 py-1 text-sm" placeholder="Drug Name" value={currentDrug.name} onChange={e=>setCurrentDrug({...currentDrug,name:e.target.value})}/>
                                 </div>
-                                <div className="col-span-3">
+                                <div className="min-w-[120px] flex-1">
                                     <label className="text-[10px] font-bold text-[#a8a099] block mb-1 uppercase">Start Date</label>
                                     <input type="date" className="border rounded w-full px-1 py-1 text-sm" value={currentDrug.startDate} onChange={e=>setCurrentDrug({...currentDrug,startDate:e.target.value})}/>
                                 </div>
-                                <div className="col-span-3">
+                                <div className="min-w-[120px] flex-1">
                                     <label className="text-[10px] font-bold text-[#a8a099] block mb-1 uppercase">Stop Date</label>
                                     <input type="date" className="border rounded w-full px-1 py-1 text-sm" value={currentDrug.stopDate} onChange={e=>setCurrentDrug({...currentDrug,stopDate:e.target.value})}/>
                                 </div>
-                                <button onClick={addDrug} className="col-span-1 bg-[#2d2926] text-white rounded font-bold h-8 flex items-center justify-center pb-0.5">+</button>
+                                <button onClick={addDrug} className="bg-white text-[#2a9d8f] border border-[#b2ddd7] rounded-[6px] font-[500] px-3 h-8 flex items-center justify-center self-end">+</button>
                             </div>
                             <div className="space-y-1">
                                 {drugs.map(d=>(
@@ -458,7 +469,7 @@ const PancreatitisAssessment = (props) => {
                     </div>
 
                     {/* Practical Lab Input Panel */}
-                    <div className="md:col-span-6 bg-rose-50/30 p-4 rounded border border-rose-100 print:bg-transparent print:border-black">
+                    <div className="bg-rose-50/30 p-4 rounded border border-rose-100 print:bg-transparent print:border-black">
                         <div className="text-xs font-bold text-rose-600 mb-2 print:text-black uppercase flex justify-between items-center">
                             <span>Pancreatic Panel Entry</span>
                         </div>
@@ -541,8 +552,8 @@ const PancreatitisAssessment = (props) => {
 
             {/* BUTTON */}
             <div className="mb-6 print:hidden">
-                <button onClick={performAnalysis} className="w-full bg-rose-600 text-white py-2 rounded shadow font-bold hover:bg-rose-700">
-                    Run Analysis
+                <button onClick={performAnalysis} className="w-full bg-[#1a6b62] hover:bg-[#145a52] text-white py-3 rounded-[8px] font-[500]">
+                    View Timeline & Score
                 </button>
             </div>
 

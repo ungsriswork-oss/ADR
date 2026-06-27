@@ -67,53 +67,43 @@ const normalizeDate = (dateStr) => {
 };
 
 // --- 2. SUB-COMPONENTS ---
-const AldenRow = ({
-  label,
-  subLabel,
-  value,
-  onChange,
-  optionsArr,
-  isAutoCalc,
-}) => {
+const AldenRow = ({ label, subLabel, value, onChange, optionsArr, isAutoCalc }) => {
   const safeValue = parseInt(value) ?? 0;
-  const selectedLabel =
-    optionsArr.find((o) => o.value === safeValue)?.label || '';
+  const selectedLabel = optionsArr.find((o) => o.value === safeValue)?.label || '';
+  const sc = safeValue > 0
+    ? { text: '#1a6b62', bg: '#e6f4f1', border: '#b2ddd7' }
+    : safeValue < 0
+    ? { text: '#8c3322', bg: '#fdf0ee', border: '#f5b8b8' }
+    : { text: '#a8a099', bg: '#f4f2ee', border: '#ebe8e2' };
+
   return (
     <tr className="border-b border-[#f4f2ee] last:border-0 hover:bg-[#faf9f7] transition-colors">
-      <td className="py-3 pl-6 w-[35%] align-middle text-[#2d2926] font-bold text-sm text-left">
-        {label}{' '}
+      <td className="py-3 pl-4 w-[36%] align-middle text-[#2d2926] text-sm">
+        <span className="font-semibold">{label}</span>
         {isAutoCalc && (
-          <span className="ml-2 text-[9px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded border border-blue-200 tracking-wider">
-            AUTO
-          </span>
+          <span className="ml-1.5 text-[9px] font-semibold text-[#1a6b62] bg-[#e6f4f1] border border-[#b2ddd7] px-1.5 py-0.5 rounded uppercase tracking-wide">Auto</span>
         )}
+        {subLabel && <div className="text-[11px] text-[#a8a099] mt-0.5 font-normal">{subLabel}</div>}
       </td>
-      <td className="py-3 px-2 w-[25%] align-middle text-[#a8a099] text-xs text-left">
-        {subLabel}
+      <td className="py-3 px-3 align-middle print:hidden">
+        <select
+          className="w-full text-sm text-[#2d2926] bg-white border border-[#d6d0c8] rounded-[6px] px-2 py-1.5 focus:outline-none focus:border-[#2a9d8f] focus:ring-[2px] focus:ring-[rgba(42,157,143,0.18)] cursor-pointer"
+          value={safeValue}
+          onChange={onChange}
+        >
+          {optionsArr.map((opt) => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
       </td>
-      <td className="py-3 pr-6 w-[40%] align-middle text-right">
-        <div className="hidden print:block text-sm font-bold text-[#2d2926] text-right">
-          {selectedLabel} ({safeValue > 0 ? `+${safeValue}` : safeValue})
-        </div>
-        <div className="print:hidden">
-          <select
-            className={`w-full text-right font-bold bg-transparent focus:outline-none cursor-pointer text-sm ${
-              safeValue > 0
-                ? 'text-[#8c3322]'
-                : safeValue < 0
-                ? 'text-[#a8a099]'
-                : 'text-[#6b6360]'
-            }`}
-            value={safeValue}
-            onChange={onChange}
-          >
-            {optionsArr.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label} ({opt.value > 0 ? `+${opt.value}` : opt.value})
-              </option>
-            ))}
-          </select>
-        </div>
+      <td className="py-3 pr-4 w-[11%] align-middle text-center print:hidden">
+        <span className="inline-flex items-center justify-center min-w-[36px] px-1.5 py-1 rounded-[5px] text-xs font-bold border"
+          style={{ color: sc.text, background: sc.bg, borderColor: sc.border }}>
+          {safeValue > 0 ? `+${safeValue}` : safeValue}
+        </span>
+      </td>
+      <td className="hidden print:table-cell py-2 pr-4 text-right text-xs">
+        {selectedLabel} ({safeValue > 0 ? `+${safeValue}` : safeValue})
       </td>
     </tr>
   );
@@ -610,7 +600,7 @@ const SjsAssessment = (props) => {
   }, [symptomLogs, timelinePoints]);
 
   return (
-    <div className="space-y-10 animate-fade-in font-[Inter,system-ui,sans-serif] p-4 max-w-5xl mx-auto">
+    <div className="w-full space-y-6 animate-fade-in font-[Inter,system-ui,sans-serif]">
       <style>{`
             @media print {
                 .print-color-exact {
@@ -625,13 +615,13 @@ const SjsAssessment = (props) => {
         <h2 className="text-[#8c3322] font-bold text-xl mb-6 flex items-center gap-2 border-b border-[#f5b8b8] pb-4">
           🔥 SJS/TEN Assessment (ALDEN)
         </h2>
-        <div className="mb-8 flex items-center gap-4 bg-white p-4 rounded-[8px] border border-[#f5b8b8] shadow-[0_1px_4px_rgba(0,0,0,0.05)] max-w-md">
+        <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-3 bg-white p-4 rounded-[8px] border border-[#f5b8b8]">
           <label className="font-bold text-[#2d2926] text-base">
             Index Day (Onset):
           </label>
           <input
             type="date"
-            className="flex-1 border p-2 rounded shadow-[0_1px_4px_rgba(0,0,0,0.05)] focus:outline-none focus:ring-[3px] focus:ring-[rgba(0,113,227,0.18)] focus:border-[#0071e3] outline-none font-bold text-[#8c3322] text-lg"
+            className="flex-1 border p-2 rounded shadow-[0_1px_4px_rgba(0,0,0,0.05)] focus:outline-none focus:ring-[3px] focus:ring-[rgba(42,157,143,0.18)] focus:border-[#2a9d8f] outline-none font-bold text-[#8c3322] text-lg"
             value={indexDate}
             onChange={(e) => {
               setIndexDate(e.target.value);
@@ -647,7 +637,7 @@ const SjsAssessment = (props) => {
             <div className="space-y-4 flex-grow">
               <input
                 placeholder="Drug Name"
-                className="w-full border border-[#d6d0c8] p-2.5 rounded-[8px] text-base focus:outline-none focus:ring-[3px] focus:ring-[rgba(0,113,227,0.18)] focus:border-[#0071e3] outline-none"
+                className="w-full border border-[#d6d0c8] p-2.5 rounded-[8px] text-base focus:outline-none focus:ring-[3px] focus:ring-[rgba(42,157,143,0.18)] focus:border-[#2a9d8f] outline-none"
                 value={currentDrug.name}
                 onChange={(e) =>
                   setCurrentDrug({ ...currentDrug, name: e.target.value })
@@ -689,7 +679,7 @@ const SjsAssessment = (props) => {
               </div>
               <button
                 onClick={handleAddDrug}
-                className="w-full bg-slate-700 text-white font-bold py-2.5 rounded-[8px] hover:bg-[#2d2926] transition shadow-[0_1px_4px_rgba(0,0,0,0.05)] hover:shadow"
+                className="w-full bg-[#1a6b62] hover:bg-[#145a52] text-white font-[500] py-2.5 rounded-[8px] transition"
               >
                 + Add Drug
               </button>
@@ -904,20 +894,20 @@ const SjsAssessment = (props) => {
         <button
           onClick={performAnalysis}
           disabled={!indexDate || drugList.length === 0}
-          className={`w-full mt-8 text-white text-xl py-4 rounded-[10px] font-bold shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition transform active:scale-95 flex justify-center gap-3 items-center ${
+          className={`w-full mt-6 text-white text-base py-3.5 rounded-[8px] font-[500] transition flex justify-center items-center ${
             !indexDate || drugList.length === 0
-              ? 'bg-slate-300 cursor-not-allowed'
-              : 'bg-[#b83232] hover:bg-[#8c3322] hover:shadow-orange-200'
+              ? 'bg-[#d6d0c8] cursor-not-allowed text-[#a8a099]'
+              : 'bg-[#1a6b62] hover:bg-[#145a52]'
           }`}
         >
-          <span>⚡</span> Update Timeline & Calculate
+          View Timeline & Score
         </button>
         <div className="mt-8 bg-white p-5 rounded-[10px] border border-[#ebe8e2] shadow-[0_1px_4px_rgba(0,0,0,0.05)] text-left">
           <h3 className="text-base font-bold text-[#2d2926] mb-3 flex items-center gap-2">
-            📝 Pharmacist Note
+            Pharmacist note
           </h3>
           <textarea
-            className="w-full border border-[#d6d0c8] rounded-[8px] p-3 text-sm focus:outline-none focus:ring-[3px] focus:ring-[rgba(0,113,227,0.18)] focus:border-[#0071e3] outline-none resize-y min-h-[100px]"
+            className="w-full border border-[#d6d0c8] rounded-[8px] p-3 text-sm focus:outline-none focus:ring-[3px] focus:ring-[rgba(42,157,143,0.18)] focus:border-[#2a9d8f] outline-none resize-y min-h-[100px]"
             value={pharmacistNote}
             onChange={(e) => setPharmacistNote(e.target.value)}
           />

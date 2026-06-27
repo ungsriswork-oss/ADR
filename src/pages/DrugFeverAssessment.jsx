@@ -28,7 +28,7 @@ const CommonCausesModal = ({ isOpen, onClose }) => {
     if (!isOpen) return null;
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 print:hidden backdrop-blur-sm animate-fade-in">
-            <div className="bg-white rounded-[10px] shadow-2xl p-6 max-w-4xl w-full mx-4 relative border border-[#ebe8e2]">
+            <div className="bg-white rounded-[10px] shadow-[0_4px_16px_rgba(0,0,0,0.10)] p-6 max-w-4xl w-full mx-4 relative border border-[#ebe8e2]">
                 <button 
                     onClick={onClose} 
                     className="absolute top-4 right-4 text-[#a8a099] hover:text-[#6b6360] w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#f4f2ee] transition"
@@ -59,6 +59,34 @@ const CommonCausesModal = ({ isOpen, onClose }) => {
             </div>
         </div>
     );
+};
+
+// --- 2.5 STEP INDICATOR COMPONENT ---
+const StepIndicator = ({ currentStep }) => {
+  const steps = [
+    { n: 1, label: 'Fever onset date' },
+    { n: 2, label: 'Add suspected drugs' },
+    { n: 3, label: 'View timeline & score' },
+  ];
+  return (
+    <div className="flex items-center gap-0 mb-6 print:hidden">
+      {steps.map((s, i) => (
+        <React.Fragment key={s.n}>
+          <div className="flex items-center gap-2">
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 transition-all ${
+              currentStep > s.n ? 'bg-[#2a9d8f] text-white' :
+              currentStep === s.n ? 'bg-[#1a6b62] text-white' :
+              'bg-[#f4f2ee] text-[#a8a099]'
+            }`}>{currentStep > s.n ? '✓' : s.n}</div>
+            <span className={`text-xs font-medium whitespace-nowrap ${currentStep >= s.n ? 'text-[#2d2926]' : 'text-[#a8a099]'}`}>{s.label}</span>
+          </div>
+          {i < steps.length - 1 && (
+            <div className={`flex-1 h-px mx-3 transition-all ${currentStep > s.n ? 'bg-[#2a9d8f]' : 'bg-[#ebe8e2]'}`} />
+          )}
+        </React.Fragment>
+      ))}
+    </div>
+  );
 };
 
 // --- 3. SMART TIMELINE COMPONENT ---
@@ -585,6 +613,8 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
 
     return (
         <div className="space-y-6 animate-fade-in">
+            {/* Step Indicator */}
+            <StepIndicator currentStep={!feverOnsetDate ? 1 : drugEntries.length === 0 ? 2 : 3} />
             {/* 1. INPUT PANEL */}
             <div className="bg-[#f0eeff] p-4 rounded-[10px] border border-[#cec8f6] print:hidden">
                 <h3 className="text-sm font-bold text-indigo-800 mb-3 uppercase">1. Data Entry Panel</h3>
@@ -593,18 +623,18 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
                         <label className="text-xs font-bold text-[#a8a099] block mb-2">Add Suspected Drug</label>
                         <div className="flex gap-2 items-end">
                             <div className="flex-1">
-                                <label className="text-[10px] text-[#a8a099] block mb-1">ชื่อยา</label>
+                                <label className="text-[10px] text-[#a8a099] block mb-1">Drug name</label>
                                 <input type="text" placeholder="Name" className="w-full border p-1 rounded text-xs" value={currentDrug.name} onChange={e=>setCurrentDrug({...currentDrug, name: e.target.value})} />
                             </div>
                             <div className="flex-1">
-                                <label className="text-[10px] text-[#a8a099] block mb-1">วันที่เริ่มยา</label>
+                                <label className="text-[10px] text-[#a8a099] block mb-1">Start date</label>
                                 <input type="date" className="w-full border p-1 rounded text-xs" value={currentDrug.startDate} onChange={e=>setCurrentDrug({...currentDrug, startDate: e.target.value})} />
                             </div>
                             <div className="flex-1">
-                                <label className="text-[10px] text-[#a8a099] block mb-1">วันสุดท้ายที่ได้รับยา</label>
+                                <label className="text-[10px] text-[#a8a099] block mb-1">Stop date</label>
                                 <input type="date" placeholder="Stop" className="w-full border p-1 rounded text-xs" value={currentDrug.stopDate} onChange={e=>setCurrentDrug({...currentDrug, stopDate: e.target.value})} />
                             </div>
-                            <button onClick={handleAddDrug} className="bg-[#2a9d8f] text-white rounded px-3 py-1.5 text-xs font-bold mb-[1px]">+</button>
+                            <button onClick={handleAddDrug} className="bg-white text-[#2a9d8f] border border-[#b2ddd7] rounded-[6px] px-3 py-1.5 text-xs font-[500] mb-[1px] hover:bg-[#e6f4f1]">+</button>
                         </div>
                     </div>
                     <div className="bg-white p-3 rounded-[8px] border border-[#cec8f6]">

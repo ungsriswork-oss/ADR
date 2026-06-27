@@ -89,27 +89,40 @@ const calculateScores = (drugs, logs, onset, currentScores) => {
 
 // --- UI COMPONENTS ---
 const NaranjoRow = ({ q, value, onChange }) => {
-    let bgClass = "border-b border-[#f4f2ee] last:border-0 break-inside-avoid";
-    if (q.required) bgClass += " bg-red-50 print:bg-red-50"; 
+    const n = parseInt(value) || 0;
+    const sc = n > 0
+        ? { text: '#1a6b62', bg: '#e6f4f1', border: '#b2ddd7' }
+        : n < 0
+        ? { text: '#8c3322', bg: '#fdf0ee', border: '#f5b8b8' }
+        : { text: '#a8a099', bg: '#f4f2ee', border: '#ebe8e2' };
 
     return (
-        <tr className={bgClass}>
-            <td className="py-3 pl-4 w-[65%] align-top text-left print:py-1.5">
-                <div className="font-medium text-[#2d2926] text-sm print:text-xs">{q.text}</div>
+        <tr className={`border-b border-[#f4f2ee] last:border-0 ${q.required ? 'bg-[#fef9f5]' : ''}`}>
+            <td className="py-3 pl-4 align-middle text-left">
+                <div className="font-medium text-[#2d2926] text-sm leading-snug">{q.text}</div>
                 <div className="flex gap-2 mt-1">
-                    {q.auto && (<span className="text-[10px] text-[#2d2926] font-bold flex items-center gap-1 bg-[#f4f2ee] px-1 rounded print:text-black print:bg-transparent">✨ Auto-calculated</span>)}
-                    {q.required && (<span className="text-[10px] text-[#b83232] font-bold flex items-center gap-1 bg-red-100/50 px-1 rounded print:text-[#b83232] print:bg-transparent">* Required</span>)}
+                    {q.auto && <span className="text-[9px] font-semibold text-[#1a6b62] bg-[#e6f4f1] border border-[#b2ddd7] px-1.5 py-0.5 rounded uppercase tracking-wide">Auto</span>}
+                    {q.required && <span className="text-[9px] font-semibold text-[#c4620a] bg-[#fff0e4] border border-[#f5cfa8] px-1.5 py-0.5 rounded uppercase tracking-wide">Required</span>}
                 </div>
             </td>
-            <td className="py-3 pr-4 w-[35%] align-top text-right print:py-1.5">
-                <select 
-                    className={`w-full text-right font-bold bg-transparent focus:outline-none cursor-pointer text-sm print:text-black print:text-xs ${value > 0 ? 'text-green-600' : value < 0 ? 'text-[#e07060]' : 'text-[#a8a099]'}`}
+            <td className="py-3 px-3 align-middle w-[38%] print:hidden">
+                <select
+                    className="w-full text-sm text-[#2d2926] bg-white border border-[#d6d0c8] rounded-[6px] px-2 py-1.5 focus:outline-none focus:border-[#2a9d8f] cursor-pointer"
                     value={value || 0} onChange={onChange}
                 >
-                    <option value={0}>Unknown (0)</option>
-                    <option value={q.scores[0]}>Yes ({q.scores[0] > 0 ? `+${q.scores[0]}` : q.scores[0]})</option>
-                    <option value={q.scores[1]}>No ({q.scores[1]})</option>
+                    <option value={0}>Unknown — 0</option>
+                    <option value={q.scores[0]}>Yes — {q.scores[0] > 0 ? `+${q.scores[0]}` : q.scores[0]}</option>
+                    <option value={q.scores[1]}>No — {q.scores[1]}</option>
                 </select>
+            </td>
+            <td className="py-3 pr-4 w-[10%] align-middle text-center print:hidden">
+                <span className="inline-flex items-center justify-center min-w-[32px] px-1.5 py-1 rounded-[5px] text-xs font-bold border"
+                    style={{ color: sc.text, background: sc.bg, borderColor: sc.border }}>
+                    {n > 0 ? `+${n}` : n}
+                </span>
+            </td>
+            <td className="hidden print:table-cell py-2 pr-4 text-right text-xs text-[#2d2926]">
+                {n > 0 ? `+${n}` : n}
             </td>
         </tr>
     );
@@ -196,7 +209,7 @@ const ScarProdromeAssessment = ({ data, onChange }) => {
                 </div>
                 <div className="bg-[#faf9f7] p-3 rounded border border-[#f4f2ee] print:bg-transparent print:border-[#d6d0c8]">
                     <h4 className="text-xs font-bold text-[#a8a099] mb-2 uppercase">2. Specific Warning Signs</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
                             <div className="text-[10px] font-bold text-[#e07060] mb-1">A. SJS/TEN Alert</div>
                             <div className="space-y-1">
@@ -228,7 +241,7 @@ const ScarProdromeAssessment = ({ data, onChange }) => {
                 </div>
                 <div className="bg-[#faf9f7] p-3 rounded border border-[#f4f2ee] print:bg-transparent print:border-[#d6d0c8]">
                     <h4 className="text-xs font-bold text-[#a8a099] mb-2 uppercase">3. Drug Exposure Timeline (Latency)</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         <CheckItem id="lat_agep" label="1 - 11 Days (Suggests AGEP)" checked={safeData.lat_agep} onChange={handleCheckChange} />
                         <CheckItem id="lat_sjs" label="4 - 28 Days (Suggests SJS/TEN)" checked={safeData.lat_sjs} onChange={handleCheckChange} />
                         <CheckItem id="lat_dress" label="2 - 6 Weeks (Suggests DRESS)" checked={safeData.lat_dress} onChange={handleCheckChange} />
@@ -366,20 +379,20 @@ const RashAssessment = (props) => {
                     <span>🏥 Clinical Data Entry</span>
                     {onset && <span className="text-[#9b3060] bg-[#fbeaf0] px-2 rounded border border-[#f4c0d1] print:text-black print:border-black print:bg-transparent">Onset: {formatDate(onset)}</span>}
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-                    <div className="md:col-span-7 space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="space-y-4">
                         <div className="flex items-center gap-2"><label className="text-xs font-bold text-[#9b3060] uppercase w-24 print:text-black">RASH ONSET:</label><input type="date" value={onset} onChange={e=>{syncToParent(undefined,undefined,e.target.value,undefined); setIsAnalyzed(false);}} className="border rounded px-2 py-1 text-sm font-bold print:border-black"/></div>
                         <div className="bg-[#faf9f7] p-3 rounded-[8px] border border-[#ebe8e2] print:bg-transparent print:border-black">
-                            <div className="grid grid-cols-12 gap-2 mb-2 items-end print:hidden">
-                                <input className="col-span-5 border rounded px-2 py-1 text-sm" placeholder="Drug Name" value={currentDrug.name} onChange={e=>setCurrentDrug({...currentDrug,name:e.target.value})}/>
-                                <div className="col-span-3"><label className="text-[10px] font-bold text-[#a8a099] block mb-1">วันที่เริ่มยา</label><input type="date" className="border rounded w-full px-1 py-1 text-sm" value={currentDrug.startDate} onChange={e=>setCurrentDrug({...currentDrug,startDate:e.target.value})}/></div>
-                                <div className="col-span-3"><label className="text-[10px] font-bold text-[#a8a099] block mb-1">วันสุดท้ายที่ได้รับยา</label><input type="date" className="border rounded w-full px-1 py-1 text-sm" value={currentDrug.stopDate} onChange={e=>setCurrentDrug({...currentDrug,stopDate:e.target.value})}/></div>
-                                <button onClick={addDrug} className="col-span-1 bg-[#2d2926] text-white rounded font-bold h-8 flex items-center justify-center pb-0.5">+</button>
+                            <div className="flex flex-wrap gap-2 mb-2 print:hidden">
+                                <input className="flex-1 min-w-[140px] border rounded px-2 py-1 text-sm" placeholder="Drug Name" value={currentDrug.name} onChange={e=>setCurrentDrug({...currentDrug,name:e.target.value})}/>
+                                <div className="min-w-[130px] flex-1"><label className="text-[10px] font-bold text-[#a8a099] block mb-1">วันที่เริ่มยา</label><input type="date" className="border rounded w-full px-1 py-1 text-sm" value={currentDrug.startDate} onChange={e=>setCurrentDrug({...currentDrug,startDate:e.target.value})}/></div>
+                                <div className="min-w-[130px] flex-1"><label className="text-[10px] font-bold text-[#a8a099] block mb-1">วันสุดท้ายที่ได้รับยา</label><input type="date" className="border rounded w-full px-1 py-1 text-sm" value={currentDrug.stopDate} onChange={e=>setCurrentDrug({...currentDrug,stopDate:e.target.value})}/></div>
+                                <button onClick={addDrug} className="col-span-1 bg-[#fff] text-[#2a9d8f] border border-[#b2ddd7] rounded-[6px] font-[500] h-8 flex items-center justify-center px-3">+</button>
                             </div>
                             <div className="space-y-1">{drugs.map(d=><div key={d.id} className="flex justify-between items-center bg-white border px-2 py-1 rounded text-xs print:border-black print:bg-transparent"><span className="font-bold w-1/3 truncate">{d.name}</span><span className="text-[#a8a099] print:text-black">{formatDate(d.startDate)} - {d.stopDate?formatDate(d.stopDate):'Ongoing'}</span><button onClick={()=>removeDrug(d.id)} className="text-[#e07060] font-bold px-2 print:hidden">×</button></div>)}</div>
                         </div>
                     </div>
-                    <div className="md:col-span-5 bg-blue-50/30 p-4 rounded border border-blue-100 print:bg-transparent print:border-black">
+                    <div className="space-y-4 bg-blue-50/30 p-4 rounded border border-blue-100 print:bg-transparent print:border-black">
                         <div className="text-xs font-bold text-blue-600 mb-2 print:text-black">DAILY SYMPTOM LOG</div>
                         <div className="flex gap-2 mb-2 print:hidden"><input type="date" className="border rounded px-2 py-1 text-sm w-full" value={currentLog.date} onChange={e=>setCurrentLog({...currentLog,date:e.target.value})}/><button onClick={addLog} className="bg-blue-600 text-white px-3 rounded text-sm">Add</button></div>
                         <select className="border rounded px-2 py-1.5 w-full text-sm mb-2 font-bold text-[#2d2926] print:hidden" value={currentLog.status} onChange={e=>setCurrentLog({...currentLog,status:e.target.value})}><option value="Stable">🟡 Stable (คงเดิม)</option><option value="Better">🟢 Better (ดีขึ้น)</option><option value="Worse">🔴 Worse (แย่ลง)</option><option value="No Symptoms">⚪ No Symptoms (ปกติ)</option></select>
@@ -392,8 +405,8 @@ const RashAssessment = (props) => {
             
             {/* ✅ MOVED BUTTON - Full Width */}
             <div className="mb-6 print:hidden">
-                <button onClick={performAnalysis} className="w-full bg-[#2a9d8f] text-white py-2 rounded shadow font-bold hover:bg-pink-700">
-                    Analysis
+                <button onClick={performAnalysis} className="w-full bg-[#1a6b62] hover:bg-[#145a52] text-white py-3 rounded-[8px] font-[500]">
+                    View Timeline & Score
                 </button>
             </div>
 

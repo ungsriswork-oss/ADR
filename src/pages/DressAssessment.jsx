@@ -239,7 +239,7 @@ const DrugAnalysisSection = ({ drugs, onsetDate, labs }) => {
 
   return (
     // Added print classes for proper sizing and color
-    <div className="bg-[#2d2926] text-white p-6 rounded-[10px] shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-slate-700 mt-6 print:bg-white print:text-black print:border-[#d6d0c8] print:shadow-none print:mt-4">
+    <div className="bg-[#2d2926] text-white p-6 rounded-[10px] border border-[#3d3532] mt-6 print:bg-white print:text-black print:border-[#d6d0c8] print:mt-4">
       <div className="flex items-center gap-3 mb-6 border-b border-slate-700 pb-4 print:border-[#d6d0c8]">
         <AlertTriangle className="text-yellow-400 print:text-black" size={24} />
         <div>
@@ -522,7 +522,7 @@ const DressAssessment = (props) => {
   };
 
   return (
-    <div className="max-w-[1600px] mx-auto p-6 bg-[#faf9f7] min-h-screen font-[Inter,system-ui,sans-serif] text-[#2d2926] print:bg-white print:p-0 print:min-h-0">
+    <div className="w-full font-[Inter,system-ui,sans-serif] text-[#2d2926] print:p-0">
       <div className="space-y-8 print:space-y-0">
         
         {/* ROW 1: DRUGS - HIDDEN ON PRINT */}
@@ -530,14 +530,14 @@ const DressAssessment = (props) => {
           <h3 className="text-base font-bold text-[#4a3ab8] uppercase mb-4 flex items-center gap-2 border-b border-purple-50 pb-3">
             <Pill className="w-5 h-5" /> 1. Suspected Drugs & Onset
           </h3>
-          <div className="flex flex-col lg:flex-row gap-4 mb-4">
+          <div className="flex flex-col gap-3 mb-4">
             <div className="flex-1 bg-[#faf9f7] p-3 rounded border border-[#ebe8e2]">
               <label className="text-xs font-bold text-[#a8a099] uppercase mb-1 block">Symptom Onset Date</label>
               <input type="date" className="w-full border-[#d6d0c8] rounded p-2 font-bold text-[#b83232] border text-sm" value={onsetDate} 
                 onChange={(e) => { setOnsetDate(e.target.value); setAnalyzed(false); }} 
               />
             </div>
-            <div className="flex-[3] bg-[#f0eeff] p-3 rounded-[8px] border border-[#cec8f6] flex flex-col md:flex-row gap-2 items-end">
+            <div className="bg-[#f0eeff] p-3 rounded-[8px] border border-[#cec8f6] flex flex-col gap-2">
               <div className="flex-1 w-full"><label className="text-xs font-bold text-[#4a3ab8] uppercase mb-1 block">Drug Name</label><input className="text-sm border rounded p-2 w-full" placeholder="Drug Name" value={newDrug.name} onChange={(e) => setNewDrug({ ...newDrug, name: e.target.value })} /></div>
               <div className="w-full md:w-[160px]"><label className="text-[10px] font-bold text-[#a8a099] block mb-0.5">Start Date</label><input type="date" className="w-full text-xs border rounded p-2" value={newDrug.startDate} onChange={(e) => setNewDrug({ ...newDrug, startDate: e.target.value })} /></div>
               <div className="w-full md:w-[160px]"><label className="text-[10px] font-bold text-[#a8a099] block mb-0.5">End Date</label><input type="date" className="w-full text-xs border rounded p-2" value={newDrug.endDate} onChange={(e) => setNewDrug({ ...newDrug, endDate: e.target.value })} /></div>
@@ -546,7 +546,7 @@ const DressAssessment = (props) => {
           </div>
           <div className="h-[200px] overflow-y-auto border border-dashed border-[#ebe8e2] rounded-[8px] p-1 bg-[#faf9f7]/50 custom-scrollbar">
             {drugs.length === 0 ? <div className="h-full flex items-center justify-center text-[#a8a099] text-sm">No drugs added</div> : 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 p-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-1">
                 {drugs.map((drug) => (
                   <div key={drug.id} className="flex justify-between items-center text-sm bg-white border border-[#f4f2ee] p-3 rounded shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
                     <div><span className="font-bold block text-[#2d2926]">{drug.name}</span><div className="text-xs text-[#a8a099] mt-0.5">{drug.startDate} ➝ {drug.endDate || 'Ongoing'}</div></div>
@@ -561,7 +561,7 @@ const DressAssessment = (props) => {
         {/* ROW 2: LABS - HIDDEN ON PRINT */}
         <div className="bg-white p-6 rounded-[10px] shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-[#ebe8e2] print:hidden">
           <h3 className="text-base font-bold text-[#4a3ab8] uppercase mb-4 flex items-center gap-2 border-b border-purple-50 pb-3"><Droplet className="w-5 h-5" /> 2. Clinical Data Points</h3>
-          <div className="bg-[#f0eeff] p-3 rounded-[8px] border border-[#cec8f6] mb-4 flex flex-col md:flex-row gap-4 items-end">
+          <div className="bg-[#f0eeff] p-3 rounded-[8px] border border-[#cec8f6] mb-4 flex flex-col gap-3">
             <div className="w-full md:w-[200px]"><label className="text-xs font-bold text-[#4a3ab8] uppercase mb-1 block">Date</label><input type="date" className="w-full text-xs border rounded p-2 bg-white" value={newLab.date} onChange={(e) => setNewLab({ ...newLab, date: e.target.value })} /></div>
             <div className="flex-1 flex gap-2 w-full">
               <div className="flex-1"><label className="text-[10px] font-bold text-[#a8a099] block mb-0.5">Temp</label><input type="number" className="w-full text-xs border rounded p-2" placeholder="Temp" value={newLab.temp} onChange={(e) => setNewLab({ ...newLab, temp: e.target.value })} /></div>
@@ -572,7 +572,7 @@ const DressAssessment = (props) => {
           </div>
           <div className="h-[200px] overflow-y-auto border border-dashed border-[#ebe8e2] rounded-[8px] p-1 bg-[#faf9f7]/50 custom-scrollbar">
             {labs.length === 0 ? <div className="h-full flex items-center justify-center text-[#a8a099] text-sm">No labs added</div> : 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 p-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-1">
                 {labs.map((lab) => (
                   <div key={lab.id} className="grid grid-cols-12 gap-2 items-center bg-white border border-[#f4f2ee] p-2.5 rounded text-xs hover:border-[#cec8f6] transition-colors shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
                     <div className="col-span-3 font-mono text-[#a8a099]">{lab.date.slice(5)}</div>
@@ -592,8 +592,8 @@ const DressAssessment = (props) => {
         {/* ROW 3: CHECKLIST - HIDDEN ON PRINT */}
         <div className="bg-white p-6 rounded-[10px] shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-[#ebe8e2] print:hidden">
           <h3 className="text-base font-bold text-[#4a3ab8] uppercase mb-6 flex items-center gap-2 border-b border-purple-50 pb-3"><CheckCircle className="w-5 h-5" /> 3. Detailed Clinical Checklist (RegiSCAR)</h3>
-          <div className="grid grid-cols-12 gap-6">
-            <div className="col-span-12 md:col-span-3 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-4">
               <div className="font-bold text-sm text-[#2d2926] border-b pb-1 mb-2">General Criteria</div>
               <label className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-[#faf9f7] transition-colors border border-transparent hover:border-[#f4f2ee]">
                 <input type="checkbox" className="w-4 h-4 accent-[#534ab7]" checked={clinical.fever} onChange={(e) => handleClinicalChange('fever', e.target.checked)} />
@@ -608,7 +608,7 @@ const DressAssessment = (props) => {
                 <span className="text-sm">Atypical Lymphocytes (+1)</span>
               </label>
             </div>
-            <div className="col-span-12 md:col-span-5 space-y-4 border-x border-slate-50 px-4">
+            <div className="space-y-4 border-t md:border-t-0 md:border-x border-[#f4f2ee] px-0 md:px-4 pt-4 md:pt-0">
               <div className="font-bold text-sm text-[#2d2926] border-b pb-1 mb-2">Skin (Need 2 feats for +1)</div>
               <div className="flex gap-4 mb-2 items-center">
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -632,7 +632,7 @@ const DressAssessment = (props) => {
                 </div>
               )}
             </div>
-            <div className="col-span-12 md:col-span-4 space-y-2">
+            <div className="space-y-2">
               <div className="font-bold text-sm text-[#2d2926] border-b pb-1 mb-2">Organs (1 pt / ≥2 pts)</div>
               <div className="grid grid-cols-2 gap-2">
                 {organOptions.map((org) => (
@@ -662,17 +662,38 @@ const DressAssessment = (props) => {
         </div>
 
         {/* --- ANALYZE BUTTON (Trigger) - HIDDEN ON PRINT --- */}
-        <button
-          onClick={handleAnalyze}
-          className="w-full bg-from-[#534ab7] to-[#3730a3] text-white font-bold py-4 rounded-[10px] shadow-[0_4px_16px_rgba(0,0,0,0.08)] mb-6 hover:shadow-xl hover:scale-[1.01] transition-all text-lg flex items-center justify-center gap-2 mt-8 print:hidden"
-        >
-          Analyze
-        </button>
+                {/* Live score bar — updates as checkboxes change */}
+        <div className="bg-white border border-[#ebe8e2] rounded-[10px] p-4 mt-6 mb-2 print:hidden">
+          <div className="flex items-center gap-4">
+            <div>
+              <div className="text-[10px] font-semibold text-[#a8a099] uppercase tracking-wider mb-0.5">RegiSCAR score</div>
+              <div className="flex items-baseline gap-2">
+                <span className={`text-3xl font-bold ${calculateScore.color}`}>{calculateScore.total}</span>
+                <span className="text-xs text-[#a8a099]">/ 9</span>
+              </div>
+            </div>
+            <div className={`px-3 py-1.5 rounded-[7px] text-sm font-semibold ${calculateScore.bg} ${calculateScore.color} border ${calculateScore.border}`}>
+              {calculateScore.interpretation}
+            </div>
+            <div className="flex-1 mx-2">
+              <div className="h-1.5 bg-[#f4f2ee] rounded-full overflow-hidden">
+                <div className="h-full rounded-full transition-all duration-300"
+                  style={{ width: `${Math.max(0, Math.min(100, (calculateScore.total / 9) * 100))}%`, background: '#2a9d8f' }} />
+              </div>
+            </div>
+            <button
+              onClick={handleAnalyze}
+              className="bg-[#1a6b62] hover:bg-[#145a52] text-white font-[500] py-2.5 px-6 rounded-[8px] text-sm flex-shrink-0 transition"
+            >
+              View Timeline & Score
+            </button>
+          </div>
+        </div>
 
         {/* --- PHARMACIST NOTE - HIDDEN ON PRINT --- */}
         <div className="bg-white p-6 rounded-[10px] shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-[#ebe8e2] mt-8 mb-8 print:hidden">
           <div className="flex items-center gap-2 mb-4 text-[#2d2926] font-bold border-b border-[#f4f2ee] pb-2"><Edit3 className="w-5 h-5 text-[#534ab7]" /><h3>Pharmacist Note</h3></div>
-          <textarea className="w-full border border-[#d6d0c8] rounded-[8px] p-3 text-sm focus:outline-none focus:ring-[3px] focus:ring-[rgba(0,113,227,0.18)] focus:border-[#0071e3] focus:border-[#0071e3] outline-none h-24 resize-none" placeholder="Enter clinical observations, drug interactions, or recommendations..." value={pharmacistNote} onChange={(e) => setPharmacistNote(e.target.value)}></textarea>
+          <textarea className="w-full border border-[#d6d0c8] rounded-[8px] p-3 text-sm focus:outline-none focus:ring-[3px] focus:ring-[rgba(42,157,143,0.18)] focus:border-[#2a9d8f] focus:border-[#2a9d8f] outline-none h-24 resize-none" placeholder="Enter clinical observations, drug interactions, or recommendations..." value={pharmacistNote} onChange={(e) => setPharmacistNote(e.target.value)}></textarea>
         </div>
 
         {/* --- RESULTS (Hidden until analyzed, VISIBLE ON PRINT) --- */}
@@ -680,7 +701,7 @@ const DressAssessment = (props) => {
           <div ref={resultsRef} className="animate-fade-in-up space-y-8 pb-12 print:space-y-0 print:block">
             {/* SCORE - Page 1 */}
             <div className="bg-white p-6 rounded-[10px] shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-[#cec8f6] print:shadow-none print:border-[#ebe8e2]">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex flex-col gap-5">
                 <div className={`p-6 text-center rounded-[10px] ${calculateScore.bg} border ${calculateScore.border} min-w-[250px] print:bg-white print:border-[#d6d0c8]`}>
                   <h3 className="text-xs font-bold uppercase tracking-wider text-[#a8a099] mb-2">RegiSCAR Final Score</h3>
                   <div className="flex items-baseline justify-center gap-2"><span className={`text-6xl font-black ${calculateScore.color} leading-none print:text-black`}>{calculateScore.total}</span></div>
@@ -688,7 +709,7 @@ const DressAssessment = (props) => {
                 </div>
                 <div className="flex-1 w-full">
                   <h4 className="text-sm font-bold text-[#a8a099] uppercase tracking-wider mb-3 print:text-black">Score Breakdown</h4>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {calculateScore.breakdown.map((item, i) => (
                       <div key={i} className="flex justify-between items-center p-2 border border-[#f4f2ee] rounded bg-[#faf9f7]/50 print:bg-white print:border-[#ebe8e2]">
                         <div><span className="font-bold text-xs text-[#2d2926] block">{item.label}</span>{item.detail && (<span className="text-[10px] text-[#a8a099]">{item.detail}</span>)}</div>
