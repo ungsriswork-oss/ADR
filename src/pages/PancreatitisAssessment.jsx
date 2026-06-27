@@ -25,10 +25,10 @@ const formatFullDate = (d) => new Date(d).toLocaleDateString('th-TH', {day: 'num
 
 const analyzeLabValue = (type, value) => {
     const conf = LAB_CONFIG[type];
-    if (!conf || !value || value === "") return { status: 'Unknown', deviation: 0, text: '-', color: 'text-slate-400', bg: 'bg-slate-50', border: 'border-slate-200' };
+    if (!conf || !value || value === "") return { status: 'Unknown', deviation: 0, text: '-', color: 'text-[#a8a099]', bg: 'bg-[#faf9f7]', border: 'border-[#ebe8e2]' };
     
     const num = parseFloat(value);
-    if (isNaN(num)) return { status: 'Unknown', deviation: 0, text: '-', color: 'text-slate-400', bg: 'bg-slate-50', border: 'border-slate-200' };
+    if (isNaN(num)) return { status: 'Unknown', deviation: 0, text: '-', color: 'text-[#a8a099]', bg: 'bg-[#faf9f7]', border: 'border-[#ebe8e2]' };
 
     const threshold3x = conf.max * 3;
 
@@ -179,21 +179,21 @@ const calculateScores = (drugs, labs, onset, currentScores, isApConfirmed) => {
 
 // --- UI COMPONENTS ---
 const WeissmanScoreRow = ({ q, value, onChange }) => {
-    let bgClass = "border-b border-slate-100 last:border-0 break-inside-avoid";
+    let bgClass = "border-b border-[#f4f2ee] last:border-0 break-inside-avoid";
     if (q.required) bgClass += " bg-red-50 print:bg-red-50"; 
 
     return (
         <tr className={bgClass}>
             <td className="py-3 pl-4 w-[65%] align-top text-left print:py-1.5">
-                <div className="font-medium text-slate-700 text-sm print:text-xs">{q.text}</div>
+                <div className="font-medium text-[#2d2926] text-sm print:text-xs">{q.text}</div>
                 <div className="flex gap-2 mt-1">
-                    {q.auto && (<span className="text-[10px] text-slate-700 font-bold flex items-center gap-1 bg-slate-100 px-1 rounded print:text-black print:bg-transparent">✨ Auto-calculated</span>)}
-                    {q.required && (<span className="text-[10px] text-red-600 font-bold flex items-center gap-1 bg-red-100/50 px-1 rounded print:text-red-600 print:bg-transparent">* Required</span>)}
+                    {q.auto && (<span className="text-[10px] text-[#2d2926] font-bold flex items-center gap-1 bg-[#f4f2ee] px-1 rounded print:text-black print:bg-transparent">✨ Auto-calculated</span>)}
+                    {q.required && (<span className="text-[10px] text-[#b83232] font-bold flex items-center gap-1 bg-red-100/50 px-1 rounded print:text-[#b83232] print:bg-transparent">* Required</span>)}
                 </div>
             </td>
             <td className="py-3 pr-4 w-[35%] align-top text-right print:py-1.5">
                 <select 
-                    className={`w-full text-right font-bold bg-transparent focus:outline-none cursor-pointer text-sm print:text-black print:text-xs ${value > 0 ? 'text-green-600' : value < 0 ? 'text-red-500' : 'text-slate-400'}`}
+                    className={`w-full text-right font-bold bg-transparent focus:outline-none cursor-pointer text-sm print:text-black print:text-xs ${value > 0 ? 'text-green-600' : value < 0 ? 'text-[#e07060]' : 'text-[#a8a099]'}`}
                     value={value !== undefined ? value : 0} onChange={onChange}
                 >
                     <option value={0}>Unknown (0)</option>
@@ -207,15 +207,15 @@ const WeissmanScoreRow = ({ q, value, onChange }) => {
 
 // UPDATED TO WEISSMAN INTERPRETATION
 const WeissmanScoreCard = ({ group, scoreMap, total, onScoreChange }) => {
-    let interp = 'Doubtful'; let color = 'bg-slate-500'; let border = 'border-slate-500';
+    let interp = 'Doubtful'; let color = 'bg-[#faf9f7]0'; let border = 'border-slate-500';
 
     if (total > 9) { interp = 'Highly Probable'; color = 'bg-rose-900'; border = 'border-rose-900'; } 
     else if (total >= 6) { interp = 'Probable'; color = 'bg-rose-600'; border = 'border-rose-600'; }
     else if (total >= 3) { interp = 'Possible'; color = 'bg-rose-400'; border = 'border-rose-400'; }
-    else { interp = 'Doubtful'; color = 'bg-slate-500'; border = 'border-slate-500'; }
+    else { interp = 'Doubtful'; color = 'bg-[#faf9f7]0'; border = 'border-slate-500'; }
 
     return (
-        <div className={`print-section border-2 ${border} rounded-xl overflow-hidden shadow-sm bg-white mb-6 break-inside-avoid page-break-inside-avoid print:break-before-page`}>
+        <div className={`print-section border-2 ${border} rounded-[10px] overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.05)] bg-white mb-6 break-inside-avoid page-break-inside-avoid print:break-before-page`}>
             <div className={`${color} text-white px-5 py-3 flex justify-between items-center print:text-black print:border-b-2 print:border-black print:py-2`} style={{WebkitPrintColorAdjust: 'exact'}}>
                 <div>
                     <h3 className="text-xl font-bold print:text-lg">{group.name}</h3>
@@ -391,10 +391,10 @@ const PancreatitisAssessment = (props) => {
     const uniqueDrugs = useMemo(()=> [...new Set(drugs.map(d=>d.name.trim().toLowerCase()))].map(k=>drugs.find(d=>d.name.trim().toLowerCase()===k)), [drugs]);
 
     return (
-        <div className="space-y-8 animate-fade-in pb-20 font-sans">
+        <div className="space-y-8 animate-fade-in pb-20 font-[Inter,system-ui,sans-serif]">
             {/* INPUTS */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6 print:border-black print:shadow-none break-inside-avoid">
-                <div className="text-sm font-bold text-slate-700 border-b pb-3 mb-4 flex justify-between print:text-black print:border-black">
+            <div className="bg-white rounded-[10px] border border-[#ebe8e2] shadow-[0_1px_4px_rgba(0,0,0,0.05)] p-6 mb-6 print:border-black print:shadow-none break-inside-avoid">
+                <div className="text-sm font-bold text-[#2d2926] border-b pb-3 mb-4 flex justify-between print:text-black print:border-black">
                     <span>Pancreatitis & Drug Data</span>
                     {onset && <span className="text-rose-600 bg-rose-50 px-2 rounded border border-rose-100 print:text-black print:border-black print:bg-transparent">Pancreatitis Onset: {formatDate(onset)}</span>}
                 </div>
@@ -405,22 +405,22 @@ const PancreatitisAssessment = (props) => {
                         {/* AP Criteria Checklist */}
                         <div className="flex flex-col gap-2 mb-4 bg-rose-50/50 p-4 rounded-lg border border-rose-100 print:border-black print:bg-transparent">
                             <label className="text-sm font-bold text-rose-700 uppercase print:text-black">Acute Pancreatitis Criteria</label>
-                            <div className="text-xs text-slate-600 mb-2">Check at least 2 out of 3 to confirm diagnosis:</div>
+                            <div className="text-xs text-[#6b6360] mb-2">Check at least 2 out of 3 to confirm diagnosis:</div>
                             
-                            <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
-                                <input type="checkbox" checked={apCriteria.pain} onChange={(e) => { const n = {...apCriteria, pain: e.target.checked}; setApCriteria(n); syncToParent(undefined,undefined,undefined,undefined,n); }} className="w-4 h-4 text-rose-600 border-slate-300 rounded focus:ring-rose-500"/>
+                            <label className="flex items-center gap-2 text-sm text-[#2d2926] cursor-pointer">
+                                <input type="checkbox" checked={apCriteria.pain} onChange={(e) => { const n = {...apCriteria, pain: e.target.checked}; setApCriteria(n); syncToParent(undefined,undefined,undefined,undefined,n); }} className="w-4 h-4 text-rose-600 border-[#d6d0c8] rounded focus:ring-rose-500"/>
                                 Abdominal pain consistent with AP
                             </label>
-                            <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
-                                <input type="checkbox" checked={apCriteria.lab} onChange={(e) => { const n = {...apCriteria, lab: e.target.checked}; setApCriteria(n); syncToParent(undefined,undefined,undefined,undefined,n); }} className="w-4 h-4 text-rose-600 border-slate-300 rounded focus:ring-rose-500"/>
+                            <label className="flex items-center gap-2 text-sm text-[#2d2926] cursor-pointer">
+                                <input type="checkbox" checked={apCriteria.lab} onChange={(e) => { const n = {...apCriteria, lab: e.target.checked}; setApCriteria(n); syncToParent(undefined,undefined,undefined,undefined,n); }} className="w-4 h-4 text-rose-600 border-[#d6d0c8] rounded focus:ring-rose-500"/>
                                 Serum lipase or amylase &gt; 3 times UNL
                             </label>
-                            <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
-                                <input type="checkbox" checked={apCriteria.imaging} onChange={(e) => { const n = {...apCriteria, imaging: e.target.checked}; setApCriteria(n); syncToParent(undefined,undefined,undefined,undefined,n); }} className="w-4 h-4 text-rose-600 border-slate-300 rounded focus:ring-rose-500"/>
+                            <label className="flex items-center gap-2 text-sm text-[#2d2926] cursor-pointer">
+                                <input type="checkbox" checked={apCriteria.imaging} onChange={(e) => { const n = {...apCriteria, imaging: e.target.checked}; setApCriteria(n); syncToParent(undefined,undefined,undefined,undefined,n); }} className="w-4 h-4 text-rose-600 border-[#d6d0c8] rounded focus:ring-rose-500"/>
                                 Characteristic findings from imaging (CECT or MRI)
                             </label>
                             
-                            <div className={`mt-3 p-2 rounded text-xs font-bold text-center ${isApConfirmed ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-slate-100 text-slate-500 border border-slate-200'}`}>
+                            <div className={`mt-3 p-2 rounded text-xs font-bold text-center ${isApConfirmed ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-[#f4f2ee] text-[#a8a099] border border-[#ebe8e2]'}`}>
                                 {isApConfirmed ? '✅ Confirmed Acute Pancreatitis (≥ 2 criteria met)' : '❌ Not meeting Acute Pancreatitis criteria yet'}
                             </div>
                         </div>
@@ -429,28 +429,28 @@ const PancreatitisAssessment = (props) => {
                             <label className="text-xs font-bold text-rose-600 uppercase w-28 print:text-black">ONSET DATE:</label>
                             <input type="date" value={onset} onChange={e=>{syncToParent(undefined,undefined,e.target.value,undefined,undefined); setIsAnalyzed(false);}} className="border rounded px-2 py-1 text-sm font-bold print:border-black"/>
                         </div>
-                        <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 print:bg-transparent print:border-black">
+                        <div className="bg-[#faf9f7] p-3 rounded-lg border border-[#ebe8e2] print:bg-transparent print:border-black">
                             <div className="grid grid-cols-12 gap-2 mb-2 items-end print:hidden">
                                 <div className="col-span-5">
-                                    <label className="text-[10px] font-bold text-slate-400 block mb-1 uppercase">Culprit Drug</label>
+                                    <label className="text-[10px] font-bold text-[#a8a099] block mb-1 uppercase">Culprit Drug</label>
                                     <input className="border rounded w-full px-2 py-1 text-sm" placeholder="Drug Name" value={currentDrug.name} onChange={e=>setCurrentDrug({...currentDrug,name:e.target.value})}/>
                                 </div>
                                 <div className="col-span-3">
-                                    <label className="text-[10px] font-bold text-slate-400 block mb-1 uppercase">Start Date</label>
+                                    <label className="text-[10px] font-bold text-[#a8a099] block mb-1 uppercase">Start Date</label>
                                     <input type="date" className="border rounded w-full px-1 py-1 text-sm" value={currentDrug.startDate} onChange={e=>setCurrentDrug({...currentDrug,startDate:e.target.value})}/>
                                 </div>
                                 <div className="col-span-3">
-                                    <label className="text-[10px] font-bold text-slate-400 block mb-1 uppercase">Stop Date</label>
+                                    <label className="text-[10px] font-bold text-[#a8a099] block mb-1 uppercase">Stop Date</label>
                                     <input type="date" className="border rounded w-full px-1 py-1 text-sm" value={currentDrug.stopDate} onChange={e=>setCurrentDrug({...currentDrug,stopDate:e.target.value})}/>
                                 </div>
-                                <button onClick={addDrug} className="col-span-1 bg-slate-800 text-white rounded font-bold h-8 flex items-center justify-center pb-0.5">+</button>
+                                <button onClick={addDrug} className="col-span-1 bg-[#2d2926] text-white rounded font-bold h-8 flex items-center justify-center pb-0.5">+</button>
                             </div>
                             <div className="space-y-1">
                                 {drugs.map(d=>(
                                     <div key={d.id} className="flex justify-between items-center bg-white border px-2 py-1 rounded text-xs print:border-black print:bg-transparent">
                                         <span className="font-bold w-1/3 truncate">{d.name}</span>
-                                        <span className="text-slate-500 print:text-black">{formatDate(d.startDate)} - {d.stopDate?formatDate(d.stopDate):'Ongoing'}</span>
-                                        <button onClick={()=>removeDrug(d.id)} className="text-red-500 font-bold px-2 print:hidden">×</button>
+                                        <span className="text-[#a8a099] print:text-black">{formatDate(d.startDate)} - {d.stopDate?formatDate(d.stopDate):'Ongoing'}</span>
+                                        <button onClick={()=>removeDrug(d.id)} className="text-[#e07060] font-bold px-2 print:hidden">×</button>
                                     </div>
                                 ))}
                             </div>
@@ -475,10 +475,10 @@ const PancreatitisAssessment = (props) => {
                                     const val = batchValues[key] || '';
                                     const analysis = analyzeLabValue(key, val);
                                     return (
-                                        <div key={key} className={`flex flex-col p-2 rounded border ${val ? `${analysis.border} ${analysis.bg}` : 'border-slate-200 bg-white'}`}>
+                                        <div key={key} className={`flex flex-col p-2 rounded border ${val ? `${analysis.border} ${analysis.bg}` : 'border-[#ebe8e2] bg-white'}`}>
                                             <div className="flex justify-between items-center mb-1">
-                                                <label className="text-[10px] font-bold text-slate-600">{key}</label>
-                                                <span className="text-[9px] text-slate-400">({conf.min}-{conf.max})</span>
+                                                <label className="text-[10px] font-bold text-[#6b6360]">{key}</label>
+                                                <span className="text-[9px] text-[#a8a099]">({conf.min}-{conf.max})</span>
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <input 
@@ -488,22 +488,22 @@ const PancreatitisAssessment = (props) => {
                                                     value={val}
                                                     onChange={e => setBatchValues({...batchValues, [key]: e.target.value})}
                                                 />
-                                                <span className="text-[10px] text-slate-500 w-10">{conf.unit}</span>
+                                                <span className="text-[10px] text-[#a8a099] w-10">{conf.unit}</span>
                                             </div>
                                         </div>
                                     )
                                 })}
                             </div>
 
-                            <button onClick={addBatchLabs} className="w-full bg-rose-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-rose-700 shadow-sm">
+                            <button onClick={addBatchLabs} className="w-full bg-rose-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-rose-700 shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
                                 Record Lipase/Amylase Results
                             </button>
                         </div>
 
                         {/* Lab History Table */}
-                        <div className="max-h-60 overflow-y-auto print:max-h-none bg-white rounded border border-slate-200">
+                        <div className="max-h-60 overflow-y-auto print:max-h-none bg-white rounded border border-[#ebe8e2]">
                             <table className="w-full text-xs text-left">
-                                <thead className="bg-slate-50 text-slate-500 font-bold sticky top-0">
+                                <thead className="bg-[#faf9f7] text-[#a8a099] font-bold sticky top-0">
                                     <tr>
                                         <th className="p-2 border-b">Date</th>
                                         <th className="p-2 border-b">Values Recorded</th>
@@ -512,7 +512,7 @@ const PancreatitisAssessment = (props) => {
                                 </thead>
                                 <tbody>
                                     {Object.entries(groupedLabs).sort((a,b)=>new Date(b[0])-new Date(a[0])).map(([date, items]) => (
-                                        <tr key={date} className="border-b last:border-0 hover:bg-slate-50">
+                                        <tr key={date} className="border-b last:border-0 hover:bg-[#faf9f7]">
                                             <td className="p-2 font-mono align-top w-20">{formatDate(date)}</td>
                                             <td className="p-2 align-top">
                                                 <div className="flex flex-wrap gap-1">
@@ -527,7 +527,7 @@ const PancreatitisAssessment = (props) => {
                                                 </div>
                                             </td>
                                             <td className="p-2 text-right align-top print:hidden">
-                                                <button onClick={() => items.forEach(i => removeLab(i.id))} className="text-slate-300 hover:text-red-500 font-bold">×</button>
+                                                <button onClick={() => items.forEach(i => removeLab(i.id))} className="text-slate-300 hover:text-[#e07060] font-bold">×</button>
                                             </td>
                                         </tr>
                                     ))}
@@ -546,25 +546,25 @@ const PancreatitisAssessment = (props) => {
                 </button>
             </div>
 
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6 print:border-black print:shadow-none break-inside-avoid">
-                <div className="text-sm font-bold text-slate-700 border-b pb-3 mb-4 print:text-black print:border-black text-left">📝 Pharmacist Note</div>
+            <div className="bg-white rounded-[10px] border border-[#ebe8e2] shadow-[0_1px_4px_rgba(0,0,0,0.05)] p-6 mb-6 print:border-black print:shadow-none break-inside-avoid">
+                <div className="text-sm font-bold text-[#2d2926] border-b pb-3 mb-4 print:text-black print:border-black text-left">📝 Pharmacist Note</div>
                 <textarea className="w-full h-32 border rounded p-3 text-sm focus:outline-rose-500 print:border-black print:h-auto" placeholder="Enter clinical assessment notes..." value={note} onChange={handleNoteChange}></textarea>
             </div>
 
             {/* RESULTS & TIMELINE */}
             {isAnalyzed && timelineData && (
                 <div className="animate-fade-in space-y-8">
-                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 overflow-hidden break-inside-avoid page-break-inside-avoid print:break-before-page print:border-black print:shadow-none relative flex flex-col">
-                        <div className="text-xs font-bold text-slate-400 uppercase mb-4 tracking-wider flex items-center gap-2 print:text-black"><span className="w-2 h-4 bg-rose-500 rounded-sm print:bg-black"></span> Timeline Visualization</div>
+                    <div className="bg-white rounded-[10px] border border-[#ebe8e2] shadow-[0_1px_4px_rgba(0,0,0,0.05)] p-6 overflow-hidden break-inside-avoid page-break-inside-avoid print:break-before-page print:border-black print:shadow-none relative flex flex-col">
+                        <div className="text-xs font-bold text-[#a8a099] uppercase mb-4 tracking-wider flex items-center gap-2 print:text-black"><span className="w-2 h-4 bg-rose-500 rounded-sm print:bg-black"></span> Timeline Visualization</div>
                         <div className="relative w-full pb-8 mt-8">
                             {/* Grid Lines */}
                             <div className="absolute inset-0 pl-[150px] pointer-events-none">
-                                <div className="relative w-full h-full border-l border-slate-100 print:border-black">
+                                <div className="relative w-full h-full border-l border-[#f4f2ee] print:border-black">
                                     {timelineData.points.map((t, i) => {
                                         const pct = (i / (timelineData.totalPoints > 1 ? timelineData.totalPoints - 1 : 1)) * 100;
                                         return (
-                                            <div key={i} className="absolute top-0 bottom-0 border-l border-slate-100 print:border-slate-300" style={{left:`${pct}%`}}>
-                                                <div className="absolute -bottom-6 -translate-x-1/2 text-[9px] text-slate-400 print:text-black whitespace-nowrap">{formatFullDate(new Date(t))}</div>
+                                            <div key={i} className="absolute top-0 bottom-0 border-l border-[#f4f2ee] print:border-[#d6d0c8]" style={{left:`${pct}%`}}>
+                                                <div className="absolute -bottom-6 -translate-x-1/2 text-[9px] text-[#a8a099] print:text-black whitespace-nowrap">{formatFullDate(new Date(t))}</div>
                                             </div>
                                         )
                                     })}
@@ -572,9 +572,9 @@ const PancreatitisAssessment = (props) => {
                             </div>
 
                             {/* (1) DRUG SECTION */}
-                            <div className="relative z-10 border-b border-slate-100 pb-4 mb-4">
+                            <div className="relative z-10 border-b border-[#f4f2ee] pb-4 mb-4">
                                 <div className="flex h-6 items-end pb-1">
-                                    <div className="w-[150px] shrink-0 font-bold text-xs text-right pr-4 text-slate-400 print:text-black">DRUG</div>
+                                    <div className="w-[150px] shrink-0 font-bold text-xs text-right pr-4 text-[#a8a099] print:text-black">DRUG</div>
                                     <div className="flex-1"></div>
                                 </div>
                                 
@@ -582,7 +582,7 @@ const PancreatitisAssessment = (props) => {
                                 {onset && (
                                     <div className="absolute top-0 bottom-0 left-[150px] right-0 pointer-events-none z-0">
                                         <div className="absolute top-[-30px] bottom-0 w-0.5 bg-rose-500 border-l border-dashed border-rose-500 print:border-black -translate-x-1/2" style={{left:`${timelineData.getPos(onset)}%`}}>
-                                            <div className="absolute -top-6 -left-0 -translate-x-1/2 bg-rose-600 text-white text-[9px] px-2 py-0.5 rounded shadow-sm font-bold whitespace-nowrap print:bg-transparent print:text-black print:border print:border-black" style={{WebkitPrintColorAdjust:'exact'}}>Onset {formatDate(onset)}</div>
+                                            <div className="absolute -top-6 -left-0 -translate-x-1/2 bg-rose-600 text-white text-[9px] px-2 py-0.5 rounded shadow-[0_1px_4px_rgba(0,0,0,0.05)] font-bold whitespace-nowrap print:bg-transparent print:text-black print:border print:border-black" style={{WebkitPrintColorAdjust:'exact'}}>Onset {formatDate(onset)}</div>
                                         </div>
                                     </div>
                                 )}
@@ -590,17 +590,17 @@ const PancreatitisAssessment = (props) => {
                                 {uniqueDrugs.map(g => {
                                     const periods = drugs.filter(d => d.name.trim().toLowerCase() === g.name.trim().toLowerCase());
                                     return (
-                                        <div key={g.id} className="flex h-6 items-center group relative hover:bg-slate-50 rounded">
-                                            <div className="w-[150px] shrink-0 pr-4 text-right text-xs font-bold text-slate-600 truncate print:text-black">{g.name}</div>
+                                        <div key={g.id} className="flex h-6 items-center group relative hover:bg-[#faf9f7] rounded">
+                                            <div className="w-[150px] shrink-0 pr-4 text-right text-xs font-bold text-[#6b6360] truncate print:text-black">{g.name}</div>
                                             <div className="flex-1 relative h-full">
                                                 {periods.map((p, i) => { 
                                                     const s = timelineData.getPos(p.startDate); 
                                                     const e = p.stopDate ? timelineData.getPos(p.stopDate) : 100; 
                                                     const width = Math.max(0.5, e - s); 
                                                     return (
-                                                        <div key={i} className="absolute h-1 top-2.5 bg-slate-500 print:bg-black opacity-80" style={{left:`${s}%`, width:`${width}%`, WebkitPrintColorAdjust:'exact'}}>
-                                                            <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-slate-500 print:bg-black" style={{left: '0%'}}></div>
-                                                            {p.stopDate && <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-slate-500 print:bg-black" style={{left: '100%'}}></div>}
+                                                        <div key={i} className="absolute h-1 top-2.5 bg-[#faf9f7]0 print:bg-black opacity-80" style={{left:`${s}%`, width:`${width}%`, WebkitPrintColorAdjust:'exact'}}>
+                                                            <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-[#faf9f7]0 print:bg-black" style={{left: '0%'}}></div>
+                                                            {p.stopDate && <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-[#faf9f7]0 print:bg-black" style={{left: '100%'}}></div>}
                                                         </div>
                                                     )
                                                 })}
@@ -613,7 +613,7 @@ const PancreatitisAssessment = (props) => {
                             {/* (2) LAB VALUES SECTION */}
                             <div className="relative z-10">
                                 <div className="flex h-6 items-end pb-1">
-                                    <div className="w-[150px] shrink-0 pr-4 text-right text-[10px] text-slate-400 print:text-black font-bold">LAB VALUES</div>
+                                    <div className="w-[150px] shrink-0 pr-4 text-right text-[10px] text-[#a8a099] print:text-black font-bold">LAB VALUES</div>
                                     <div className="flex-1"></div>
                                 </div>
                                 <div className="flex items-center mt-12 h-16">
@@ -630,7 +630,7 @@ const PancreatitisAssessment = (props) => {
                                                         {dateLabs.map((l, i) => {
                                                              const analysis = analyzeLabValue(l.type, l.value);
                                                              return (
-                                                                <div key={i} className={`text-[9px] font-bold px-1 border rounded shadow-sm whitespace-nowrap print:border-black print:shadow-none opacity-90 hover:opacity-100 hover:scale-110 transition-transform ${analysis.bg} ${analysis.color} ${analysis.border}`}>
+                                                                <div key={i} className={`text-[9px] font-bold px-1 border rounded shadow-[0_1px_4px_rgba(0,0,0,0.05)] whitespace-nowrap print:border-black print:shadow-none opacity-90 hover:opacity-100 hover:scale-110 transition-transform ${analysis.bg} ${analysis.color} ${analysis.border}`}>
                                                                     {l.type}: {l.value}
                                                                 </div>
                                                              )
@@ -650,7 +650,7 @@ const PancreatitisAssessment = (props) => {
                     <div className="print:break-before-auto">
                         <div className="flex flex-wrap gap-2 mb-4 border-b pb-1 print:hidden">{uniqueDrugs.map(d=>{
                             const k = d.name.trim().toLowerCase(); const total=Object.values(scores[k]||{}).reduce((a,b)=>a+(parseInt(b)||0),0);
-                            return <button key={d.id} onClick={()=>setActiveTab(k)} className={`px-4 py-2 rounded-t-lg border-t border-x border-b-0 text-sm font-bold ${activeTab===k?'bg-white text-rose-600 -mb-px z-10':'bg-slate-50 text-slate-500'}`}>{d.name} ({total})</button>
+                            return <button key={d.id} onClick={()=>setActiveTab(k)} className={`px-4 py-2 rounded-t-lg border-t border-x border-b-0 text-sm font-bold ${activeTab===k?'bg-white text-rose-600 -mb-px z-10':'bg-[#faf9f7] text-[#a8a099]'}`}>{d.name} ({total})</button>
                         })}</div>
                         <div className="hidden print:block space-y-4">
                             {uniqueDrugs.map(d => {

@@ -59,22 +59,22 @@ const RucamRow = ({
 
   return (
     <tr
-      className={`border-b border-slate-100 last:border-0 break-inside-avoid ${
-        isRequired ? 'bg-yellow-50' : ''
+      className={`border-b border-[#f4f2ee] last:border-0 break-inside-avoid ${
+        isRequired ? 'bg-[#fef6e4]' : ''
       }`}
     >
-      <td className="py-2 pl-4 w-[35%] align-top font-bold text-slate-700 text-sm text-left">
-        {label} {isRequired && <span className="text-red-500 ml-1">*</span>}
+      <td className="py-2 pl-4 w-[35%] align-top font-bold text-[#2d2926] text-sm text-left">
+        {label} {isRequired && <span className="text-[#e07060] ml-1">*</span>}
       </td>
-      <td className="py-2 px-2 w-[25%] align-top text-slate-500 text-xs text-left">
+      <td className="py-2 px-2 w-[25%] align-top text-[#a8a099] text-xs text-left">
         {subLabel}
       </td>
       <td className="py-2 pr-4 w-[40%] align-top text-right">
         <div className="hidden print:flex flex-col items-end w-full">
-          <span className="text-[10px] text-slate-500 text-right w-full whitespace-normal break-words leading-tight">
+          <span className="text-[10px] text-[#a8a099] text-right w-full whitespace-normal break-words leading-tight">
             {displayValue}
           </span>
-          <span className="font-bold text-slate-800 text-sm mt-1 border border-slate-200 px-2 rounded inline-block">
+          <span className="font-bold text-[#2d2926] text-sm mt-1 border border-[#ebe8e2] px-2 rounded inline-block">
             {safeValue > 0 ? `+${safeValue}` : safeValue}
           </span>
         </div>
@@ -117,7 +117,7 @@ const RucamCard = ({
 
   return (
     <div
-      className={`print-section border-2 ${result.border} rounded-xl overflow-hidden shadow-sm bg-white mb-6 break-inside-avoid`}
+      className={`print-section border-2 ${result.border} rounded-[10px] overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.06)] bg-white mb-6 break-inside-avoid`}
     >
       <div
         className={`${result.color} text-white px-5 py-3 flex justify-between items-center`}
@@ -351,6 +351,11 @@ const DiliAssessment = ({
   }, [analyzeCount]);
 
   const performAnalysis = () => {
+    // ULN ตาม RUCAM 2016: ALT_ULN = 40 U/L, ALP_ULN = 120 U/L (unisex conservative)
+    // Note: ในทางปฏิบัติอาจแยกตาม sex: ALT ชาย=40, หญิง=35; ALP ชาย=120, หญิง=100
+    const ALT_ULN = 40;
+    const ALP_ULN = 120;
+
     let rFactor = 0,
       type = 'Inconclusive',
       altRatio = 0,
@@ -381,8 +386,8 @@ const DiliAssessment = ({
         usedALP = Math.max(...labEntries.map((l) => parseFloat(l.alp || 0)));
       }
 
-      altRatio = (usedALT / 40).toFixed(2);
-      alpRatio = (usedALP / 120).toFixed(2);
+      altRatio = (usedALT / ALT_ULN).toFixed(2);
+      alpRatio = (usedALP / ALP_ULN).toFixed(2);
 
       if (parseFloat(alpRatio) > 0) {
         rFactor = (altRatio / alpRatio).toFixed(2);
@@ -685,46 +690,49 @@ const DiliAssessment = ({
       : 0;
 
   const interpretRucam = (score, rechallengeScore, isExcludedTime) => {
+    // Excluded เมื่อ: ยาเริ่มหลัง onset (isExcludedTime)
+    // หรือ rechallenge negative/adaptation (-2) = ยาไม่ได้ทำให้เกิด DILI
+    // หรือคะแนนรวม <= 0
     if (isExcludedTime || rechallengeScore === -2 || score <= 0) {
       return {
         text: 'Excluded',
         color: 'bg-slate-300',
-        textCol: 'text-slate-500',
-        border: 'border-slate-300',
-        light: 'bg-slate-100',
+        textCol: 'text-[#a8a099]',
+        border: 'border-[#d6d0c8]',
+        light: 'bg-[#f4f2ee]',
         isExcluded: true,
       };
     }
     if (score >= 9)
       return {
         text: 'Highly Probable',
-        color: 'bg-red-600',
-        textCol: 'text-red-600',
-        border: 'border-red-600',
+        color: 'bg-[#b83232]',
+        textCol: 'text-[#b83232]',
+        border: 'border-[#b83232]',
         light: 'bg-red-50',
       };
     if (score >= 6)
       return {
         text: 'Probable',
-        color: 'bg-orange-500',
-        textCol: 'text-orange-600',
-        border: 'border-orange-500',
-        light: 'bg-orange-50',
+        color: 'bg-[#2a9d8f]',
+        textCol: 'text-[#c4620a]',
+        border: 'border-[#f5cfa8]',
+        light: 'bg-[#fff0e4]',
       };
     if (score >= 3)
       return {
         text: 'Possible',
-        color: 'bg-yellow-500',
+        color: 'bg-[#fef6e4]0',
         textCol: 'text-yellow-600',
         border: 'border-yellow-500',
-        light: 'bg-yellow-50',
+        light: 'bg-[#fef6e4]',
       };
     return {
       text: 'Unlikely',
       color: 'bg-slate-400',
-      textCol: 'text-slate-500',
+      textCol: 'text-[#a8a099]',
       border: 'border-slate-400',
-      light: 'bg-slate-50',
+      light: 'bg-[#faf9f7]',
     };
   };
 
@@ -739,12 +747,12 @@ const DiliAssessment = ({
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="mb-10">
-        <h2 className="text-sm font-bold text-orange-600 uppercase tracking-wider mb-4 border-b border-orange-100 pb-2 text-left">
+        <h2 className="text-sm font-bold text-[#c4620a] uppercase tracking-wider mb-4 border-b border-[#f5cfa8] pb-2 text-left">
           DILI Assessment Data
         </h2>
 
         <div className="print-section mb-6">
-          <h3 className="text-xs font-bold text-slate-500 mb-2 text-left print:text-black">
+          <h3 className="text-xs font-bold text-[#a8a099] mb-2 text-left print:text-black">
             Serial Lab Monitoring
           </h3>
           <div
@@ -797,31 +805,31 @@ const DiliAssessment = ({
             />
             <button
               onClick={handleAddLab}
-              className="bg-orange-500 text-white rounded font-bold hover:bg-orange-600"
+              className="bg-[#2a9d8f] text-white rounded font-bold hover:bg-[#1a6b62]"
             >
               + Add
             </button>
           </div>
-          <div className="w-full overflow-hidden border border-slate-200 rounded-lg print:border-black">
+          <div className="w-full overflow-hidden border border-[#ebe8e2] rounded-lg print:border-black">
             <table className="w-full text-sm text-left border-collapse table-fixed">
-              <thead className="bg-slate-100 print:bg-slate-200">
+              <thead className="bg-[#f4f2ee] print:bg-[#ebe8e2]">
                 <tr>
-                  <th className="p-2 border border-slate-200 print:border-black w-1/5">
+                  <th className="p-2 border border-[#ebe8e2] print:border-black w-1/5">
                     Date
                   </th>
-                  <th className="p-2 border border-slate-200 print:border-black">
+                  <th className="p-2 border border-[#ebe8e2] print:border-black">
                     AST
                   </th>
-                  <th className="p-2 border border-slate-200 print:border-black">
+                  <th className="p-2 border border-[#ebe8e2] print:border-black">
                     ALT
                   </th>
-                  <th className="p-2 border border-slate-200 print:border-black">
+                  <th className="p-2 border border-[#ebe8e2] print:border-black">
                     ALP
                   </th>
-                  <th className="p-2 border border-slate-200 print:border-black">
+                  <th className="p-2 border border-[#ebe8e2] print:border-black">
                     T.Bil
                   </th>
-                  <th className="p-2 border border-slate-200 text-center print:hidden w-16">
+                  <th className="p-2 border border-[#ebe8e2] text-center print:hidden w-16">
                     Action
                   </th>
                 </tr>
@@ -830,25 +838,25 @@ const DiliAssessment = ({
                 {labEntries.map((l) => (
                   <tr
                     key={l.id}
-                    className="border-b border-slate-200 print:border-black"
+                    className="border-b border-[#ebe8e2] print:border-black"
                   >
-                    <td className="p-2 border-r border-slate-200 print:border-black">
+                    <td className="p-2 border-r border-[#ebe8e2] print:border-black">
                       {l.date}
                     </td>
-                    <td className="p-2 border-r border-slate-200 print:border-black">
+                    <td className="p-2 border-r border-[#ebe8e2] print:border-black">
                       {l.ast}
                     </td>
-                    <td className="p-2 border-r border-slate-200 print:border-black">
+                    <td className="p-2 border-r border-[#ebe8e2] print:border-black">
                       {l.alt}
                     </td>
-                    <td className="p-2 border-r border-slate-200 print:border-black">
+                    <td className="p-2 border-r border-[#ebe8e2] print:border-black">
                       {l.alp}
                     </td>
-                    <td className="p-2 border-r border-slate-200 print:border-black">
+                    <td className="p-2 border-r border-[#ebe8e2] print:border-black">
                       {l.tbil}
                     </td>
                     <td
-                      className="p-2 text-center text-red-500 cursor-pointer font-bold print:hidden"
+                      className="p-2 text-center text-[#e07060] cursor-pointer font-bold print:hidden"
                       onClick={() => handleDeleteLab(l.id)}
                     >
                       ×
@@ -861,11 +869,11 @@ const DiliAssessment = ({
         </div>
 
         <div className="print-section">
-          <h3 className="text-xs font-bold text-slate-500 mb-2 text-left print:text-black">
+          <h3 className="text-xs font-bold text-[#a8a099] mb-2 text-left print:text-black">
             Culprit Drugs & Onset
           </h3>
-          <div className="flex items-center gap-4 mb-4 bg-slate-50 p-3 rounded border border-slate-200 print:bg-transparent print:border-black">
-            <label className="text-sm font-bold text-red-600 print:text-black">
+          <div className="flex items-center gap-4 mb-4 bg-[#faf9f7] p-3 rounded border border-[#ebe8e2] print:bg-transparent print:border-black">
+            <label className="text-sm font-bold text-[#b83232] print:text-black">
               Symptom Onset Date:
             </label>
             <input
@@ -875,20 +883,20 @@ const DiliAssessment = ({
               className="border p-1 rounded print:border-0 print:p-0 print:font-bold"
             />
           </div>
-          <div className="w-full overflow-hidden mb-4 border border-slate-200 rounded-lg print:border-black">
+          <div className="w-full overflow-hidden mb-4 border border-[#ebe8e2] rounded-lg print:border-black">
             <table className="w-full text-sm text-left border-collapse table-fixed">
-              <thead className="bg-slate-100 print:bg-slate-200">
+              <thead className="bg-[#f4f2ee] print:bg-[#ebe8e2]">
                 <tr>
-                  <th className="p-2 border border-slate-200 print:border-black w-1/3">
+                  <th className="p-2 border border-[#ebe8e2] print:border-black w-1/3">
                     Suspected Drug
                   </th>
-                  <th className="p-2 border border-slate-200 print:border-black">
+                  <th className="p-2 border border-[#ebe8e2] print:border-black">
                     Start Date
                   </th>
-                  <th className="p-2 border border-slate-200 print:border-black">
+                  <th className="p-2 border border-[#ebe8e2] print:border-black">
                     Stop Date
                   </th>
-                  <th className="p-2 border border-slate-200 text-center print:hidden w-16">
+                  <th className="p-2 border border-[#ebe8e2] text-center print:hidden w-16">
                     Action
                   </th>
                 </tr>
@@ -897,19 +905,19 @@ const DiliAssessment = ({
                 {drugList.map((d) => (
                   <tr
                     key={d.id}
-                    className="border-b border-slate-200 print:border-black"
+                    className="border-b border-[#ebe8e2] print:border-black"
                   >
-                    <td className="p-2 border-r border-slate-200 print:border-black font-medium">
+                    <td className="p-2 border-r border-[#ebe8e2] print:border-black font-medium">
                       {d.name}
                     </td>
-                    <td className="p-2 border-r border-slate-200 print:border-black">
+                    <td className="p-2 border-r border-[#ebe8e2] print:border-black">
                       {d.startDate}
                     </td>
-                    <td className="p-2 border-r border-slate-200 print:border-black">
+                    <td className="p-2 border-r border-[#ebe8e2] print:border-black">
                       {d.stopDate || 'Ongoing'}
                     </td>
                     <td
-                      className="p-2 text-center text-red-500 cursor-pointer font-bold print:hidden"
+                      className="p-2 text-center text-[#e07060] cursor-pointer font-bold print:hidden"
                       onClick={() => handleDeleteDrug(d.id)}
                     >
                       ×
@@ -924,7 +932,7 @@ const DiliAssessment = ({
             data-html2canvas-ignore
           >
             <div>
-              <label className="text-xs text-slate-500 block">Drug Name</label>
+              <label className="text-xs text-[#a8a099] block">Drug Name</label>
               <input
                 type="text"
                 className="border p-1 rounded w-full"
@@ -935,7 +943,7 @@ const DiliAssessment = ({
               />
             </div>
             <div>
-              <label className="text-xs text-slate-500 block">Start Date</label>
+              <label className="text-xs text-[#a8a099] block">Start Date</label>
               <input
                 type="date"
                 className="border p-1 rounded w-full"
@@ -946,7 +954,7 @@ const DiliAssessment = ({
               />
             </div>
             <div>
-              <label className="text-xs text-slate-500 block">Stop Date</label>
+              <label className="text-xs text-[#a8a099] block">Stop Date</label>
               <input
                 type="date"
                 className="border p-1 rounded w-full"
@@ -958,7 +966,7 @@ const DiliAssessment = ({
             </div>
             <button
               onClick={handleAddDrug}
-              className="bg-slate-700 text-white rounded font-bold hover:bg-slate-800 py-1.5 h-auto"
+              className="bg-slate-700 text-white rounded font-bold hover:bg-[#2d2926] py-1.5 h-auto"
             >
               + Add Drug
             </button>
@@ -967,19 +975,19 @@ const DiliAssessment = ({
           <div className="mt-6 flex flex-col gap-4 no-print">
             <button
               onClick={performAnalysis}
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white text-lg px-8 py-3 rounded-lg font-bold shadow hover:shadow-lg transition-all transform active:scale-95 flex items-center justify-center gap-2"
+              className="w-full bg-[#2a9d8f] hover:bg-[#1a6b62] text-white text-lg px-8 py-3 rounded-lg font-bold shadow hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-all transform active:scale-95 flex items-center justify-center gap-2"
             >
               <span className="text-xl">⚡</span> Analyze Assessment
             </button>
 
             {/* --- Pharmacist Note Section --- */}
-            <div className="bg-white border border-slate-200 rounded-lg shadow-sm p-4 text-left">
-              <div className="flex items-center gap-2 mb-3 border-b border-slate-100 pb-2">
+            <div className="bg-white border border-[#ebe8e2] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.06)] p-4 text-left">
+              <div className="flex items-center gap-2 mb-3 border-b border-[#f4f2ee] pb-2">
                 <span className="text-lg">📝</span>
-                <h3 className="font-bold text-slate-700">Pharmacist Note</h3>
+                <h3 className="font-bold text-[#2d2926]">Pharmacist Note</h3>
               </div>
               <textarea
-                className="w-full p-3 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-orange-400 transition-all placeholder:text-slate-400 resize-none"
+                className="w-full p-3 border border-[#ebe8e2] rounded-lg text-sm text-[#2d2926] focus:outline-none focus:ring-1 focus:ring-[#e6f4f1] focus:border-[#2a9d8f] transition-all placeholder:text-[#a8a099] resize-none"
                 rows="4"
                 placeholder="Enter additional notes..."
                 value={pharmacistNote}
@@ -995,15 +1003,15 @@ const DiliAssessment = ({
 
       {analysisResult && (
         <div className="animate-fade-in">
-          <h2 className="text-sm font-bold text-orange-600 uppercase tracking-wider mb-4 border-b border-orange-100 pb-2 text-left print:text-black print:border-black">
+          <h2 className="text-sm font-bold text-[#c4620a] uppercase tracking-wider mb-4 border-b border-[#f5cfa8] pb-2 text-left print:text-black print:border-black">
             Clinical Timeline & Assessment
           </h2>
 
-          <div className="print-section mb-8 p-6 border border-slate-200 rounded-xl bg-white break-inside-avoid relative print:border-black">
+          <div className="print-section mb-8 p-6 border border-[#ebe8e2] rounded-[10px] bg-white break-inside-avoid relative print:border-black">
             {symptomDate && analysisResult.timelineMeta ? (
               <div className="w-full relative">
-                <div className="flex items-end pb-2 mb-2 border-b border-slate-100">
-                  <div className="w-[15%] text-right pr-4 font-bold text-slate-400 text-xs uppercase tracking-wider">
+                <div className="flex items-end pb-2 mb-2 border-b border-[#f4f2ee]">
+                  <div className="w-[15%] text-right pr-4 font-bold text-[#a8a099] text-xs uppercase tracking-wider">
                     TIMELINE
                   </div>
                   <div className="w-[85%] relative"></div>
@@ -1011,7 +1019,7 @@ const DiliAssessment = ({
 
                 <div className="relative">
                   <div className="absolute inset-0 flex pointer-events-none z-0">
-                    <div className="w-[15%] border-r border-slate-100 h-full bg-slate-50/30"></div>
+                    <div className="w-[15%] border-r border-[#f4f2ee] h-full bg-[#faf9f7]/30"></div>
                     <div className="w-[85%] relative h-full">
                       <div className="absolute inset-0 flex justify-between opacity-20">
                         <div className="w-px bg-slate-400 h-full border-l border-dashed"></div>
@@ -1062,7 +1070,7 @@ const DiliAssessment = ({
                       </div>
 
                       <div className="flex w-full mb-2">
-                        <div className="w-[15%] text-right pr-4 font-bold text-slate-400 text-[10px]">
+                        <div className="w-[15%] text-right pr-4 font-bold text-[#a8a099] text-[10px]">
                           DRUGS
                         </div>
                       </div>
@@ -1070,14 +1078,14 @@ const DiliAssessment = ({
                         (group, idx) => (
                           <div
                             key={idx}
-                            className="flex items-center h-10 w-full mb-1 group/row hover:bg-slate-50 transition-colors rounded relative z-10"
+                            className="flex items-center h-10 w-full mb-1 group/row hover:bg-[#faf9f7] transition-colors rounded relative z-10"
                           >
                             <div className="w-[15%] text-right pr-4 flex flex-col items-end justify-center">
-                              <span className="font-bold text-slate-700 text-sm truncate w-full">
+                              <span className="font-bold text-[#2d2926] text-sm truncate w-full">
                                 {group.name}
                               </span>
                               {group.hasRechallenge && (
-                                <span className="text-[8px] text-red-500 bg-red-50 px-1 rounded border border-red-100 mt-0.5">
+                                <span className="text-[8px] text-[#e07060] bg-red-50 px-1 rounded border border-red-100 mt-0.5">
                                   Re-chal
                                 </span>
                               )}
@@ -1102,7 +1110,7 @@ const DiliAssessment = ({
                                 return (
                                   <div
                                     key={i}
-                                    className="absolute h-1 top-1/2 -translate-y-1/2 bg-slate-400 rounded-full shadow-sm group-hover/row:bg-slate-500 transition-colors"
+                                    className="absolute h-1 top-1/2 -translate-y-1/2 bg-slate-400 rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.06)] group-hover/row:bg-[#faf9f7]0 transition-colors"
                                     style={{
                                       left: `${Math.max(0, leftPct)}%`,
                                       width: `${Math.max(1, widthPct)}%`,
@@ -1124,7 +1132,7 @@ const DiliAssessment = ({
                                         printColorAdjust: 'exact',
                                       }}
                                     ></div>
-                                    <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[9px] font-medium text-slate-500 bg-white border border-slate-200 px-1.5 rounded opacity-0 group-hover/row:opacity-100 transition-opacity z-50 whitespace-nowrap pointer-events-none shadow-sm">
+                                    <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[9px] font-medium text-[#a8a099] bg-white border border-[#ebe8e2] px-1.5 rounded opacity-0 group-hover/row:opacity-100 transition-opacity z-50 whitespace-nowrap pointer-events-none shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
                                       {getRelativeDay(seg.startDate)} -{' '}
                                       {seg.stopDate
                                         ? getRelativeDay(seg.stopDate)
@@ -1141,9 +1149,9 @@ const DiliAssessment = ({
 
                     {/* LFT */}
                     <div className="w-full relative z-20">
-                      <div className="flex w-full h-8 items-center border-t border-slate-100">
+                      <div className="flex w-full h-8 items-center border-t border-[#f4f2ee]">
                         <div className="w-[15%] text-right pr-4">
-                          <span className="font-bold text-slate-700 text-sm bg-orange-100 text-orange-800 px-2 py-0.5 rounded">
+                          <span className="font-bold text-[#2d2926] text-sm bg-[#fff0e4] text-[#7a3a00] px-2 py-0.5 rounded">
                             LFT
                           </span>
                         </div>
@@ -1162,7 +1170,7 @@ const DiliAssessment = ({
                             return (
                               <div
                                 key={idx}
-                                className="absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-orange-400 border border-white shadow-sm"
+                                className="absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-orange-400 border border-white shadow-[0_1px_4px_rgba(0,0,0,0.06)]"
                                 style={{
                                   left: `${leftPct}%`,
                                   transform: 'translateX(-50%)',
@@ -1180,7 +1188,7 @@ const DiliAssessment = ({
                           key={test}
                           className="flex w-full h-8 items-center border-b border-slate-50"
                         >
-                          <div className="w-[15%] text-right pr-4 text-xs font-bold text-slate-500">
+                          <div className="w-[15%] text-right pr-4 text-xs font-bold text-[#a8a099]">
                             {test}
                           </div>
                           <div className="w-[85%] relative h-full">
@@ -1202,8 +1210,8 @@ const DiliAssessment = ({
                                   key={idx}
                                   className={`absolute top-1/2 -translate-y-1/2 text-[10px] font-bold ${
                                     parseFloat(val) > 40
-                                      ? 'text-red-500'
-                                      : 'text-slate-600'
+                                      ? 'text-[#e07060]'
+                                      : 'text-[#6b6360]'
                                   }`}
                                   style={{
                                     left: `${leftPct}%`,
@@ -1219,8 +1227,8 @@ const DiliAssessment = ({
                       ))}
 
                       {/* DATE */}
-                      <div className="flex w-full h-10 items-end mt-1 border-t border-slate-200 pt-1">
-                        <div className="w-[15%] text-right pr-4 text-[10px] font-bold text-slate-400 pb-2">
+                      <div className="flex w-full h-10 items-end mt-1 border-t border-[#ebe8e2] pt-1">
+                        <div className="w-[15%] text-right pr-4 text-[10px] font-bold text-[#a8a099] pb-2">
                           Date
                         </div>
                         <div className="w-[85%] relative h-full">
@@ -1238,7 +1246,7 @@ const DiliAssessment = ({
                             return (
                               <div
                                 key={idx}
-                                className="absolute bottom-2 text-[10px] text-slate-500 font-medium -rotate-45 origin-bottom-left"
+                                className="absolute bottom-2 text-[10px] text-[#a8a099] font-medium -rotate-45 origin-bottom-left"
                                 style={{
                                   left: `${leftPct}%`,
                                   transform: 'translateX(-50%) rotate(-45deg)',
@@ -1259,7 +1267,7 @@ const DiliAssessment = ({
                 </div>
               </div>
             ) : (
-              <div className="text-center text-slate-400 py-10">
+              <div className="text-center text-[#a8a099] py-10">
                 Set Onset Date to view Timeline
               </div>
             )}
@@ -1267,53 +1275,53 @@ const DiliAssessment = ({
 
           <div className="mb-8 break-inside-avoid">
             <div
-              className="flex items-center gap-4 bg-orange-50 p-4 rounded-lg border border-orange-100 cursor-pointer hover:bg-orange-100 transition print:border-black print:bg-transparent"
+              className="flex items-center gap-4 bg-[#fff0e4] p-4 rounded-lg border border-[#f5cfa8] cursor-pointer hover:bg-[#fff0e4] transition print:border-black print:bg-transparent"
               onClick={() => setShowRLogic(!showRLogic)}
             >
               <div className="text-center">
-                <div className="text-3xl font-extrabold text-orange-600 print:text-black">
+                <div className="text-3xl font-extrabold text-[#c4620a] print:text-black">
                   {analysisResult.rFactor}
                 </div>
-                <div className="text-[10px] uppercase text-orange-400 font-bold print:text-black">
+                <div className="text-[10px] uppercase text-[#e09520] font-bold print:text-black">
                   R-Factor Score
                 </div>
               </div>
               <div className="h-10 w-px bg-orange-200 mx-2 print:bg-black"></div>
               <div className="flex-1">
-                <div className="text-lg font-bold text-slate-700 print:text-black">
+                <div className="text-lg font-bold text-[#2d2926] print:text-black">
                   {analysisResult.type} Pattern
                 </div>
-                <div className="text-xs text-slate-500 print:hidden">
+                <div className="text-xs text-[#a8a099] print:hidden">
                   Click to see calculation details
                 </div>
               </div>
             </div>
-            {(showRLogic || true) && (
+            {showRLogic && (
               <div
-                className={`mt-2 p-4 bg-white border border-slate-200 rounded shadow-inner text-sm text-slate-600 print:block print:border-black print:text-black`}
+                className={`mt-2 p-4 bg-white border border-[#ebe8e2] rounded shadow-inner text-sm text-[#6b6360] print:block print:border-black print:text-black`}
               >
                 <p className="font-bold mb-2 border-b pb-1 print:border-black">
                   Calculation Method:
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-xs font-bold text-slate-500 print:text-black">
+                    <p className="text-xs font-bold text-[#a8a099] print:text-black">
                       Formulas:
                     </p>
-                    <p className="font-mono bg-slate-50 p-1 print:bg-transparent">
+                    <p className="font-mono bg-[#faf9f7] p-1 print:bg-transparent">
                       R = (ALT / ULN) ÷ (ALP / ULN)
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-slate-500 print:text-black">
+                    <p className="text-xs font-bold text-[#a8a099] print:text-black">
                       Values:
                     </p>
                     <p>
-                      ALT: {analysisResult.usedALT}/40 ={' '}
+                      ALT: {analysisResult.usedALT}/{ALT_ULN || 40} ={' '}
                       {analysisResult.altRatio}
                     </p>
                     <p>
-                      ALP: {analysisResult.usedALP}/120 ={' '}
+                      ALP: {analysisResult.usedALP}/{ALP_ULN || 120} ={' '}
                       {analysisResult.alpRatio}
                     </p>
                   </div>
@@ -1342,7 +1350,7 @@ const DiliAssessment = ({
               ))}
             </div>
             <div className="print:hidden">
-              <div className="flex flex-wrap gap-2 mb-4 border-b border-slate-200 pb-1">
+              <div className="flex flex-wrap gap-2 mb-4 border-b border-[#ebe8e2] pb-1">
                 {Object.keys(analysisResult.groupedDrugs).map((key) => {
                   const total = calculateTotalRucam(rucamScores[key]);
                   const group = analysisResult.groupedDrugs[key];
@@ -1358,8 +1366,8 @@ const DiliAssessment = ({
                       onClick={() => setActiveTab(key)}
                       className={`px-4 py-2 rounded-t-lg border-t border-x border-b-0 text-sm font-bold transition-all ${
                         isActive
-                          ? 'bg-white border-slate-300 text-slate-800 -mb-[1px] z-10 shadow-sm'
-                          : 'bg-slate-50 border-transparent text-slate-500 hover:bg-slate-100'
+                          ? 'bg-white border-[#d6d0c8] text-[#2d2926] -mb-[1px] z-10 shadow-[0_1px_4px_rgba(0,0,0,0.06)]'
+                          : 'bg-[#faf9f7] border-transparent text-[#a8a099] hover:bg-[#f4f2ee]'
                       }`}
                     >
                       <div className="flex items-center gap-2">

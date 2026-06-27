@@ -79,8 +79,8 @@ const AldenRow = ({
   const selectedLabel =
     optionsArr.find((o) => o.value === safeValue)?.label || '';
   return (
-    <tr className="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
-      <td className="py-3 pl-6 w-[35%] align-middle text-slate-700 font-bold text-sm text-left">
+    <tr className="border-b border-[#f4f2ee] last:border-0 hover:bg-[#faf9f7] transition-colors">
+      <td className="py-3 pl-6 w-[35%] align-middle text-[#2d2926] font-bold text-sm text-left">
         {label}{' '}
         {isAutoCalc && (
           <span className="ml-2 text-[9px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded border border-blue-200 tracking-wider">
@@ -88,21 +88,21 @@ const AldenRow = ({
           </span>
         )}
       </td>
-      <td className="py-3 px-2 w-[25%] align-middle text-slate-500 text-xs text-left">
+      <td className="py-3 px-2 w-[25%] align-middle text-[#a8a099] text-xs text-left">
         {subLabel}
       </td>
       <td className="py-3 pr-6 w-[40%] align-middle text-right">
-        <div className="hidden print:block text-sm font-bold text-slate-800 text-right">
+        <div className="hidden print:block text-sm font-bold text-[#2d2926] text-right">
           {selectedLabel} ({safeValue > 0 ? `+${safeValue}` : safeValue})
         </div>
         <div className="print:hidden">
           <select
             className={`w-full text-right font-bold bg-transparent focus:outline-none cursor-pointer text-sm ${
               safeValue > 0
-                ? 'text-orange-600'
+                ? 'text-[#8c3322]'
                 : safeValue < 0
-                ? 'text-slate-400'
-                : 'text-slate-600'
+                ? 'text-[#a8a099]'
+                : 'text-[#6b6360]'
             }`}
             value={safeValue}
             onChange={onChange}
@@ -138,13 +138,13 @@ const AldenCard = ({
   if (totalScore >= 6)
     result = {
       text: 'Very Probable',
-      color: 'bg-red-600',
-      border: 'border-red-600',
+      color: 'bg-[#b83232]',
+      border: 'border-[#b83232]',
     };
   else if (totalScore >= 4)
     result = {
       text: 'Probable',
-      color: 'bg-orange-500',
+      color: 'bg-[#fdf0ee]0',
       border: 'border-orange-500',
     };
   else if (totalScore >= 2)
@@ -156,8 +156,8 @@ const AldenCard = ({
   else if (totalScore < 0)
     result = {
       text: 'Very Unlikely',
-      color: 'bg-green-600',
-      border: 'border-green-600',
+      color: 'bg-[#2e9e5b]',
+      border: 'border-[#2e9e5b]',
     };
 
   const dateRanges = groupedData.intervals
@@ -179,7 +179,7 @@ const AldenCard = ({
 
   return (
     <div
-      className={`print-section border-2 ${result.border} rounded-xl overflow-hidden shadow-sm bg-white mb-6 break-inside-avoid animate-fade-in`}
+      className={`print-section border-2 ${result.border} rounded-[10px] overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.05)] bg-white mb-6 break-inside-avoid animate-fade-in`}
     >
       <div
         className={`${result.color} text-white px-6 py-4 flex justify-between items-center shadow-inner`}
@@ -521,15 +521,21 @@ const SjsAssessment = (props) => {
 
   // สร้างตัวแปรเช็คว่าเคยโหลดครั้งแรกไปหรือยัง
   const isInitialLoad = useRef(true);
+  const performAnalysisRef = useRef(performAnalysis);
+
+  // อัปเดต ref ทุกครั้งที่ performAnalysis เปลี่ยน (แก้ stale closure)
+  useEffect(() => {
+    performAnalysisRef.current = performAnalysis;
+  });
 
   // 🟢 IMPROVED: Trigger Analysis Automatically when Data is Ready
   useEffect(() => {
     // เช็คว่ามีข้อมูลยาและวันที่มาครบแล้ว และยังเป็นการโหลดครั้งแรกอยู่
     if (isInitialLoad.current && drugList.length > 0 && indexDate) {
-      performAnalysis();
+      performAnalysisRef.current();
       isInitialLoad.current = false; // ปิด flag เพื่อไม่ให้คำนวณอัตโนมัติเวลามีการแก้ไขข้อมูลทีหลัง
     }
-  }, [drugList, indexDate]); // ใส่ dependency เพื่อให้ useEffect เฝ้าดูว่าข้อมูลมาหรือยัง
+  }, [drugList, indexDate]);
 
   // --- HANDLERS ---
   const handleScoreChange = (drugId, criteria, val) =>
@@ -604,7 +610,7 @@ const SjsAssessment = (props) => {
   }, [symptomLogs, timelinePoints]);
 
   return (
-    <div className="space-y-10 animate-fade-in font-sans p-4 max-w-5xl mx-auto">
+    <div className="space-y-10 animate-fade-in font-[Inter,system-ui,sans-serif] p-4 max-w-5xl mx-auto">
       <style>{`
             @media print {
                 .print-color-exact {
@@ -615,17 +621,17 @@ const SjsAssessment = (props) => {
         `}</style>
 
       {/* 1. INPUT SECTION */}
-      <div className="bg-orange-50 p-6 rounded-xl border border-orange-100 shadow-sm print:hidden">
-        <h2 className="text-orange-800 font-bold text-xl mb-6 flex items-center gap-2 border-b border-orange-200 pb-4">
+      <div className="bg-[#fdf0ee] p-6 rounded-[10px] border border-orange-100 shadow-[0_1px_4px_rgba(0,0,0,0.05)] print:hidden">
+        <h2 className="text-[#8c3322] font-bold text-xl mb-6 flex items-center gap-2 border-b border-[#f5b8b8] pb-4">
           🔥 SJS/TEN Assessment (ALDEN)
         </h2>
-        <div className="mb-8 flex items-center gap-4 bg-white p-4 rounded-lg border border-orange-200 shadow-sm max-w-md">
-          <label className="font-bold text-slate-700 text-base">
+        <div className="mb-8 flex items-center gap-4 bg-white p-4 rounded-lg border border-[#f5b8b8] shadow-[0_1px_4px_rgba(0,0,0,0.05)] max-w-md">
+          <label className="font-bold text-[#2d2926] text-base">
             Index Day (Onset):
           </label>
           <input
             type="date"
-            className="flex-1 border p-2 rounded shadow-sm focus:ring-2 focus:ring-orange-300 outline-none font-bold text-orange-600 text-lg"
+            className="flex-1 border p-2 rounded shadow-[0_1px_4px_rgba(0,0,0,0.05)] focus:ring-1 focus:ring-[#e6f4f1] outline-none font-bold text-[#8c3322] text-lg"
             value={indexDate}
             onChange={(e) => {
               setIndexDate(e.target.value);
@@ -634,14 +640,14 @@ const SjsAssessment = (props) => {
           />
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col h-full">
-            <h3 className="text-base font-bold text-slate-700 mb-4 border-b pb-2 flex items-center gap-2">
+          <div className="bg-white p-5 rounded-[10px] border border-[#ebe8e2] shadow-[0_1px_4px_rgba(0,0,0,0.05)] flex flex-col h-full">
+            <h3 className="text-base font-bold text-[#2d2926] mb-4 border-b pb-2 flex items-center gap-2">
               💊 Culprit Drug
             </h3>
             <div className="space-y-4 flex-grow">
               <input
                 placeholder="Drug Name"
-                className="w-full border border-slate-300 p-2.5 rounded-lg text-base focus:ring-2 focus:ring-blue-100 outline-none"
+                className="w-full border border-[#d6d0c8] p-2.5 rounded-lg text-base focus:ring-1 focus:ring-[#e6f4f1] outline-none"
                 value={currentDrug.name}
                 onChange={(e) =>
                   setCurrentDrug({ ...currentDrug, name: e.target.value })
@@ -649,7 +655,7 @@ const SjsAssessment = (props) => {
               />
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <span className="text-xs font-bold text-slate-500 mb-1 block">
+                  <span className="text-xs font-bold text-[#a8a099] mb-1 block">
                     Start
                   </span>
                   <input
@@ -665,7 +671,7 @@ const SjsAssessment = (props) => {
                   />
                 </div>
                 <div className="flex-1">
-                  <span className="text-xs font-bold text-slate-500 mb-1 block">
+                  <span className="text-xs font-bold text-[#a8a099] mb-1 block">
                     Stop (Opt)
                   </span>
                   <input
@@ -683,7 +689,7 @@ const SjsAssessment = (props) => {
               </div>
               <button
                 onClick={handleAddDrug}
-                className="w-full bg-slate-700 text-white font-bold py-2.5 rounded-lg hover:bg-slate-800 transition shadow-sm hover:shadow"
+                className="w-full bg-slate-700 text-white font-bold py-2.5 rounded-lg hover:bg-[#2d2926] transition shadow-[0_1px_4px_rgba(0,0,0,0.05)] hover:shadow"
               >
                 + Add Drug
               </button>
@@ -691,20 +697,20 @@ const SjsAssessment = (props) => {
                 {drugList.map((d) => (
                   <div
                     key={d.id}
-                    className="w-full bg-white border border-slate-200 p-3 rounded-lg shadow-sm flex items-center justify-between group hover:border-orange-300 transition-all"
+                    className="w-full bg-white border border-[#ebe8e2] p-3 rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.05)] flex items-center justify-between group hover:border-[#f5b8b8] transition-all"
                   >
                     <div className="flex items-center gap-3 w-full overflow-hidden">
-                      <strong className="text-slate-800 text-base min-w-[100px] truncate">
+                      <strong className="text-[#2d2926] text-base min-w-[100px] truncate">
                         {d.name}
                       </strong>
-                      <div className="flex items-center gap-1.5 text-slate-600 bg-slate-100 px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap border border-slate-200">
+                      <div className="flex items-center gap-1.5 text-[#6b6360] bg-[#f4f2ee] px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap border border-[#ebe8e2]">
                         <span>
                           {new Date(d.startDate).toLocaleDateString('en-GB', {
                             day: 'numeric',
                             month: 'short',
                           })}
                         </span>
-                        <span className="text-slate-400">→</span>
+                        <span className="text-[#a8a099]">→</span>
                         <span>
                           {d.stopDate
                             ? new Date(d.stopDate).toLocaleDateString('en-GB', {
@@ -717,7 +723,7 @@ const SjsAssessment = (props) => {
                     </div>
                     <button
                       onClick={() => handleDeleteDrug(d.id)}
-                      className="text-slate-300 hover:text-red-500 font-bold px-2 text-lg ml-2"
+                      className="text-slate-300 hover:text-[#e07060] font-bold px-2 text-lg ml-2"
                     >
                       ×
                     </button>
@@ -727,19 +733,19 @@ const SjsAssessment = (props) => {
             </div>
           </div>
           {/* 🟢 FIXED: INPUT UI for Daily Log */}
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col h-full">
-            <h3 className="text-base font-bold text-slate-700 mb-4 border-b pb-2 flex items-center gap-2">
+          <div className="bg-white p-5 rounded-[10px] border border-[#ebe8e2] shadow-[0_1px_4px_rgba(0,0,0,0.05)] flex flex-col h-full">
+            <h3 className="text-base font-bold text-[#2d2926] mb-4 border-b pb-2 flex items-center gap-2">
               📝 Daily Clinical Log
             </h3>
             <div className="space-y-4 flex-grow">
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <span className="text-xs font-bold text-slate-500 block mb-1">
+                  <span className="text-xs font-bold text-[#a8a099] block mb-1">
                     Date
                   </span>
                   <input
                     type="date"
-                    className="w-full border border-slate-300 p-2.5 rounded-lg text-base"
+                    className="w-full border border-[#d6d0c8] p-2.5 rounded-lg text-base"
                     value={currentLog.date}
                     onChange={(e) =>
                       setCurrentLog({ ...currentLog, date: e.target.value })
@@ -747,13 +753,13 @@ const SjsAssessment = (props) => {
                   />
                 </div>
                 <div className="w-1/3">
-                  <span className="text-xs font-bold text-slate-500 block mb-1">
+                  <span className="text-xs font-bold text-[#a8a099] block mb-1">
                     % Detachment
                   </span>
                   <input
                     type="number"
                     placeholder="%"
-                    className="w-full border border-slate-300 p-2.5 rounded-lg text-base text-center font-bold text-red-600 bg-red-50 focus:bg-white transition-colors"
+                    className="w-full border border-[#d6d0c8] p-2.5 rounded-lg text-base text-center font-bold text-[#b83232] bg-red-50 focus:bg-white transition-colors"
                     value={currentLog.detachment}
                     onChange={(e) =>
                       setCurrentLog({
@@ -764,9 +770,9 @@ const SjsAssessment = (props) => {
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4 bg-slate-50 p-3 rounded-lg border border-slate-100">
+              <div className="grid grid-cols-2 gap-4 bg-[#faf9f7] p-3 rounded-lg border border-[#f4f2ee]">
                 <div>
-                  <span className="text-xs font-bold text-slate-500 block mb-1">
+                  <span className="text-xs font-bold text-[#a8a099] block mb-1">
                     Max Temp (°C)
                   </span>
                   <input
@@ -775,7 +781,7 @@ const SjsAssessment = (props) => {
                     className={`w-full border p-2 rounded-lg text-base font-medium ${
                       parseFloat(currentLog.temp) > 38
                         ? 'border-red-300 bg-white text-red-700'
-                        : 'border-slate-300'
+                        : 'border-[#d6d0c8]'
                     }`}
                     value={currentLog.temp}
                     onChange={(e) =>
@@ -785,7 +791,7 @@ const SjsAssessment = (props) => {
                 </div>
                 {/* 🟢 BEAUTIFUL CHECKBOX LAYOUT */}
                 <div>
-                  <span className="text-xs font-bold text-slate-500 block mb-1">
+                  <span className="text-xs font-bold text-[#a8a099] block mb-1">
                     Mucosal Sites
                   </span>
                   <div className="flex gap-2 justify-between pt-2">
@@ -809,7 +815,7 @@ const SjsAssessment = (props) => {
                               })
                             }
                           />
-                          <div className="w-5 h-5 border-2 border-slate-300 rounded peer-checked:bg-purple-500 peer-checked:border-purple-500 transition-all"></div>
+                          <div className="w-5 h-5 border-2 border-[#d6d0c8] rounded peer-checked:bg-purple-500 peer-checked:border-purple-500 transition-all"></div>
                           <svg
                             className="absolute w-3 h-3 text-white hidden peer-checked:block top-1 left-1 pointer-events-none"
                             fill="none"
@@ -824,7 +830,7 @@ const SjsAssessment = (props) => {
                             />
                           </svg>
                         </div>
-                        <span className="text-[10px] font-bold text-slate-400 mt-1 group-hover:text-purple-600 peer-checked:text-purple-600 transition-colors">
+                        <span className="text-[10px] font-bold text-[#a8a099] mt-1 group-hover:text-purple-600 peer-checked:text-purple-600 transition-colors">
                           {site}
                         </span>
                       </label>
@@ -834,7 +840,7 @@ const SjsAssessment = (props) => {
               </div>
               <input
                 placeholder="Note (e.g. Hypotension)"
-                className="w-full border border-slate-300 p-2.5 rounded-lg text-base"
+                className="w-full border border-[#d6d0c8] p-2.5 rounded-lg text-base"
                 value={currentLog.note}
                 onChange={(e) =>
                   setCurrentLog({ ...currentLog, note: e.target.value })
@@ -842,7 +848,7 @@ const SjsAssessment = (props) => {
               />
               <button
                 onClick={handleAddLog}
-                className="w-full bg-orange-100 text-orange-700 border border-orange-200 font-bold py-2.5 rounded-lg hover:bg-orange-200 transition"
+                className="w-full bg-[#fdf0ee] text-[#8c3322] border border-[#f5b8b8] font-bold py-2.5 rounded-lg hover:bg-orange-200 transition"
               >
                 + Add Log
               </button>
@@ -855,10 +861,10 @@ const SjsAssessment = (props) => {
                 return (
                   <div
                     key={l.id}
-                    className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex flex-col gap-1.5 hover:border-blue-300 transition-colors"
+                    className="bg-white p-3 rounded-lg border border-[#ebe8e2] shadow-[0_1px_4px_rgba(0,0,0,0.05)] flex flex-col gap-1.5 hover:border-blue-300 transition-colors"
                   >
                     <div className="flex justify-between items-center border-b border-slate-50 pb-1">
-                      <span className="font-bold text-slate-800 text-sm">
+                      <span className="font-bold text-[#2d2926] text-sm">
                         {new Date(l.date).toLocaleDateString('en-GB', {
                           day: 'numeric',
                           month: 'short',
@@ -866,7 +872,7 @@ const SjsAssessment = (props) => {
                       </span>
                       <button
                         onClick={() => handleDeleteLog(l.id)}
-                        className="text-slate-300 hover:text-red-500 font-bold text-lg"
+                        className="text-slate-300 hover:text-[#e07060] font-bold text-lg"
                       >
                         ×
                       </button>
@@ -878,7 +884,7 @@ const SjsAssessment = (props) => {
                         </span>
                       )}
                       {parseFloat(l.temp) > 38 && (
-                        <span className="text-xs bg-red-50 text-red-600 px-2 py-0.5 rounded border border-red-100 font-bold">
+                        <span className="text-xs bg-red-50 text-[#b83232] px-2 py-0.5 rounded border border-red-100 font-bold">
                           🌡 Fever
                         </span>
                       )}
@@ -898,20 +904,20 @@ const SjsAssessment = (props) => {
         <button
           onClick={performAnalysis}
           disabled={!indexDate || drugList.length === 0}
-          className={`w-full mt-8 text-white text-xl py-4 rounded-xl font-bold shadow-lg transition transform active:scale-95 flex justify-center gap-3 items-center ${
+          className={`w-full mt-8 text-white text-xl py-4 rounded-[10px] font-bold shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition transform active:scale-95 flex justify-center gap-3 items-center ${
             !indexDate || drugList.length === 0
               ? 'bg-slate-300 cursor-not-allowed'
-              : 'bg-orange-600 hover:bg-orange-700 hover:shadow-orange-200'
+              : 'bg-[#b83232] hover:bg-[#8c3322] hover:shadow-orange-200'
           }`}
         >
           <span>⚡</span> Update Timeline & Calculate
         </button>
-        <div className="mt-8 bg-white p-5 rounded-xl border border-slate-200 shadow-sm text-left">
-          <h3 className="text-base font-bold text-slate-700 mb-3 flex items-center gap-2">
+        <div className="mt-8 bg-white p-5 rounded-[10px] border border-[#ebe8e2] shadow-[0_1px_4px_rgba(0,0,0,0.05)] text-left">
+          <h3 className="text-base font-bold text-[#2d2926] mb-3 flex items-center gap-2">
             📝 Pharmacist Note
           </h3>
           <textarea
-            className="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-100 outline-none resize-y min-h-[100px]"
+            className="w-full border border-[#d6d0c8] rounded-lg p-3 text-sm focus:ring-1 focus:ring-[#e6f4f1] outline-none resize-y min-h-[100px]"
             value={pharmacistNote}
             onChange={(e) => setPharmacistNote(e.target.value)}
           />
@@ -921,14 +927,14 @@ const SjsAssessment = (props) => {
       {showResults && timelinePoints.length > 0 && (
         <>
           {/* 2. TIMELINE SECTION */}
-          <div className="bg-white border border-slate-200 rounded-xl p-8 shadow-sm print:break-inside-avoid relative overflow-hidden">
-            <h3 className="font-bold text-slate-700 mb-6 border-b pb-2 text-lg text-left">
+          <div className="bg-white border border-[#ebe8e2] rounded-[10px] p-8 shadow-[0_1px_4px_rgba(0,0,0,0.05)] print:break-inside-avoid relative overflow-hidden">
+            <h3 className="font-bold text-[#2d2926] mb-6 border-b pb-2 text-lg text-left">
               📅 Clinical Timeline
             </h3>
 
             <div className="relative w-full min-h-[200px] mb-6">
               {/* 🟢 2. DRUGS SECTION */}
-              <div className="relative mb-0 pb-6 border-b border-slate-200 z-10">
+              <div className="relative mb-0 pb-6 border-b border-[#ebe8e2] z-10">
                 {/* 🟢 ย้ายเส้น ONSET มาไว้ตรงนี้ เพื่อให้ความยาวสุดแค่ขอบเขตของส่วนยา (เส้นสีเทา) */}
                 <div className="absolute inset-0 pointer-events-none">
                   <div className="w-full h-full flex">
@@ -936,14 +942,14 @@ const SjsAssessment = (props) => {
                     <div className="w-[85%] relative h-full">
                       {indexDate && (
                         <div
-                          className="absolute top-0 bottom-0 border-l-[2px] border-red-500 border-solid transform -translate-x-1/2 print:border-red-600 print-color-exact"
+                          className="absolute top-0 bottom-0 border-l-[2px] border-red-500 border-solid transform -translate-x-1/2 print:border-[#b83232] print-color-exact"
                           style={{
                             left: `${getTimelinePos(
                               normalizeDate(indexDate)
                             )}%`,
                           }}
                         >
-                          <div className="absolute -top-7 -left-10 bg-red-500 text-white text-[10px] px-2 py-1 rounded shadow font-bold whitespace-nowrap z-20 print:bg-red-600 print-color-exact">
+                          <div className="absolute -top-7 -left-10 bg-red-500 text-white text-[10px] px-2 py-1 rounded shadow font-bold whitespace-nowrap z-20 print:bg-[#b83232] print-color-exact">
                             ONSET{' '}
                             {new Date(indexDate).toLocaleDateString('en-GB', {
                               day: 'numeric',
@@ -959,7 +965,7 @@ const SjsAssessment = (props) => {
                 <div className="space-y-6 relative">
                   {groupedDrugs.map((group, i) => (
                     <div key={i} className="flex w-full items-center h-6 group">
-                      <div className="w-[15%] text-right pr-4 text-sm font-bold truncate text-slate-700 capitalize">
+                      <div className="w-[15%] text-right pr-4 text-sm font-bold truncate text-[#2d2926] capitalize">
                         {group.displayName}
                       </div>
                       <div className="w-[85%] relative h-full flex items-center">
@@ -971,7 +977,7 @@ const SjsAssessment = (props) => {
                           return (
                             <React.Fragment key={idx}>
                               <div
-                                className="absolute h-1.5 bg-slate-400 rounded-full transition-colors print:bg-slate-500 print-color-exact"
+                                className="absolute h-1.5 bg-slate-400 rounded-full transition-colors print:bg-[#faf9f7]0 print-color-exact"
                                 style={{
                                   left: barProps.left,
                                   width: barProps.width,
@@ -979,7 +985,7 @@ const SjsAssessment = (props) => {
                               ></div>
                               {barProps.showStart && (
                                 <div
-                                  className="absolute w-3.5 h-3.5 bg-slate-400 rounded-full border border-white shadow z-10 transform -translate-x-1/2 print:bg-slate-500 print-color-exact"
+                                  className="absolute w-3.5 h-3.5 bg-slate-400 rounded-full border border-white shadow z-10 transform -translate-x-1/2 print:bg-[#faf9f7]0 print-color-exact"
                                   style={{
                                     left: `${getTimelinePos(
                                       normalizeDate(iv.startDate)
@@ -990,7 +996,7 @@ const SjsAssessment = (props) => {
                               )}
                               {barProps.showEnd && (
                                 <div
-                                  className="absolute w-3.5 h-3.5 bg-slate-400 rounded-full border border-white shadow z-10 transform -translate-x-1/2 print:bg-slate-500 print-color-exact"
+                                  className="absolute w-3.5 h-3.5 bg-slate-400 rounded-full border border-white shadow z-10 transform -translate-x-1/2 print:bg-[#faf9f7]0 print-color-exact"
                                   style={{
                                     left: `${getTimelinePos(
                                       normalizeDate(
@@ -1014,7 +1020,7 @@ const SjsAssessment = (props) => {
               <div className="pt-4 space-y-4 relative z-10">
                 {/* Detachment */}
                 <div className="flex w-full items-center min-h-[40px] relative">
-                  <div className="w-[15%] text-right pr-4 text-xs font-bold text-red-600">
+                  <div className="w-[15%] text-right pr-4 text-xs font-bold text-[#b83232]">
                     Detachment
                   </div>
                   <div className="w-[85%] relative h-full">
@@ -1031,11 +1037,11 @@ const SjsAssessment = (props) => {
                           >
                             {l.level > 0 && (
                               <div
-                                className="w-px bg-slate-200 mb-0.5 print:bg-slate-400 print-color-exact"
+                                className="w-px bg-[#ebe8e2] mb-0.5 print:bg-slate-400 print-color-exact"
                                 style={{ height: `${l.level * 24}px` }}
                               ></div>
                             )}
-                            <span className="text-[10px] font-bold text-red-600 bg-white/90 px-1 rounded shadow-sm border border-slate-100 whitespace-nowrap print:border-slate-300 print-color-exact">
+                            <span className="text-[10px] font-bold text-[#b83232] bg-white/90 px-1 rounded shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-[#f4f2ee] whitespace-nowrap print:border-[#d6d0c8] print-color-exact">
                               {l.detachment}%
                             </span>
                           </div>
@@ -1045,7 +1051,7 @@ const SjsAssessment = (props) => {
                 </div>
                 {/* Temp */}
                 <div className="flex w-full items-center min-h-[40px] relative mt-4">
-                  <div className="w-[15%] text-right pr-4 text-xs font-bold text-orange-600">
+                  <div className="w-[15%] text-right pr-4 text-xs font-bold text-[#8c3322]">
                     Temp
                   </div>
                   <div className="w-[85%] relative h-full">
@@ -1062,15 +1068,15 @@ const SjsAssessment = (props) => {
                           >
                             {l.level > 0 && (
                               <div
-                                className="w-px bg-slate-200 mb-0.5 print:bg-slate-400 print-color-exact"
+                                className="w-px bg-[#ebe8e2] mb-0.5 print:bg-slate-400 print-color-exact"
                                 style={{ height: `${l.level * 24}px` }}
                               ></div>
                             )}
                             <span
-                              className={`text-[10px] font-bold bg-white/90 px-1 rounded shadow-sm border border-slate-100 whitespace-nowrap print:border-slate-300 print-color-exact ${
+                              className={`text-[10px] font-bold bg-white/90 px-1 rounded shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-[#f4f2ee] whitespace-nowrap print:border-[#d6d0c8] print-color-exact ${
                                 parseFloat(l.temp) > 38
-                                  ? 'text-red-500'
-                                  : 'text-slate-600'
+                                  ? 'text-[#e07060]'
+                                  : 'text-[#6b6360]'
                               }`}
                             >
                               {l.temp}
@@ -1082,7 +1088,7 @@ const SjsAssessment = (props) => {
                 </div>
 
                 {/* 🟢 NEW: Single Mucositis Row with Vertical Stack */}
-                <div className="mt-6 border-t border-slate-100 pt-2 print:border-slate-300">
+                <div className="mt-6 border-t border-[#f4f2ee] pt-2 print:border-[#d6d0c8]">
                   <div className="flex w-full items-start min-h-[40px] relative">
                     <div className="w-[15%] text-right pr-4 text-xs font-bold text-purple-700 pt-2">
                       Mucositis
@@ -1108,7 +1114,7 @@ const SjsAssessment = (props) => {
                             {sites.map((s) => (
                               <div
                                 key={s}
-                                className="w-5 h-5 bg-purple-100 text-purple-700 rounded-full border border-purple-300 shadow-sm print:bg-purple-100 print:border-purple-300 print-color-exact flex items-center justify-center text-[9px] font-bold"
+                                className="w-5 h-5 bg-purple-100 text-purple-700 rounded-full border border-purple-300 shadow-[0_1px_4px_rgba(0,0,0,0.05)] print:bg-purple-100 print:border-purple-300 print-color-exact flex items-center justify-center text-[9px] font-bold"
                               >
                                 {s}
                               </div>
@@ -1122,13 +1128,13 @@ const SjsAssessment = (props) => {
               </div>
 
               {/* X-Axis */}
-              <div className="flex w-full h-6 items-end mt-8 border-t border-slate-200 pt-2 relative z-10">
+              <div className="flex w-full h-6 items-end mt-8 border-t border-[#ebe8e2] pt-2 relative z-10">
                 <div className="w-[15%]"></div>
                 <div className="w-[85%] relative h-full">
                   {getSmartDateTicks().map((date, i) => (
                     <div
                       key={i}
-                      className="absolute top-0 text-[10px] text-slate-400 font-medium -translate-x-1/2 whitespace-nowrap origin-top"
+                      className="absolute top-0 text-[10px] text-[#a8a099] font-medium -translate-x-1/2 whitespace-nowrap origin-top"
                       style={{ left: `${getTimelinePos(date.getTime())}%` }}
                     >
                       {date.toLocaleDateString('en-GB', {
@@ -1146,22 +1152,22 @@ const SjsAssessment = (props) => {
           {/* 3. ALDEN CARDS RESULTS */}
           <div className="animate-slide-up pb-10">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold text-slate-800">
+              <h3 className="text-xl font-bold text-[#2d2926]">
                 Assessment Results
               </h3>
-              <span className="text-xs text-slate-500 print:hidden bg-slate-100 px-2 py-1 rounded">
+              <span className="text-xs text-[#a8a099] print:hidden bg-[#f4f2ee] px-2 py-1 rounded">
                 Auto-calculated
               </span>
             </div>
-            <div className="flex flex-wrap gap-2 mb-0 border-b border-slate-200 pb-0 print:hidden">
+            <div className="flex flex-wrap gap-2 mb-0 border-b border-[#ebe8e2] pb-0 print:hidden">
               {groupedDrugs.map((g) => (
                 <button
                   key={g.id}
                   onClick={() => setActiveTab(g.id)}
                   className={`px-4 py-3 rounded-t-lg text-sm font-bold border-t border-x transition-all relative top-[1px] capitalize ${
                     activeTab === g.id
-                      ? 'bg-white border-slate-300 border-b-white text-slate-800 shadow-sm z-10'
-                      : 'bg-slate-50 border-transparent text-slate-400 hover:bg-slate-100'
+                      ? 'bg-white border-[#d6d0c8] border-b-white text-[#2d2926] shadow-[0_1px_4px_rgba(0,0,0,0.05)] z-10'
+                      : 'bg-[#faf9f7] border-transparent text-[#a8a099] hover:bg-[#f4f2ee]'
                   }`}
                 >
                   {/* 🟢 Modified: Show Score in Tab */}
@@ -1169,7 +1175,7 @@ const SjsAssessment = (props) => {
                     {g.displayName}
                     <span
                       className={
-                        activeTab === g.id ? 'text-orange-600' : 'opacity-75'
+                        activeTab === g.id ? 'text-[#8c3322]' : 'opacity-75'
                       }
                     >
                       ({calculateTotal(g.id)})
@@ -1178,7 +1184,7 @@ const SjsAssessment = (props) => {
                 </button>
               ))}
             </div>
-            <div className="bg-white border-x border-b border-slate-200 rounded-b-xl rounded-tr-xl p-1 shadow-sm relative z-0">
+            <div className="bg-white border-x border-b border-[#ebe8e2] rounded-b-xl rounded-tr-xl p-1 shadow-[0_1px_4px_rgba(0,0,0,0.05)] relative z-0">
               {activeTab && groupedDrugs.find((g) => g.id === activeTab) && (
                 <AldenCard
                   key={activeTab}

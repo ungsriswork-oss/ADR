@@ -7,15 +7,15 @@ import drugFeverCauseImg from '../assets/drug_fever_causes.png';
 
 // --- 1. PHARMACIST NOTE COMPONENT ---
 const PharmacistNoteSection = ({ note, setNote }) => (
-    <div className="border border-slate-300 rounded-lg overflow-hidden bg-white print:border-black mb-6 shadow-sm print:break-inside-avoid">
-        <div className="bg-slate-100 px-4 py-2 border-b border-slate-300 flex items-center gap-2 print:bg-slate-200 print:border-black">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div className="border border-[#d6d0c8] rounded-lg overflow-hidden bg-white print:border-black mb-6 shadow-[0_1px_4px_rgba(0,0,0,0.05)] print:break-inside-avoid">
+        <div className="bg-[#f4f2ee] px-4 py-2 border-b border-[#d6d0c8] flex items-center gap-2 print:bg-[#ebe8e2] print:border-black">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#6b6360]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
-            <span className="font-bold text-slate-700 text-sm">Pharmacist Note / ความเห็นเภสัชกร</span>
+            <span className="font-bold text-[#2d2926] text-sm">Pharmacist Note / ความเห็นเภสัชกร</span>
         </div>
         <textarea
-            className="w-full p-4 text-sm text-slate-700 focus:outline-none min-h-[100px] resize-y print:text-black"
+            className="w-full p-4 text-sm text-[#2d2926] focus:outline-none min-h-[100px] resize-y print:text-black"
             placeholder="บันทึกความเห็นเพิ่มเติม..."
             value={note}
             onChange={(e) => setNote(e.target.value)}
@@ -28,16 +28,16 @@ const CommonCausesModal = ({ isOpen, onClose }) => {
     if (!isOpen) return null;
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 print:hidden backdrop-blur-sm animate-fade-in">
-            <div className="bg-white rounded-xl shadow-2xl p-6 max-w-4xl w-full mx-4 relative border border-slate-200">
+            <div className="bg-white rounded-[10px] shadow-2xl p-6 max-w-4xl w-full mx-4 relative border border-[#ebe8e2]">
                 <button 
                     onClick={onClose} 
-                    className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition"
+                    className="absolute top-4 right-4 text-[#a8a099] hover:text-[#6b6360] w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#f4f2ee] transition"
                 >
                     ✕
                 </button>
-                <h3 className="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Drug Fever Common Causes</h3>
+                <h3 className="text-lg font-bold text-[#2d2926] mb-4 border-b pb-2">Drug Fever Common Causes</h3>
                 
-                <div className="overflow-auto max-h-[70vh] flex justify-center bg-slate-50 rounded border border-slate-100 p-4">
+                <div className="overflow-auto max-h-[70vh] flex justify-center bg-[#faf9f7] rounded border border-[#f4f2ee] p-4">
                     {/* ใช้ตัวแปรที่ import มา */}
                     <img 
                         src={drugFeverCauseImg} 
@@ -46,13 +46,13 @@ const CommonCausesModal = ({ isOpen, onClose }) => {
                         onError={(e) => {
                             e.target.onerror = null; 
                             e.target.style.display = 'none'; 
-                            e.target.parentNode.innerHTML = '<div class="text-center p-10 text-slate-400 text-sm">Image load failed.<br/>Please check filename in src/assets/</div>';
+                            e.target.parentNode.innerHTML = '<div class="text-center p-10 text-[#a8a099] text-sm">Image load failed.<br/>Please check filename in src/assets/</div>';
                         }}
                     />
                 </div>
                 
                 <div className="mt-4 text-right">
-                    <button onClick={onClose} className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-sm font-bold transition">
+                    <button onClick={onClose} className="px-4 py-2 bg-[#ebe8e2] hover:bg-slate-300 text-[#2d2926] rounded-lg text-sm font-bold transition">
                         Close
                     </button>
                 </div>
@@ -133,16 +133,16 @@ const SmartVisualTimeline = ({ groupedDrugs, logs, feverOnset }) => {
     };
 
     return (
-        <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white shadow-sm mb-6 p-4 print:border-none print:shadow-none print:p-0">
-            <h3 className="text-sm font-bold text-slate-700 mb-2 flex justify-between print:text-black">
+        <div className="overflow-x-auto border border-[#ebe8e2] rounded-[10px] bg-white shadow-[0_1px_4px_rgba(0,0,0,0.05)] mb-6 p-4 print:border-none print:shadow-none print:p-0">
+            <h3 className="text-sm font-bold text-[#2d2926] mb-2 flex justify-between print:text-black">
                 <span>Timeline Analysis (Time-based Plot)</span>
                 <div className="flex gap-4 text-xs">
-                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500 print:bg-red-600"></span> Temp</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500 print:bg-[#b83232]"></span> Temp</span>
                     <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500 print:bg-blue-600"></span> Pulse</span>
                 </div>
             </h3>
             <div style={{ width: '100%', minWidth: totalWidth }}>
-                <svg width={totalWidth} height={chartHeight} className="font-sans text-xs">
+                <svg width={totalWidth} height={chartHeight} className="font-[Inter,system-ui,sans-serif] text-xs">
                     <g className="text-[10px] fill-slate-400 print:fill-black">
                          {[36, 37, 38, 39, 40, 41].map(t => (
                             <text key={`ty-${t}`} x={leftMargin - 10} y={getTempY(t) + 4} textAnchor="end" fill="#ef4444" fontWeight="bold">{t}°</text>
@@ -291,9 +291,9 @@ const DrugAssessmentCard = ({ drugGroup, logs, feverDate, onChangeCriteria, onDe
     const totalScore = c1 + c2 + c3 + c4 + c5;
     
     let result = "Unlikely";
-    let badgeColor = "bg-slate-100 text-slate-500 print:border print:border-slate-400";
-    if (totalScore >= 5) { result = "Definite"; badgeColor = "bg-indigo-600 text-white print:text-black print:bg-transparent print:border-black"; }
-    else if (totalScore >= 3) { result = "Probable"; badgeColor = "bg-indigo-100 text-indigo-700 print:text-black print:bg-transparent"; }
+    let badgeColor = "bg-[#f4f2ee] text-[#a8a099] print:border print:border-slate-400";
+    if (totalScore >= 5) { result = "Definite"; badgeColor = "bg-[#2a9d8f] text-white print:text-black print:bg-transparent print:border-black"; }
+    else if (totalScore >= 3) { result = "Probable"; badgeColor = "bg-indigo-100 text-[#4a3ab8] print:text-black print:bg-transparent"; }
     else if (totalScore >= 1) { result = "Possible"; badgeColor = "bg-yellow-100 text-yellow-700 print:text-black print:bg-transparent"; }
 
     const handleManualChange = (field, val) => {
@@ -301,37 +301,37 @@ const DrugAssessmentCard = ({ drugGroup, logs, feverDate, onChangeCriteria, onDe
     };
 
     return (
-        <div className="border border-indigo-100 rounded-b-xl rounded-tr-xl overflow-hidden bg-white shadow-sm mb-4 transition animate-fade-in p-5 print:shadow-none print:border print:border-slate-400 print:rounded-xl print:mb-8 print:break-inside-avoid">
+        <div className="border border-[#cec8f6] rounded-b-xl rounded-tr-xl overflow-hidden bg-white shadow-[0_1px_4px_rgba(0,0,0,0.05)] mb-4 transition animate-fade-in p-5 print:shadow-none print:border print:border-slate-400 print:rounded-[10px] print:mb-8 print:break-inside-avoid">
             <div className="flex justify-between items-start mb-6 border-b pb-4">
                 <div>
                     <h3 className="text-xl font-bold text-indigo-900 flex items-center gap-2 print:text-black">
                         {drugGroup.name}
-                        <span className="text-base font-normal text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full ml-1 print:bg-transparent print:border print:border-slate-300 print:text-black">
+                        <span className="text-base font-normal text-[#a8a099] bg-[#f4f2ee] px-2 py-0.5 rounded-full ml-1 print:bg-transparent print:border print:border-[#d6d0c8] print:text-black">
                             (Score: {totalScore})
                         </span>
                     </h3>
                     <div className="flex flex-wrap gap-2 mt-2">
                         {drugGroup.intervals.map((inv, idx) => (
-                            <span key={idx} className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded border border-slate-200 print:border-slate-400 print:text-black">
+                            <span key={idx} className="text-xs text-[#a8a099] bg-[#f4f2ee] px-2 py-1 rounded border border-[#ebe8e2] print:border-slate-400 print:text-black">
                                 {inv.start} → {inv.stop || 'Ongoing'}
                             </span>
                         ))}
                     </div>
                 </div>
-                <div className={`px-4 py-2 rounded text-sm font-bold uppercase tracking-wide shadow-sm ${badgeColor} self-center`}>
+                <div className={`px-4 py-2 rounded text-sm font-bold uppercase tracking-wide shadow-[0_1px_4px_rgba(0,0,0,0.05)] ${badgeColor} self-center`}>
                     {result}
                 </div>
             </div>
 
             <div className="space-y-4 text-left">
-                <div className="flex items-start gap-4 p-3 rounded border border-slate-100 hover:bg-slate-50 transition print:bg-white print:border-slate-300">
+                <div className="flex items-start gap-4 p-3 rounded border border-[#f4f2ee] hover:bg-[#faf9f7] transition print:bg-white print:border-[#d6d0c8]">
                     <div className={`mt-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${c1 > 0 ? 'bg-green-500 text-white' : 'bg-red-500 text-white'} print:text-black print:bg-transparent print:border print:border-black`}>1</div>
                     <div className="flex-1">
                         <div className="flex justify-between items-center mb-1">
-                            <span className="text-sm font-bold text-slate-800">Temporal Relationship</span>
-                            <span className={`text-sm font-bold ${c1 > 0 ? 'text-green-600 print:text-black' : 'text-red-600 print:text-black'}`}>{c1 > 0 ? '+1' : '-2'}</span>
+                            <span className="text-sm font-bold text-[#2d2926]">Temporal Relationship</span>
+                            <span className={`text-sm font-bold ${c1 > 0 ? 'text-green-600 print:text-black' : 'text-[#b83232] print:text-black'}`}>{c1 > 0 ? '+1' : '-2'}</span>
                         </div>
-                        <p className="text-sm text-slate-600 mb-2 print:text-black">ไข้เกิดขึ้นหลังจากเริ่มยา?</p>
+                        <p className="text-sm text-[#6b6360] mb-2 print:text-black">ไข้เกิดขึ้นหลังจากเริ่มยา?</p>
                         <div className="flex gap-4 print:hidden">
                             <label className="flex items-center gap-2 cursor-pointer hover:bg-white p-1 rounded"><input type="radio" checked={c1 === 1} onChange={() => handleManualChange('manualC1', 1)} className="accent-green-600 w-4 h-4" /><span className="text-sm">Yes (+1)</span></label>
                             <label className="flex items-center gap-2 cursor-pointer hover:bg-white p-1 rounded"><input type="radio" checked={c1 === -2} onChange={() => handleManualChange('manualC1', -2)} className="accent-red-500 w-4 h-4" /><span className="text-sm">No (-2)</span></label>
@@ -340,14 +340,14 @@ const DrugAssessmentCard = ({ drugGroup, logs, feverDate, onChangeCriteria, onDe
                     </div>
                 </div>
 
-                <div className="flex items-start gap-4 p-3 rounded border border-slate-100 hover:bg-slate-50 transition print:bg-white print:border-slate-300">
+                <div className="flex items-start gap-4 p-3 rounded border border-[#f4f2ee] hover:bg-[#faf9f7] transition print:bg-white print:border-[#d6d0c8]">
                     <div className={`mt-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${c2 > 0 ? 'bg-green-500 text-white' : c2 < 0 ? 'bg-red-500 text-white' : 'bg-slate-400 text-white'} print:text-black print:bg-transparent print:border print:border-black`}>2</div>
                     <div className="flex-1">
                         <div className="flex justify-between items-center mb-1">
-                            <span className="text-sm font-bold text-slate-800">Dechallenge</span>
-                            <span className={`text-sm font-bold ${c2 > 0 ? 'text-green-600 print:text-black' : c2 < 0 ? 'text-red-600 print:text-black' : 'text-slate-400 print:text-black'}`}>{c2 > 0 ? '+2' : c2 < 0 ? '-2' : '0'}</span>
+                            <span className="text-sm font-bold text-[#2d2926]">Dechallenge</span>
+                            <span className={`text-sm font-bold ${c2 > 0 ? 'text-green-600 print:text-black' : c2 < 0 ? 'text-[#b83232] print:text-black' : 'text-[#a8a099] print:text-black'}`}>{c2 > 0 ? '+2' : c2 < 0 ? '-2' : '0'}</span>
                         </div>
-                        <p className="text-sm text-slate-600 mb-2 print:text-black">ไข้ลดลงภายใน 96 ชม. หลังหยุดยา?</p>
+                        <p className="text-sm text-[#6b6360] mb-2 print:text-black">ไข้ลดลงภายใน 96 ชม. หลังหยุดยา?</p>
                         <div className="flex gap-4 print:hidden">
                             <label className="flex items-center gap-2 cursor-pointer hover:bg-white p-1 rounded"><input type="radio" checked={c2 === 2} onChange={() => handleManualChange('manualC2', 2)} className="accent-green-600 w-4 h-4" /><span className="text-sm">Yes (+2)</span></label>
                             <label className="flex items-center gap-2 cursor-pointer hover:bg-white p-1 rounded"><input type="radio" checked={c2 === -2} onChange={() => handleManualChange('manualC2', -2)} className="accent-red-500 w-4 h-4" /><span className="text-sm">No (-2)</span></label>
@@ -357,14 +357,14 @@ const DrugAssessmentCard = ({ drugGroup, logs, feverDate, onChangeCriteria, onDe
                     </div>
                 </div>
 
-                <div className="flex items-start gap-4 p-3 rounded border border-slate-100 hover:bg-slate-50 transition print:bg-white print:border-slate-300">
-                    <div className="mt-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-slate-500 bg-slate-200 print:text-black print:bg-transparent print:border print:border-black">3</div>
+                <div className="flex items-start gap-4 p-3 rounded border border-[#f4f2ee] hover:bg-[#faf9f7] transition print:bg-white print:border-[#d6d0c8]">
+                    <div className="mt-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-[#a8a099] bg-[#ebe8e2] print:text-black print:bg-transparent print:border print:border-black">3</div>
                     <div className="flex-1">
                         <div className="flex justify-between items-center mb-1">
-                            <span className="text-sm font-bold text-slate-800">Exclusion of other causes</span>
-                            <span className="text-sm font-bold text-indigo-600 print:text-black">{c3 > 0 ? `+${c3}` : c3}</span>
+                            <span className="text-sm font-bold text-[#2d2926]">Exclusion of other causes</span>
+                            <span className="text-sm font-bold text-[#4a3ab8] print:text-black">{c3 > 0 ? `+${c3}` : c3}</span>
                         </div>
-                        <p className="text-sm text-slate-600 mb-2 print:text-black">ไม่มีสาเหตุอื่นที่อธิบายไข้ได้ชัดเจน (Infection, Disease flare)?</p>
+                        <p className="text-sm text-[#6b6360] mb-2 print:text-black">ไม่มีสาเหตุอื่นที่อธิบายไข้ได้ชัดเจน (Infection, Disease flare)?</p>
                         <div className="flex gap-4 print:hidden">
                             <label className="flex items-center gap-2 cursor-pointer hover:bg-white p-1 rounded"><input type="radio" checked={c3 === 1} onChange={() => handleManualChange('manualC3', 1)} className="accent-indigo-600 w-4 h-4" /><span className="text-sm">Yes (+1)</span></label>
                             <label className="flex items-center gap-2 cursor-pointer hover:bg-white p-1 rounded"><input type="radio" checked={c3 === 0} onChange={() => handleManualChange('manualC3', 0)} className="accent-red-500 w-4 h-4" /><span className="text-sm">No (0)</span></label>
@@ -373,14 +373,14 @@ const DrugAssessmentCard = ({ drugGroup, logs, feverDate, onChangeCriteria, onDe
                     </div>
                 </div>
 
-                <div className="flex items-start gap-4 p-3 rounded border border-slate-100 hover:bg-slate-50 transition print:bg-white print:border-slate-300">
-                    <div className="mt-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-slate-500 bg-slate-200 print:text-black print:bg-transparent print:border print:border-black">4</div>
+                <div className="flex items-start gap-4 p-3 rounded border border-[#f4f2ee] hover:bg-[#faf9f7] transition print:bg-white print:border-[#d6d0c8]">
+                    <div className="mt-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-[#a8a099] bg-[#ebe8e2] print:text-black print:bg-transparent print:border print:border-black">4</div>
                     <div className="flex-1">
                         <div className="flex justify-between items-center mb-1">
-                            <span className="text-sm font-bold text-slate-800">Rechallenge {c4_auto_triggered && <span className="text-xs text-red-500 font-normal ml-2">(Auto: Negative due to tolerance)</span>}</span>
-                            <span className={`text-sm font-bold ${c4 > 0 ? 'text-green-600 print:text-black' : c4 < 0 ? 'text-red-600 print:text-black' : 'text-slate-400 print:text-black'}`}>{c4 > 0 ? `+${c4}` : c4}</span>
+                            <span className="text-sm font-bold text-[#2d2926]">Rechallenge {c4_auto_triggered && <span className="text-xs text-[#e07060] font-normal ml-2">(Auto: Negative due to tolerance)</span>}</span>
+                            <span className={`text-sm font-bold ${c4 > 0 ? 'text-green-600 print:text-black' : c4 < 0 ? 'text-[#b83232] print:text-black' : 'text-[#a8a099] print:text-black'}`}>{c4 > 0 ? `+${c4}` : c4}</span>
                         </div>
-                        <p className="text-sm text-slate-600 mb-2 print:text-black">ได้รับยาซ้ำแล้วไข้กลับมา (Positive) หรือ ใช้ยาต่อแล้วไข้ลง (Negative)?</p>
+                        <p className="text-sm text-[#6b6360] mb-2 print:text-black">ได้รับยาซ้ำแล้วไข้กลับมา (Positive) หรือ ใช้ยาต่อแล้วไข้ลง (Negative)?</p>
                         <div className="flex gap-4 print:hidden">
                             <label className="flex items-center gap-2 cursor-pointer hover:bg-white p-1 rounded"><input type="radio" checked={c4 === 2} onChange={() => handleManualChange('manualC4', 2)} className="accent-green-600 w-4 h-4" /><span className="text-sm">Positive (+2)</span></label>
                             <label className="flex items-center gap-2 cursor-pointer hover:bg-white p-1 rounded"><input type="radio" checked={c4 === -2} onChange={() => handleManualChange('manualC4', -2)} className="accent-red-500 w-4 h-4" /><span className="text-sm">Negative (-2)</span></label>
@@ -390,14 +390,14 @@ const DrugAssessmentCard = ({ drugGroup, logs, feverDate, onChangeCriteria, onDe
                     </div>
                 </div>
 
-                <div className="flex items-start gap-4 p-3 rounded border border-slate-100 hover:bg-slate-50 transition print:bg-white print:border-slate-300">
-                    <div className="mt-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-slate-500 bg-slate-200 print:text-black print:bg-transparent print:border print:border-black">5</div>
+                <div className="flex items-start gap-4 p-3 rounded border border-[#f4f2ee] hover:bg-[#faf9f7] transition print:bg-white print:border-[#d6d0c8]">
+                    <div className="mt-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-[#a8a099] bg-[#ebe8e2] print:text-black print:bg-transparent print:border print:border-black">5</div>
                     <div className="flex-1">
                         <div className="flex justify-between items-center mb-1">
-                            <span className="text-sm font-bold text-slate-800">Supportive Findings</span>
-                            <span className="text-sm font-bold text-indigo-600 print:text-black">{c5 > 0 ? `+${c5}` : c5}</span>
+                            <span className="text-sm font-bold text-[#2d2926]">Supportive Findings</span>
+                            <span className="text-sm font-bold text-[#4a3ab8] print:text-black">{c5 > 0 ? `+${c5}` : c5}</span>
                         </div>
-                        <p className="text-sm text-slate-600 mb-2 print:text-black">มี Relative Bradycardia หรือรู้สึกสบายดีแม้ไข้สูง?</p>
+                        <p className="text-sm text-[#6b6360] mb-2 print:text-black">มี Relative Bradycardia หรือรู้สึกสบายดีแม้ไข้สูง?</p>
                         <div className="flex gap-4 print:hidden">
                             <label className="flex items-center gap-2 cursor-pointer hover:bg-white p-1 rounded"><input type="radio" checked={c5 === 1} onChange={() => handleManualChange('manualC5', 1)} className="accent-indigo-600 w-4 h-4" /><span className="text-sm">Yes (+1)</span></label>
                             <label className="flex items-center gap-2 cursor-pointer hover:bg-white p-1 rounded"><input type="radio" checked={c5 === 0} onChange={() => handleManualChange('manualC5', 0)} className="accent-red-500 w-4 h-4" /><span className="text-sm">No (0)</span></label>
@@ -407,7 +407,7 @@ const DrugAssessmentCard = ({ drugGroup, logs, feverDate, onChangeCriteria, onDe
                 </div>
 
                 <div className="flex justify-end pt-3 border-t mt-4 print:hidden">
-                    <button onClick={() => drugGroup.ids.forEach(id => onDelete(id))} className="text-sm text-red-400 hover:text-red-600 font-bold flex items-center gap-1 px-2 py-1 rounded hover:bg-red-50">
+                    <button onClick={() => drugGroup.ids.forEach(id => onDelete(id))} className="text-sm text-red-400 hover:text-[#b83232] font-bold flex items-center gap-1 px-2 py-1 rounded hover:bg-red-50">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
                         Remove Drug Group
                     </button>
@@ -586,65 +586,65 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
     return (
         <div className="space-y-6 animate-fade-in">
             {/* 1. INPUT PANEL */}
-            <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100 print:hidden">
+            <div className="bg-[#f0eeff] p-4 rounded-[10px] border border-[#cec8f6] print:hidden">
                 <h3 className="text-sm font-bold text-indigo-800 mb-3 uppercase">1. Data Entry Panel</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-white p-3 rounded-lg border border-indigo-100">
-                        <label className="text-xs font-bold text-slate-500 block mb-2">Add Suspected Drug</label>
+                    <div className="bg-white p-3 rounded-lg border border-[#cec8f6]">
+                        <label className="text-xs font-bold text-[#a8a099] block mb-2">Add Suspected Drug</label>
                         <div className="flex gap-2 items-end">
                             <div className="flex-1">
-                                <label className="text-[10px] text-slate-500 block mb-1">ชื่อยา</label>
+                                <label className="text-[10px] text-[#a8a099] block mb-1">ชื่อยา</label>
                                 <input type="text" placeholder="Name" className="w-full border p-1 rounded text-xs" value={currentDrug.name} onChange={e=>setCurrentDrug({...currentDrug, name: e.target.value})} />
                             </div>
                             <div className="flex-1">
-                                <label className="text-[10px] text-slate-500 block mb-1">วันที่เริ่มยา</label>
+                                <label className="text-[10px] text-[#a8a099] block mb-1">วันที่เริ่มยา</label>
                                 <input type="date" className="w-full border p-1 rounded text-xs" value={currentDrug.startDate} onChange={e=>setCurrentDrug({...currentDrug, startDate: e.target.value})} />
                             </div>
                             <div className="flex-1">
-                                <label className="text-[10px] text-slate-500 block mb-1">วันสุดท้ายที่ได้รับยา</label>
+                                <label className="text-[10px] text-[#a8a099] block mb-1">วันสุดท้ายที่ได้รับยา</label>
                                 <input type="date" placeholder="Stop" className="w-full border p-1 rounded text-xs" value={currentDrug.stopDate} onChange={e=>setCurrentDrug({...currentDrug, stopDate: e.target.value})} />
                             </div>
-                            <button onClick={handleAddDrug} className="bg-indigo-600 text-white rounded px-3 py-1.5 text-xs font-bold mb-[1px]">+</button>
+                            <button onClick={handleAddDrug} className="bg-[#2a9d8f] text-white rounded px-3 py-1.5 text-xs font-bold mb-[1px]">+</button>
                         </div>
                     </div>
-                    <div className="bg-white p-3 rounded-lg border border-indigo-100">
-                        <label className="text-xs font-bold text-slate-500 block mb-2">Fever Onset (Time Specific)</label>
+                    <div className="bg-white p-3 rounded-lg border border-[#cec8f6]">
+                        <label className="text-xs font-bold text-[#a8a099] block mb-2">Fever Onset (Time Specific)</label>
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] text-slate-500">Select Date & Time:</label>
-                            <input type="datetime-local" className="w-full border p-1.5 rounded text-sm font-bold text-indigo-700" value={feverOnsetDate} onChange={e=>setFeverOnsetDate(e.target.value)} />
+                            <label className="text-[10px] text-[#a8a099]">Select Date & Time:</label>
+                            <input type="datetime-local" className="w-full border p-1.5 rounded text-sm font-bold text-[#4a3ab8]" value={feverOnsetDate} onChange={e=>setFeverOnsetDate(e.target.value)} />
                         </div>
                     </div>
                 </div>
 
-                <div className="mt-2 bg-white p-3 rounded-lg border border-indigo-100">
-                    <label className="text-xs font-bold text-slate-500 block mb-1">Add Clinical Log (Temp/Pulse)</label>
+                <div className="mt-2 bg-white p-3 rounded-lg border border-[#cec8f6]">
+                    <label className="text-xs font-bold text-[#a8a099] block mb-1">Add Clinical Log (Temp/Pulse)</label>
                     <div className="grid grid-cols-5 gap-2">
                         <input type="datetime-local" className="col-span-2 border p-1 rounded text-xs" value={currentLog.date} onChange={e=>setCurrentLog({...currentLog, date: e.target.value})} />
                         <input type="number" placeholder="Temp" step="0.1" className="border p-1 rounded text-xs" value={currentLog.temp} onChange={e=>setCurrentLog({...currentLog, temp: e.target.value})} />
                         <input type="number" placeholder="Pulse" className="border p-1 rounded text-xs" value={currentLog.pulse} onChange={e=>setCurrentLog({...currentLog, pulse: e.target.value})} />
-                        <button onClick={handleAddLog} className="bg-indigo-600 text-white rounded px-2 text-xs font-bold">+ Add</button>
+                        <button onClick={handleAddLog} className="bg-[#2a9d8f] text-white rounded px-2 text-xs font-bold">+ Add</button>
                     </div>
                 </div>
             </div>
 
             {/* DATA DISPLAY */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:hidden">
-                <div className="border border-slate-200 rounded-lg overflow-hidden h-full flex flex-col">
-                    <div className="bg-slate-50 px-3 py-2 border-b font-bold text-xs text-slate-600 flex justify-between items-center">
+                <div className="border border-[#ebe8e2] rounded-lg overflow-hidden h-full flex flex-col">
+                    <div className="bg-[#faf9f7] px-3 py-2 border-b font-bold text-xs text-[#6b6360] flex justify-between items-center">
                         <span>Raw Data: Daily Logs</span>
-                        <span className="text-[10px] text-slate-400">Add in Panel above</span>
+                        <span className="text-[10px] text-[#a8a099]">Add in Panel above</span>
                     </div>
                     <div className="flex-1 max-h-40 overflow-y-auto">
                         <table className="w-full text-xs text-left">
                             <thead className="bg-white sticky top-0"><tr><th className="p-2">Date</th><th className="p-2">T/P</th><th className="p-2">Act</th></tr></thead>
                             <tbody className="divide-y">
                                 {dailyLogs.length === 0 ? (
-                                    <tr><td colSpan="3" className="p-4 text-center text-slate-400 italic">No logs added.</td></tr>
+                                    <tr><td colSpan="3" className="p-4 text-center text-[#a8a099] italic">No logs added.</td></tr>
                                 ) : dailyLogs.map(l => (
                                     <tr key={l.id} className={l.temp>=38?'bg-red-50':''}>
                                         <td className="p-2">{new Date(l.date).toLocaleString()}</td>
                                         <td className="p-2 font-bold">{l.temp}° | <span className="text-blue-600">{l.pulse}</span></td>
-                                        <td className="p-2 text-center"><button onClick={()=>setDailyLogs(dailyLogs.filter(x=>x.id!==l.id))} className="text-red-400 hover:text-red-600">×</button></td>
+                                        <td className="p-2 text-center"><button onClick={()=>setDailyLogs(dailyLogs.filter(x=>x.id!==l.id))} className="text-red-400 hover:text-[#b83232]">×</button></td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -652,23 +652,23 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
                     </div>
                 </div>
 
-                <div className="border border-slate-200 rounded-lg overflow-hidden h-full flex flex-col">
-                    <div className="bg-slate-50 px-3 py-2 border-b font-bold text-xs text-slate-600 flex justify-between items-center">
+                <div className="border border-[#ebe8e2] rounded-lg overflow-hidden h-full flex flex-col">
+                    <div className="bg-[#faf9f7] px-3 py-2 border-b font-bold text-xs text-[#6b6360] flex justify-between items-center">
                         <span>Suspected Drugs List</span>
-                        <span className="text-[10px] text-slate-400">Add in Panel above</span>
+                        <span className="text-[10px] text-[#a8a099]">Add in Panel above</span>
                     </div>
                     <div className="flex-1 max-h-40 overflow-y-auto">
                         <table className="w-full text-xs text-left">
                             <thead className="bg-white sticky top-0"><tr><th className="p-2">Drug Name</th><th className="p-2">Start - Stop</th><th className="p-2 text-center">Act</th></tr></thead>
                             <tbody className="divide-y">
                                 {drugEntries.length === 0 ? (
-                                    <tr><td colSpan="3" className="p-4 text-center text-slate-400 italic">No drugs added.</td></tr>
+                                    <tr><td colSpan="3" className="p-4 text-center text-[#a8a099] italic">No drugs added.</td></tr>
                                 ) : drugEntries.map(d => (
                                     <tr key={d.id}>
-                                        <td className="p-2 font-bold text-slate-700">{d.name}</td>
-                                        <td className="p-2 text-slate-500">{d.startDate} → {d.stopDate || 'Ongoing'}</td>
+                                        <td className="p-2 font-bold text-[#2d2926]">{d.name}</td>
+                                        <td className="p-2 text-[#a8a099]">{d.startDate} → {d.stopDate || 'Ongoing'}</td>
                                         <td className="p-2 text-center">
-                                            <button onClick={() => handleDeleteDrug(d.id)} className="text-red-400 hover:text-red-600 font-bold">×</button>
+                                            <button onClick={() => handleDeleteDrug(d.id)} className="text-red-400 hover:text-[#b83232] font-bold">×</button>
                                         </td>
                                     </tr>
                                 ))}
@@ -684,7 +684,7 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
             {/* 3. TIMELINE */}
             <div className="print:break-before-page print:break-after-page print:landscape">
                 <div className="flex justify-center print:hidden">
-                     {!showAnalysis && <button onClick={() => setShowAnalysis(true)} className="text-indigo-600 text-xs font-bold hover:underline mb-2">Show Visual Timeline ▼</button>}
+                     {!showAnalysis && <button onClick={() => setShowAnalysis(true)} className="text-[#4a3ab8] text-xs font-bold hover:underline mb-2">Show Visual Timeline ▼</button>}
                 </div>
                 {showAnalysis && <div className="animate-fade-in"><SmartVisualTimeline groupedDrugs={groupedDrugs} logs={dailyLogs} feverOnset={feverOnsetDate} /></div>}
             </div>
@@ -696,7 +696,7 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
                     
                     <button 
                         onClick={() => setShowCausesModal(true)} 
-                        className="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-1 rounded border border-slate-200 print:hidden flex items-center gap-1"
+                        className="text-[10px] bg-[#f4f2ee] hover:bg-[#ebe8e2] text-[#6b6360] px-2 py-1 rounded border border-[#ebe8e2] print:hidden flex items-center gap-1"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         Show Common Causes
@@ -704,7 +704,7 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
                 </div>
                 
                 {groupedDrugs.length === 0 ? (
-                    <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-xl text-slate-400">
+                    <div className="p-8 text-center border-2 border-dashed border-[#ebe8e2] rounded-[10px] text-[#a8a099]">
                         No drugs added yet. Please add suspected drugs above.
                     </div>
                 ) : (
@@ -717,8 +717,8 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
                                         onClick={() => setActiveDrugKey(g.key)}
                                         className={`px-4 py-2 rounded-t-lg text-xs font-bold whitespace-nowrap border-t border-l border-r transition-all
                                             ${activeDrugKey === g.key 
-                                                ? 'bg-white border-indigo-200 text-indigo-700 relative top-[1px] shadow-sm z-10' 
-                                                : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100'}`}
+                                                ? 'bg-white border-indigo-200 text-[#4a3ab8] relative top-[1px] shadow-[0_1px_4px_rgba(0,0,0,0.05)] z-10' 
+                                                : 'bg-[#faf9f7] border-[#ebe8e2] text-[#a8a099] hover:bg-[#f4f2ee]'}`}
                                     >
                                         {g.name}
                                     </button>

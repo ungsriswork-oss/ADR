@@ -1,411 +1,173 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const Home = () => {
+const TOOLS = [
+  { id: 'dili',         title: 'DILI',                scale: 'RUCAM',      desc: 'Drug-induced liver injury',         path: '/assess/dili',         color: '#fff0e4', textColor: '#c4620a', borderColor: '#f5cfa8' },
+  { id: 'rash',         title: 'Drug Rash',           scale: 'Naranjo',    desc: 'Cutaneous drug reaction',           path: '/assess/rash',         color: '#fbeaf0', textColor: '#9b3060', borderColor: '#f4c0d1' },
+  { id: 'sjs',          title: 'SJS / TEN',           scale: 'ALDEN',      desc: 'Epidermal necrolysis',              path: '/assess/sjs',          color: '#fdf0ee', textColor: '#8c3322', borderColor: '#f5b8b8' },
+  { id: 'dress',        title: 'DRESS',               scale: 'RegiSCAR',   desc: 'Drug reaction with eosinophilia',   path: '/assess/dress',        color: '#f0eeff', textColor: '#4a3ab8', borderColor: '#cec8f6' },
+  { id: 'agep',         title: 'AGEP',                scale: 'EuroSCAR',   desc: 'Acute generalised pustulosis',      path: '/assess/agep',         color: '#e6f4f1', textColor: '#1a6b62', borderColor: '#b2ddd7' },
+  { id: 'sams',         title: 'SAMS-CI',             scale: 'SAMS-CI',    desc: 'Statin-associated muscle symptoms', path: '/assess/sams',         color: '#e6f4f1', textColor: '#1a6b62', borderColor: '#b2ddd7' },
+  { id: 'drugfever',    title: 'Drug Fever',          scale: 'Timeline',   desc: 'Drug-induced fever workup',         path: '/assess/drugfever',    color: '#f0eeff', textColor: '#4a3ab8', borderColor: '#cec8f6' },
+  { id: 'electro',      title: 'Electrolyte',         scale: 'Naranjo',    desc: 'Drug-induced electrolyte imbalance',path: '/assess/electro',      color: '#fef6e4', textColor: '#9b6e00', borderColor: '#f0d98a' },
+  { id: 'heme',         title: 'Hematologic',         scale: 'Naranjo',    desc: 'Drug-induced blood disorder',       path: '/assess/heme',         color: '#fbeaf0', textColor: '#9b3060', borderColor: '#f4c0d1' },
+  { id: 'pancreatitis', title: 'Pancreatitis',        scale: 'Weissman',   desc: 'Drug-induced pancreatitis',        path: '/assess/pancreatitis', color: '#fff0e4', textColor: '#c4620a', borderColor: '#f5cfa8' },
+];
+
+const ADR_BADGE = {
+  dili:         { bg: '#fff0e4', text: '#c4620a', border: '#f5cfa8' },
+  rash:         { bg: '#fbeaf0', text: '#9b3060', border: '#f4c0d1' },
+  sjs:          { bg: '#fdf0ee', text: '#8c3322', border: '#f5b8b8' },
+  dress:        { bg: '#f0eeff', text: '#4a3ab8', border: '#cec8f6' },
+  agep:         { bg: '#e6f4f1', text: '#1a6b62', border: '#b2ddd7' },
+  sams:         { bg: '#e6f4f1', text: '#1a6b62', border: '#b2ddd7' },
+  drugfever:    { bg: '#f0eeff', text: '#4a3ab8', border: '#cec8f6' },
+  electro:      { bg: '#fef6e4', text: '#9b6e00', border: '#f0d98a' },
+  heme:         { bg: '#fbeaf0', text: '#9b3060', border: '#f4c0d1' },
+  pancreatitis: { bg: '#fff0e4', text: '#c4620a', border: '#f5cfa8' },
+};
+
+export default function Home() {
   const navigate = useNavigate();
   const [savedCases, setSavedCases] = useState([]);
-  const currentUser = 'งานพัฒนาระบบยา กลุ่มงานเภสัชกรรม';
 
   useEffect(() => {
     const data = JSON.parse(localStorage.getItem('dili_cases') || '[]');
     setSavedCases(data);
   }, []);
 
-  const handleDeleteCase = (id, e) => {
+  const handleDelete = (id, e) => {
     e.stopPropagation();
-    if (confirm('Are you sure you want to delete this case?')) {
-      const newData = savedCases.filter((c) => c.id !== id);
-      setSavedCases(newData);
-      localStorage.setItem('dili_cases', JSON.stringify(newData));
-    }
+    if (!confirm('Delete this case?')) return;
+    const next = savedCases.filter(c => c.id !== id);
+    setSavedCases(next);
+    localStorage.setItem('dili_cases', JSON.stringify(next));
   };
 
-  const handleLoadCase = (caseData) => {
-    navigate(`/assess/${caseData.type || 'dili'}`, { state: { caseData } });
-  };
-
-  const getSuspectedDrugs = (c) => {
-    if (Array.isArray(c.rankedDrugs) && c.rankedDrugs.length > 0) {
-      return c.rankedDrugs;
-    }
-    if (
-      c.savedData &&
-      Array.isArray(c.savedData.drugList) &&
-      c.savedData.drugList.length > 0
-    ) {
-      return c.savedData.drugList;
-    }
-    if (Array.isArray(c.drugList) && c.drugList.length > 0) {
-      return c.drugList;
-    }
+  const getSuspectedDrugs = c => {
+    if (Array.isArray(c.rankedDrugs) && c.rankedDrugs.length) return c.rankedDrugs;
+    if (c.savedData?.drugList?.length) return c.savedData.drugList;
+    if (Array.isArray(c.drugList) && c.drugList.length) return c.drugList;
     return [];
   };
 
-  // ✅ UPDATE: ย้าย Pancreatitis มาไว้ล่างสุดต่อจาก Heme
-  const tools = [
-    {
-      id: 'dili',
-      title: 'DILI Assessment',
-      desc: 'RUCAM Scale for Liver Injury',
-      color: 'orange',
-      active: true,
-      path: '/assess/dili',
-    },
-    {
-      id: 'rash',
-      title: 'Drug Rash',
-      desc: 'Naranjo Scale',
-      color: 'pink',
-      active: true,
-      path: '/assess/rash',
-    },
-    {
-      id: 'sjs',
-      title: 'SJS / TEN',
-      desc: 'ALDEN Score for Severe Reactions',
-      color: 'red',
-      active: true,
-      path: '/assess/sjs',
-    },
-    {
-      id: 'dress',
-      title: 'DRESS Syndrome',
-      desc: 'RegiSCAR Score for DRESS',
-      color: 'purple',
-      active: true,
-      path: '/assess/dress',
-    },
-    {
-      id: 'agep',
-      title: 'AGEP',
-      desc: 'EuroSCAR Score for Pustulosis',
-      color: 'teal',
-      active: true,
-      path: '/assess/agep',
-    },
-    {
-      id: 'sams',
-      title: 'SAMS-CI',
-      desc: 'Statin-Associated Muscle Symptoms',
-      color: 'cyan',
-      active: true,
-      path: '/assess/sams',
-    },
-    {
-      id: 'drugfever',
-      title: 'Drug induced Fever',
-      desc: 'Timeline & Criteria Check',
-      color: 'indigo',
-      active: true,
-      path: '/assess/drugfever',
-    },
-    {
-      id: 'electro',
-      title: 'Drug induced Electrolyte Imbalance',
-      desc: 'Naranjo Scale',
-      color: 'yellow',
-      active: true,
-      path: '/assess/electro',
-    },
-    {
-      id: 'heme',
-      title: 'Drug induced Hematologic disorder', 
-      desc: 'Lab Monitoring + Naranjo',
-      color: 'rose',
-      active: true, 
-      path: '/assess/heme',
-    },
-    // ✅ ย้ายมาไว้ตรงนี้แล้วครับ
-    {
-      id: 'pancreatitis',
-      title: 'Drug induced Pancreatitis',
-      desc: 'Pancreatitis probability scale',
-      color: 'amber',
-      active: true, 
-      path: '/assess/pancreatitis',
-    },
-  ];
-
-  const getADRBadgeClass = (type) => {
-    switch (type?.toLowerCase()) {
-      case 'dili':
-        return 'bg-orange-100 text-orange-700 border-orange-200';
-      case 'rash':
-        return 'bg-pink-100 text-pink-700 border-pink-200';
-      case 'sjs':
-        return 'bg-red-100 text-red-700 border-red-200';
-      case 'dress':
-        return 'bg-purple-100 text-purple-700 border-purple-200';
-      case 'agep':
-        return 'bg-teal-100 text-teal-700 border-teal-200';
-      case 'sams':
-        return 'bg-cyan-100 text-cyan-700 border-cyan-200';
-      case 'heme':
-        return 'bg-rose-100 text-rose-700 border-rose-200';
-      case 'drugfever':
-        return 'bg-indigo-100 text-indigo-700 border-indigo-200';
-      case 'pancreatitis':
-        return 'bg-amber-100 text-amber-700 border-amber-200';
-      default:
-        return 'bg-slate-100 text-slate-700 border-slate-200';
-    }
-  };
+  const badge = type => ADR_BADGE[type?.toLowerCase()] || { bg: '#f4f2ee', text: '#6b6360', border: '#d6d0c8' };
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans">
-      <nav className="bg-white border-b border-slate-200 px-6 py-4 shadow-sm sticky top-0 z-20">
-        <div className="max-w-5xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
-              Rx
-            </div>
-            <span className="text-xl font-bold text-slate-800">
-             Yommarat ADR assessment tools
-            </span>
+    <div style={{ minHeight: '100vh', background: '#faf9f7', fontFamily: "'Inter', system-ui, sans-serif" }}>
+
+      {/* ── NAV ── */}
+      <nav style={{ background: '#fff', borderBottom: '0.5px solid #ebe8e2', padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 30, height: 30, background: '#2a9d8f', borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 12, flexShrink: 0 }}>Rx</div>
+          <span style={{ fontWeight: 600, fontSize: 15, color: '#2d2926', letterSpacing: '-0.01em' }}>Yommarat ADR tools</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: '#2d2926' }}>งานพัฒนาระบบยา</div>
+            <div style={{ fontSize: 11, color: '#a8a099' }}>Man Ung</div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="text-right hidden sm:block">
-              <div className="text-sm font-bold text-slate-700">
-                {currentUser}
-              </div>
-              <div className="text-xs text-slate-500">Man Ung</div>
-            </div>
-            <div className="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 font-bold">
-              U
-            </div>
-          </div>
+          <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#f4f2ee', border: '0.5px solid #d6d0c8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 600, color: '#6b6360' }}>U</div>
         </div>
       </nav>
 
-      <div className="max-w-5xl mx-auto px-6 py-8">
-        <div className="mb-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {tools.map((tool) => (
+      <div style={{ maxWidth: 960, margin: '0 auto', padding: '32px 24px 64px' }}>
+
+        {/* ── TOOLS GRID ── */}
+        <div style={{ marginBottom: 8 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: '#a8a099', marginBottom: 14 }}>Assessment tools</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+            {TOOLS.map(tool => (
               <div
                 key={tool.id}
-                onClick={() => tool.active && navigate(tool.path)}
-                className={`relative p-6 rounded-xl border transition duration-200 flex flex-col h-full text-left ${
-                  tool.active
-                    ? 'bg-white shadow-sm border-slate-200 hover:shadow-md hover:border-blue-400 cursor-pointer group'
-                    : 'bg-slate-50 border-slate-200 opacity-80 cursor-not-allowed grayscale-[0.2]'
-                }`}
+                onClick={() => navigate(tool.path)}
+                style={{ background: '#fff', border: '0.5px solid #ebe8e2', borderRadius: 10, padding: '14px 16px', cursor: 'pointer', transition: 'border-color 0.15s, box-shadow 0.15s', position: 'relative' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = '#2a9d8f'; e.currentTarget.style.boxShadow = '0 0 0 3px #e6f4f1'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = '#ebe8e2'; e.currentTarget.style.boxShadow = 'none'; }}
               >
-                <div className="flex justify-between items-start mb-2 w-full">
-                  <h3
-                    className={`text-lg font-bold pr-2 ${
-                      tool.active
-                        ? 'text-slate-800 group-hover:text-blue-600'
-                        : 'text-slate-500'
-                    }`}
-                  >
-                    {tool.title}
-                  </h3>
-                  {!tool.active && (
-                    <span className="bg-slate-200 text-slate-500 text-[10px] px-2 py-1 rounded font-bold uppercase shrink-0">
-                      Coming Soon
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-slate-500 flex-grow text-left w-full">{tool.desc}</p>
-                {tool.active && (
-                  <div
-                    className={`mt-4 text-xs font-bold uppercase tracking-wide flex items-center gap-1 text-${tool.color}-600`}
-                  >
-                    Click to start{' '}
-                    <span className="transition-transform group-hover:translate-x-1">
-                      →
-                    </span>
-                  </div>
-                )}
+                <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 99, fontSize: 10, fontWeight: 600, letterSpacing: '0.03em', background: tool.color, color: tool.textColor, border: `0.5px solid ${tool.borderColor}`, marginBottom: 8 }}>{tool.scale}</span>
+                <div style={{ fontWeight: 600, fontSize: 14, color: '#2d2926', marginBottom: 3 }}>{tool.title}</div>
+                <div style={{ fontSize: 11, color: '#a8a099', lineHeight: 1.4 }}>{tool.desc}</div>
+                <span style={{ position: 'absolute', top: 14, right: 14, color: '#d6d0c8', fontSize: 14 }}>→</span>
               </div>
             ))}
           </div>
         </div>
 
-        <div
-          style={{
-            backgroundColor: '#fff1f0',
-            border: '1px solid #ffa39e',
-            borderRadius: '8px',
-            padding: '12px 20px',
-            marginBottom: '16px', 
-            color: '#c02a2a',
-            fontSize: '14px',
-            fontWeight: '500',
-            textAlign: 'center',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '12px',
-          }}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            style={{ flexShrink: 0 }}
-          >
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-            <line x1="12" y1="9" x2="12" y2="13"></line>
-            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-          </svg>
-          <span style={{ textAlign: 'left' }}>
-            <strong>ข้อกำหนดการใช้งาน:</strong>{' '}
-            เครื่องมือนี้เป็นเพียงระบบช่วยสนับสนุนข้อมูลเท่านั้น
-            การตัดสินใจทางการแพทย์ทั้งหมดต้องขึ้นอยู่กับดุลยพินิจของบุคลากรทางการแพทย์ผู้ใช้งาน
-            โดยผู้พัฒนาจะไม่รับผิดชอบต่อผลลัพธ์ใดๆ
-            ที่เกิดขึ้นจากการนำข้อมูลไปใช้ และไม่อนุญาตให้นำข้อมูลไปใช้อ้างอิงก่อนได้รับสิทธิ์ในการเผยแพร่ในทุกกรณี
-          </span>
+        {/* ── NOTICES ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: '24px 0' }}>
+          <div style={{ background: '#fdf0ee', border: '0.5px solid #f0c4be', borderLeft: '3px solid #e07060', borderRadius: 6, padding: '10px 14px', fontSize: 12, color: '#8c3322', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+            <span style={{ flexShrink: 0, marginTop: 1 }}>⚠</span>
+            <span><strong>ข้อกำหนดการใช้งาน:</strong> เครื่องมือนี้เป็นระบบช่วยสนับสนุนข้อมูลเท่านั้น การตัดสินใจทางการแพทย์ขึ้นอยู่กับดุลยพินิจของบุคลากรทางการแพทย์ ผู้พัฒนาไม่รับผิดชอบต่อผลลัพธ์ที่เกิดขึ้น</span>
+          </div>
+          <div style={{ background: '#fef6e4', border: '0.5px solid #f0d98a', borderLeft: '3px solid #e09520', borderRadius: 6, padding: '10px 14px', fontSize: 12, color: '#7a5500', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+            <span style={{ flexShrink: 0, marginTop: 1 }}>ℹ</span>
+            <span><strong>Local storage:</strong> ข้อมูลถูกจัดเก็บใน browser นี้เท่านั้น จะสูญหายหากล้างแคชหรือเปลี่ยนอุปกรณ์</span>
+          </div>
         </div>
 
-        <div
-          style={{
-            backgroundColor: '#fef9c3',
-            border: '1px solid #fde047',
-            borderRadius: '8px',
-            padding: '12px 20px',
-            marginBottom: '32px',
-            color: '#854d0e',
-            fontSize: '14px',
-            fontWeight: '500',
-            textAlign: 'center',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '12px',
-          }}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            style={{ flexShrink: 0 }}
-          >
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="16" x2="12" y2="12"></line>
-            <line x1="12" y1="8" x2="12.01" y2="8"></line>
-          </svg>
-          <span style={{ textAlign: 'left' }}>
-            <strong>ข้อควรระวัง:</strong>{' '}
-            ระบบจัดเก็บข้อมูลแบบ Local Storage เฉพาะในอุปกรณ์นี้เท่านั้น ข้อมูลจะสูญหายหากมีการล้างข้อมูลการท่องเว็บหรือแคชของเบราว์เซอร์
-          </span>
-        </div>
-
+        {/* ── CASE TABLE ── */}
         <div>
-          <div className="flex justify-between items-center mb-4">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 14 }}>
             <div>
-              <h2 className="text-xl font-bold text-slate-800">
-                Case Follow-up
-              </h2>
-              <p className="text-sm text-slate-500">Recent saved assessments</p>
+              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: '#a8a099' }}>Case follow-up</div>
+              <div style={{ fontSize: 12, color: '#a8a099', marginTop: 2 }}>Recent saved assessments</div>
             </div>
+            <div style={{ fontSize: 12, color: '#a8a099' }}>{savedCases.length} case{savedCases.length !== 1 ? 's' : ''}</div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-xs">
-                <tr>
-                  <th className="p-4 font-bold">Date Saved</th>
-                  <th className="p-4 font-bold">HN</th>
-                  <th className="p-4 font-bold">Patient Name</th>
-                  <th className="p-4 font-bold text-center">ADR Type</th>
-                  <th className="p-4 font-bold">Suspected Drugs</th>
-                  <th className="p-4 font-bold text-right w-20">Delete</th>
+          <div style={{ background: '#fff', border: '0.5px solid #ebe8e2', borderRadius: 10, overflow: 'hidden' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+              <thead>
+                <tr style={{ background: '#faf9f7', borderBottom: '0.5px solid #ebe8e2' }}>
+                  {['Date', 'HN', 'Patient name', 'ADR type', 'Suspected drugs', ''].map(h => (
+                    <th key={h} style={{ padding: '9px 14px', textAlign: 'left', fontSize: 10, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: '#a8a099', whiteSpace: 'nowrap' }}>{h}</th>
+                  ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody>
                 {savedCases.length === 0 ? (
-                  <tr>
-                    <td colSpan="6" className="p-10 text-center">
-                      <div className="text-4xl mb-2">📭</div>
-                      <div className="text-slate-400 font-medium">
-                        No saved cases yet.
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  savedCases.map((c) => (
-                    <tr
-                      key={c.id}
-                      onClick={() => handleLoadCase(c)}
-                      className="hover:bg-blue-50 transition cursor-pointer group"
+                  <tr><td colSpan={6} style={{ padding: '48px 0', textAlign: 'center', color: '#a8a099', fontSize: 13 }}>
+                    <div style={{ fontSize: 24, marginBottom: 8 }}>📭</div>
+                    No saved cases yet
+                  </td></tr>
+                ) : savedCases.map(c => {
+                  const b = badge(c.type);
+                  const drugs = getSuspectedDrugs(c);
+                  return (
+                    <tr key={c.id}
+                      onClick={() => navigate(`/assess/${c.type || 'dili'}`, { state: { caseData: c } })}
+                      style={{ borderBottom: '0.5px solid #f4f2ee', cursor: 'pointer', transition: 'background 0.1s' }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#faf9f7'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                     >
-                      <td className="p-4 text-slate-500 font-mono text-xs">
-                        {new Date(c.savedAt).toLocaleDateString()}
+                      <td style={{ padding: '10px 14px', fontFamily: 'monospace', fontSize: 11, color: '#a8a099' }}>{new Date(c.savedAt).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' })}</td>
+                      <td style={{ padding: '10px 14px', fontFamily: 'monospace', fontWeight: 600, fontSize: 12, color: '#6b6360' }}>{c.hn}</td>
+                      <td style={{ padding: '10px 14px', fontWeight: 500, color: '#2d2926' }}>{c.name}</td>
+                      <td style={{ padding: '10px 14px' }}>
+                        <span style={{ padding: '2px 9px', borderRadius: 99, fontSize: 10, fontWeight: 600, letterSpacing: '0.03em', background: b.bg, color: b.text, border: `0.5px solid ${b.border}` }}>{(c.type || 'N/A').toUpperCase()}</span>
                       </td>
-                      <td className="p-4 font-mono font-bold text-slate-600 group-hover:text-blue-600">
-                        {c.hn}
-                      </td>
-                      <td className="p-4 font-bold text-slate-800">{c.name}</td>
-
-                      <td className="p-4 text-center">
-                        <span
-                          className={`px-2 py-1 rounded text-[10px] font-bold border uppercase ${getADRBadgeClass(
-                            c.type
-                          )}`}
-                        >
-                          {c.type || 'N/A'}
-                        </span>
-                      </td>
-
-                      <td className="p-4">
-                        <div className="flex flex-wrap gap-1">
-                          {getSuspectedDrugs(c)
-                            .slice(0, 3)
-                            .map((d, i) => (
-                              <span
-                                key={i}
-                                className="px-2 py-0.5 rounded text-xs border font-medium bg-slate-50 text-slate-600 border-slate-200"
-                              >
-                                {d.name}{' '}
-                                <span className="opacity-60 ml-0.5 text-[10px]">
-                                  ({d.total || d.score || 0})
-                                </span>
-                              </span>
-                            ))}
-                          {getSuspectedDrugs(c).length === 0 && (
-                            <span className="text-slate-400 italic text-xs">
-                              No data
+                      <td style={{ padding: '10px 14px' }}>
+                        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                          {drugs.slice(0, 3).map((d, i) => (
+                            <span key={i} style={{ padding: '2px 8px', borderRadius: 99, fontSize: 11, background: '#f4f2ee', color: '#6b6360', border: '0.5px solid #ebe8e2' }}>
+                              {d.name} <span style={{ color: '#a8a099', fontSize: 10 }}>({d.total ?? d.score ?? 0})</span>
                             </span>
-                          )}
+                          ))}
+                          {drugs.length === 0 && <span style={{ color: '#a8a099', fontSize: 11, fontStyle: 'italic' }}>No data</span>}
                         </div>
                       </td>
-
-                      <td className="p-4 text-right">
+                      <td style={{ padding: '10px 14px', textAlign: 'right' }}>
                         <button
-                          onClick={(e) => handleDeleteCase(c.id, e)}
-                          className="p-1.5 rounded-full hover:bg-red-100 transition"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="w-5 h-5 text-red-500 opacity-70 hover:opacity-100"
-                          >
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                          </svg>
-                        </button>
+                          onClick={e => handleDelete(c.id, e)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px', borderRadius: 6, color: '#d6d0c8', fontSize: 16, lineHeight: 1, transition: 'color 0.15s' }}
+                          onMouseEnter={e => e.currentTarget.style.color = '#e07060'}
+                          onMouseLeave={e => e.currentTarget.style.color = '#d6d0c8'}
+                        >×</button>
                       </td>
                     </tr>
-                  ))
-                )}
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -413,6 +175,4 @@ const Home = () => {
       </div>
     </div>
   );
-};
-
-export default Home;
+}

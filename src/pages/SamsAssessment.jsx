@@ -186,7 +186,7 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
         const total = Object.values(breakdown).reduce((a, b) => a + b, 0);
 
         let text = "Unlikely (< 7)";
-        let colorClass = "bg-slate-500";
+        let colorClass = "bg-[#faf9f7]0";
         if (total >= 9) {
             text = "Probable (9-11)";
             colorClass = "bg-teal-600";
@@ -254,15 +254,15 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
         };
 
         return (
-            <div className="mt-8 mb-8 p-6 bg-white rounded-xl border border-slate-200 shadow-sm print:shadow-none print:border break-inside-avoid">
-                <h3 className="text-sm font-bold text-slate-700 mb-6 flex items-center gap-2">
+            <div className="mt-8 mb-8 p-6 bg-white rounded-[10px] border border-[#ebe8e2] shadow-[0_1px_4px_rgba(0,0,0,0.05)] print:shadow-none print:border break-inside-avoid">
+                <h3 className="text-sm font-bold text-[#2d2926] mb-6 flex items-center gap-2">
                     <Activity className="w-4 h-4 text-teal-600" /> CLINICAL TIMELINE & CPK TREND
                 </h3>
                 
                 <div className="relative w-full h-48">
                     {/* Grid Lines (Background) */}
                     <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
-                        <div className="border-b border-slate-100 h-full w-full"></div>
+                        <div className="border-b border-[#f4f2ee] h-full w-full"></div>
                     </div>
 
                     {/* 1. Drug Duration Bar (Main Statin) */}
@@ -284,8 +284,8 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
                     {/* 2. Key Events (Icons) */}
                     {[
                         { date: clinicalData.startDate, icon: PlayCircle, color: 'text-green-500', label: 'Start' },
-                        { date: clinicalData.symptomDate, icon: AlertCircle, color: 'text-red-500', label: 'Symptom' },
-                        { date: clinicalData.stopDate, icon: StopCircle, color: 'text-slate-500', label: 'Stop' },
+                        { date: clinicalData.symptomDate, icon: AlertCircle, color: 'text-[#e07060]', label: 'Symptom' },
+                        { date: clinicalData.stopDate, icon: StopCircle, color: 'text-[#a8a099]', label: 'Stop' },
                         { date: clinicalData.improvementDate, icon: CheckCircle, color: 'text-blue-500', label: 'Improved' },
                     ].map((ev, i) => {
                         const pos = getPos(ev.date);
@@ -293,11 +293,11 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
                         const Icon = ev.icon;
                         return (
                             <div key={i} className="absolute top-8 flex flex-col items-center group z-10" style={{ left: `${pos}%`, transform: 'translateX(-50%)' }}>
-                                <Icon className={`w-5 h-5 bg-white rounded-full ${ev.color} shadow-sm print:text-black print:border print:border-black`} />
-                                <div className="text-[9px] font-bold text-slate-500 mt-1 uppercase print:text-black">{ev.label}</div>
-                                <div className="text-[9px] text-slate-400 print:hidden">{new Date(ev.date).toLocaleDateString(undefined, {month:'short', day:'numeric'})}</div>
+                                <Icon className={`w-5 h-5 bg-white rounded-full ${ev.color} shadow-[0_1px_4px_rgba(0,0,0,0.05)] print:text-black print:border print:border-black`} />
+                                <div className="text-[9px] font-bold text-[#a8a099] mt-1 uppercase print:text-black">{ev.label}</div>
+                                <div className="text-[9px] text-[#a8a099] print:hidden">{new Date(ev.date).toLocaleDateString(undefined, {month:'short', day:'numeric'})}</div>
                                 {/* Tooltip Line */}
-                                <div className="h-24 w-px border-l border-dashed border-slate-300 absolute top-5 -z-10 print:border-slate-400"></div>
+                                <div className="h-24 w-px border-l border-dashed border-[#d6d0c8] absolute top-5 -z-10 print:border-slate-400"></div>
                             </div>
                         );
                     })}
@@ -309,10 +309,10 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
                         return (
                             <div key={`cpk-${i}`} className="absolute top-28 flex flex-col items-center z-20" style={{ left: `${pos}%`, transform: 'translateX(-50%)' }}>
                                 <div className="w-3 h-3 bg-purple-500 rounded-full border-2 border-white shadow-md hover:scale-125 transition-transform cursor-pointer print:bg-black print:border-black"></div>
-                                <div className="bg-purple-100 text-purple-800 text-[10px] font-bold px-1.5 py-0.5 rounded mt-1 shadow-sm whitespace-nowrap print:bg-white print:border print:border-black print:text-black">
+                                <div className="bg-purple-100 text-purple-800 text-[10px] font-bold px-1.5 py-0.5 rounded mt-1 shadow-[0_1px_4px_rgba(0,0,0,0.05)] whitespace-nowrap print:bg-white print:border print:border-black print:text-black">
                                     {cpk.value} <span className="text-[8px] opacity-70">U/L</span>
                                 </div>
-                                <div className="text-[8px] text-slate-400 mt-0.5 print:hidden">{new Date(cpk.date).toLocaleDateString(undefined, {month:'short', day:'numeric'})}</div>
+                                <div className="text-[8px] text-[#a8a099] mt-0.5 print:hidden">{new Date(cpk.date).toLocaleDateString(undefined, {month:'short', day:'numeric'})}</div>
                             </div>
                         );
                     })}
@@ -332,7 +332,7 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
         <div className="space-y-6 animate-fade-in">
             
             {/* 1. CLINICAL DATA FORM */}
-            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm print:shadow-none print:border-0 print:p-0">
+            <div className="bg-white p-6 rounded-[10px] border border-[#ebe8e2] shadow-[0_1px_4px_rgba(0,0,0,0.05)] print:shadow-none print:border-0 print:p-0">
                 <h2 className="text-sm font-bold text-teal-600 uppercase tracking-wider mb-4 border-b border-teal-100 pb-2 flex items-center gap-2 print:text-black print:border-black">
                     <Calendar className="w-4 h-4" /> 1. Clinical Data & Dates
                 </h2>
@@ -340,10 +340,10 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print:grid-cols-2">
                     {/* Suspected Drug */}
                     <div className="md:col-span-2">
-                        <label className="text-xs text-slate-500 font-bold block mb-1">SUSPECTED STATIN / DRUG</label>
+                        <label className="text-xs text-[#a8a099] font-bold block mb-1">SUSPECTED STATIN / DRUG</label>
                         <input 
                             type="text" 
-                            className="w-full text-sm border-slate-300 rounded-md p-2 focus:ring-teal-500 focus:border-teal-500 placeholder:text-slate-300"
+                            className="w-full text-sm border-[#d6d0c8] rounded-md p-2 focus:ring-teal-500 focus:border-teal-500 placeholder:text-slate-300"
                             placeholder="e.g. Atorvastatin 40mg"
                             value={clinicalData.suspectedDrug}
                             onChange={e => handleChange('suspectedDrug', e.target.value)}
@@ -351,37 +351,37 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
                     </div>
 
                     {/* Onset Phase */}
-                    <div className="bg-teal-50/50 p-4 rounded-lg border border-teal-100 space-y-3 print:bg-white print:border-slate-300">
+                    <div className="bg-teal-50/50 p-4 rounded-lg border border-teal-100 space-y-3 print:bg-white print:border-[#d6d0c8]">
                         <div className="flex items-center gap-2 text-teal-700 font-bold text-xs mb-2 print:text-black">
                             <PlayCircle className="w-4 h-4" /> ONSET PHASE
                         </div>
                         <div>
-                            <label className="text-xs text-slate-500 font-bold block mb-1">Date Started</label>
-                            <input type="date" className="w-full text-sm border-slate-300 rounded-md" value={clinicalData.startDate} onChange={e => handleChange('startDate', e.target.value)} />
+                            <label className="text-xs text-[#a8a099] font-bold block mb-1">Date Started</label>
+                            <input type="date" className="w-full text-sm border-[#d6d0c8] rounded-md" value={clinicalData.startDate} onChange={e => handleChange('startDate', e.target.value)} />
                         </div>
                         <div>
-                            <label className="text-xs text-slate-500 font-bold block mb-1">Date Symptom Started</label>
-                            <input type="date" className="w-full text-sm border-slate-300 rounded-md" value={clinicalData.symptomDate} onChange={e => handleChange('symptomDate', e.target.value)} />
+                            <label className="text-xs text-[#a8a099] font-bold block mb-1">Date Symptom Started</label>
+                            <input type="date" className="w-full text-sm border-[#d6d0c8] rounded-md" value={clinicalData.symptomDate} onChange={e => handleChange('symptomDate', e.target.value)} />
                         </div>
                     </div>
 
                     {/* Dechallenge Phase */}
-                    <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-3 print:bg-white print:border-slate-300">
-                        <div className="flex items-center gap-2 text-slate-600 font-bold text-xs mb-2 print:text-black">
+                    <div className="bg-[#faf9f7] p-4 rounded-lg border border-[#ebe8e2] space-y-3 print:bg-white print:border-[#d6d0c8]">
+                        <div className="flex items-center gap-2 text-[#6b6360] font-bold text-xs mb-2 print:text-black">
                             <StopCircle className="w-4 h-4" /> DECHALLENGE PHASE
                         </div>
                         <div>
-                            <label className="text-xs text-slate-500 font-bold block mb-1">Date Stopped</label>
-                            <input type="date" className="w-full text-sm border-slate-300 rounded-md" value={clinicalData.stopDate} onChange={e => handleChange('stopDate', e.target.value)} />
+                            <label className="text-xs text-[#a8a099] font-bold block mb-1">Date Stopped</label>
+                            <input type="date" className="w-full text-sm border-[#d6d0c8] rounded-md" value={clinicalData.stopDate} onChange={e => handleChange('stopDate', e.target.value)} />
                         </div>
                         <div>
-                            <label className="text-xs text-slate-500 font-bold block mb-1">Date Improved</label>
-                            <input type="date" className="w-full text-sm border-slate-300 rounded-md" value={clinicalData.improvementDate} onChange={e => handleChange('improvementDate', e.target.value)} />
+                            <label className="text-xs text-[#a8a099] font-bold block mb-1">Date Improved</label>
+                            <input type="date" className="w-full text-sm border-[#d6d0c8] rounded-md" value={clinicalData.improvementDate} onChange={e => handleChange('improvementDate', e.target.value)} />
                         </div>
                     </div>
 
                     {/* CPK Data Entry */}
-                    <div className="md:col-span-2 bg-purple-50 p-4 rounded-lg border border-purple-100 print:bg-white print:border-slate-300">
+                    <div className="md:col-span-2 bg-purple-50 p-4 rounded-lg border border-purple-100 print:bg-white print:border-[#d6d0c8]">
                          <div className="flex items-center justify-between mb-3">
                             <label className="text-xs font-bold text-purple-700 flex items-center gap-2 print:text-black">
                                 <Activity className="w-4 h-4" /> CPK DATA (Creatine Phosphokinase)
@@ -390,19 +390,19 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
                          
                          <div className="flex gap-3 mb-3 items-end print:hidden">
                             <div className="flex-1">
-                                <label className="text-[10px] text-slate-400 block mb-1">Date</label>
+                                <label className="text-[10px] text-[#a8a099] block mb-1">Date</label>
                                 <input 
                                     type="date" 
-                                    className="w-full text-xs border-slate-300 rounded"
+                                    className="w-full text-xs border-[#d6d0c8] rounded"
                                     value={newCpk.date}
                                     onChange={e => setNewCpk({...newCpk, date: e.target.value})} 
                                 />
                             </div>
                             <div className="flex-1">
-                                <label className="text-[10px] text-slate-400 block mb-1">CPK Value (U/L)</label>
+                                <label className="text-[10px] text-[#a8a099] block mb-1">CPK Value (U/L)</label>
                                 <input 
                                     type="number" 
-                                    className="w-full text-xs border-slate-300 rounded"
+                                    className="w-full text-xs border-[#d6d0c8] rounded"
                                     placeholder="e.g. 2500"
                                     value={newCpk.value}
                                     onChange={e => setNewCpk({...newCpk, value: e.target.value})} 
@@ -410,7 +410,7 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
                             </div>
                             <button 
                                 onClick={handleAddCpk}
-                                className="bg-purple-600 hover:bg-purple-700 text-white p-1.5 rounded transition shadow-sm"
+                                className="bg-purple-600 hover:bg-purple-700 text-white p-1.5 rounded transition shadow-[0_1px_4px_rgba(0,0,0,0.05)]"
                                 title="Add CPK"
                             >
                                 <Plus className="w-4 h-4" />
@@ -419,9 +419,9 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
 
                          {/* CPK List */}
                          {cpkEntries.length > 0 && (
-                             <div className="bg-white rounded border border-purple-100 overflow-hidden print:border-slate-300">
+                             <div className="bg-white rounded border border-purple-100 overflow-hidden print:border-[#d6d0c8]">
                                  <table className="w-full text-xs text-left">
-                                     <thead className="bg-purple-100/50 text-purple-700 font-bold print:bg-slate-200 print:text-black">
+                                     <thead className="bg-purple-100/50 text-purple-700 font-bold print:bg-[#ebe8e2] print:text-black">
                                          <tr>
                                              <th className="p-2">Date</th>
                                              <th className="p-2">Value (U/L)</th>
@@ -431,10 +431,10 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
                                      <tbody className="divide-y divide-purple-50 print:divide-slate-200">
                                          {cpkEntries.map((cpk, i) => (
                                              <tr key={i}>
-                                                 <td className="p-2 text-slate-600">{new Date(cpk.date).toLocaleDateString()}</td>
+                                                 <td className="p-2 text-[#6b6360]">{new Date(cpk.date).toLocaleDateString()}</td>
                                                  <td className="p-2 font-mono font-bold text-purple-600 print:text-black">{cpk.value}</td>
                                                  <td className="p-2 text-right print:hidden">
-                                                     <button onClick={() => removeCpk(i)} className="text-slate-400 hover:text-red-500">
+                                                     <button onClick={() => removeCpk(i)} className="text-[#a8a099] hover:text-[#e07060]">
                                                          <Trash2 className="w-3 h-3" />
                                                      </button>
                                                  </td>
@@ -456,20 +456,20 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
                                 checked={clinicalData.hasRechallenge}
                                 onChange={e => handleChange('hasRechallenge', e.target.checked)}
                             />
-                            <label htmlFor="hasRechallenge" className="text-sm font-bold text-slate-700 cursor-pointer flex items-center gap-2">
+                            <label htmlFor="hasRechallenge" className="text-sm font-bold text-[#2d2926] cursor-pointer flex items-center gap-2">
                                 <RefreshCw className="w-4 h-4" /> Rechallenge (Did the patient restart the drug?)
                             </label>
                         </div>
                         
                         {clinicalData.hasRechallenge && (
-                            <div className="grid grid-cols-2 gap-4 bg-orange-50 p-4 rounded-lg border border-orange-100 animate-fade-in print:bg-white print:border-slate-300">
+                            <div className="grid grid-cols-2 gap-4 bg-orange-50 p-4 rounded-lg border border-orange-100 animate-fade-in print:bg-white print:border-[#d6d0c8]">
                                 <div>
-                                    <label className="text-xs text-slate-500 font-bold block mb-1">Date Restarted</label>
-                                    <input type="date" className="w-full text-sm border-slate-300 rounded-md" value={clinicalData.restartDate} onChange={e => handleChange('restartDate', e.target.value)} />
+                                    <label className="text-xs text-[#a8a099] font-bold block mb-1">Date Restarted</label>
+                                    <input type="date" className="w-full text-sm border-[#d6d0c8] rounded-md" value={clinicalData.restartDate} onChange={e => handleChange('restartDate', e.target.value)} />
                                 </div>
                                 <div>
-                                    <label className="text-xs text-slate-500 font-bold block mb-1">Date Recurred</label>
-                                    <input type="date" className="w-full text-sm border-slate-300 rounded-md" value={clinicalData.recurrenceDate} onChange={e => handleChange('recurrenceDate', e.target.value)} />
+                                    <label className="text-xs text-[#a8a099] font-bold block mb-1">Date Recurred</label>
+                                    <input type="date" className="w-full text-sm border-[#d6d0c8] rounded-md" value={clinicalData.recurrenceDate} onChange={e => handleChange('recurrenceDate', e.target.value)} />
                                 </div>
                             </div>
                         )}
@@ -480,7 +480,7 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
                 <div className="mt-6 flex justify-center print:hidden">
                     <button 
                         onClick={() => handleAnalyze()}
-                        className="bg-teal-600 text-white px-8 py-3 rounded-full shadow-md hover:bg-teal-700 hover:shadow-lg transition-all flex items-center gap-2 font-bold text-sm"
+                        className="bg-teal-600 text-white px-8 py-3 rounded-full shadow-md hover:bg-teal-700 hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-all flex items-center gap-2 font-bold text-sm"
                     >
                         <Activity className="w-4 h-4" /> ANALYZE & CALCULATE SCORE
                     </button>
@@ -494,16 +494,16 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
             {isAnalyzed && (
                 <div className="animate-slide-up space-y-6">
                      <div className="print-section">
-                        <h2 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-4 border-b border-slate-200 pb-2 flex items-center gap-2 print:text-black print:border-black">
+                        <h2 className="text-sm font-bold text-[#6b6360] uppercase tracking-wider mb-4 border-b border-[#ebe8e2] pb-2 flex items-center gap-2 print:text-black print:border-black">
                             <CheckCircle className="w-4 h-4" /> 2. SAMS-CI Scoring Criteria
                         </h2>
                         
-                        <div className="bg-white p-6 rounded-xl border border-slate-200 mb-6 grid grid-cols-1 md:grid-cols-2 gap-6 print:border-0 print:p-0">
+                        <div className="bg-white p-6 rounded-[10px] border border-[#ebe8e2] mb-6 grid grid-cols-1 md:grid-cols-2 gap-6 print:border-0 print:p-0">
                             {/* Q1: Distribution */}
                             <div className="md:col-span-2">
-                                <label className="text-xs text-slate-500 font-bold block mb-1">1. DISTRIBUTION OF SYMPTOMS (Manual Select)</label>
+                                <label className="text-xs text-[#a8a099] font-bold block mb-1">1. DISTRIBUTION OF SYMPTOMS (Manual Select)</label>
                                 <select 
-                                    className="w-full text-sm border-slate-300 rounded-md p-2 bg-yellow-50 focus:ring-teal-500 focus:border-teal-500 print:appearance-none print:bg-white print:border-0 print:p-0 print:font-bold" 
+                                    className="w-full text-sm border-[#d6d0c8] rounded-md p-2 bg-yellow-50 focus:ring-teal-500 focus:border-teal-500 print:appearance-none print:bg-white print:border-0 print:p-0 print:font-bold" 
                                     value={answers.distribution} 
                                     onChange={e => handleScoreChange('distribution', e.target.value)}
                                 >
@@ -511,17 +511,17 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
                                         <option key={score} value={score}>{label} ({Math.floor(score)} pts)</option>
                                     ))}
                                 </select>
-                                <p className="text-[10px] text-slate-400 mt-1 print:hidden">* This criteria depends on physical location, please select manually.</p>
+                                <p className="text-[10px] text-[#a8a099] mt-1 print:hidden">* This criteria depends on physical location, please select manually.</p>
                             </div>
 
                             {/* Q2: Onset */}
                             <div>
-                                <label className="text-xs text-slate-500 font-bold block mb-1">2. ONSET (Auto-calculated)</label>
-                                <div className="p-2 bg-slate-100 rounded text-sm text-slate-700 font-medium mb-1 border border-slate-200 print:hidden">
+                                <label className="text-xs text-[#a8a099] font-bold block mb-1">2. ONSET (Auto-calculated)</label>
+                                <div className="p-2 bg-[#f4f2ee] rounded text-sm text-[#2d2926] font-medium mb-1 border border-[#ebe8e2] print:hidden">
                                     Duration: {getDaysDiff(clinicalData.startDate, clinicalData.symptomDate) ?? '-'} days
                                 </div>
                                 <select 
-                                    className="w-full text-sm border-slate-300 rounded-md p-2 focus:ring-teal-500 focus:border-teal-500 print:appearance-none print:bg-white print:border-0 print:p-0 print:font-bold" 
+                                    className="w-full text-sm border-[#d6d0c8] rounded-md p-2 focus:ring-teal-500 focus:border-teal-500 print:appearance-none print:bg-white print:border-0 print:p-0 print:font-bold" 
                                     value={answers.onset} 
                                     onChange={e => handleScoreChange('onset', e.target.value)}
                                 >
@@ -533,12 +533,12 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
 
                             {/* Q3: Dechallenge */}
                             <div>
-                                <label className="text-xs text-slate-500 font-bold block mb-1">3. DECHALLENGE (Auto-calculated)</label>
-                                <div className="p-2 bg-slate-100 rounded text-sm text-slate-700 font-medium mb-1 border border-slate-200 print:hidden">
+                                <label className="text-xs text-[#a8a099] font-bold block mb-1">3. DECHALLENGE (Auto-calculated)</label>
+                                <div className="p-2 bg-[#f4f2ee] rounded text-sm text-[#2d2926] font-medium mb-1 border border-[#ebe8e2] print:hidden">
                                     Improvement within: {getDaysDiff(clinicalData.stopDate, clinicalData.improvementDate) ?? '-'} days
                                 </div>
                                 <select 
-                                    className="w-full text-sm border-slate-300 rounded-md p-2 focus:ring-teal-500 focus:border-teal-500 print:appearance-none print:bg-white print:border-0 print:p-0 print:font-bold" 
+                                    className="w-full text-sm border-[#d6d0c8] rounded-md p-2 focus:ring-teal-500 focus:border-teal-500 print:appearance-none print:bg-white print:border-0 print:p-0 print:font-bold" 
                                     value={answers.dechallenge} 
                                     onChange={e => handleScoreChange('dechallenge', e.target.value)}
                                 >
@@ -550,9 +550,9 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
 
                             {/* Q4: Rechallenge */}
                             <div>
-                                <label className="text-xs text-slate-500 font-bold block mb-1">4. RECHALLENGE (Auto-calculated)</label>
+                                <label className="text-xs text-[#a8a099] font-bold block mb-1">4. RECHALLENGE (Auto-calculated)</label>
                                 <select 
-                                    className="w-full text-sm border-slate-300 rounded-md p-2 focus:ring-teal-500 focus:border-teal-500 print:appearance-none print:bg-white print:border-0 print:p-0 print:font-bold" 
+                                    className="w-full text-sm border-[#d6d0c8] rounded-md p-2 focus:ring-teal-500 focus:border-teal-500 print:appearance-none print:bg-white print:border-0 print:p-0 print:font-bold" 
                                     value={answers.rechallenge} 
                                     onChange={e => handleScoreChange('rechallenge', e.target.value)}
                                 >
@@ -567,7 +567,7 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
                     {/* RESULT CARD */}
                     {result && (
                         <div className="print-section break-inside-avoid">
-                            <div className="border-2 border-teal-500 rounded-xl overflow-hidden shadow-md bg-white print:border-black">
+                            <div className="border-2 border-teal-500 rounded-[10px] overflow-hidden shadow-md bg-white print:border-black">
                                 <div className={`${result.colorClass} text-white px-5 py-6 flex justify-between items-center print:text-black print:bg-white print:border-b-2 print:border-black`}>
                                     <div>
                                         <h3 className="text-2xl font-bold flex items-center gap-2">
@@ -577,14 +577,14 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
                                     </div>
                                     <div className="text-right">
                                         <div className="text-5xl font-bold">{result.total}</div>
-                                        <div className="text-sm font-bold uppercase tracking-wide bg-black/20 px-3 py-1 rounded inline-block mt-2 print:bg-slate-100 print:text-black">
+                                        <div className="text-sm font-bold uppercase tracking-wide bg-black/20 px-3 py-1 rounded inline-block mt-2 print:bg-[#f4f2ee] print:text-black">
                                             {result.text}
                                         </div>
                                     </div>
                                 </div>
                                 <div className="bg-white p-4">
                                     <table className="w-full table-auto text-sm">
-                                        <thead className="bg-slate-50 text-slate-500 border-b print:bg-slate-200 print:text-black">
+                                        <thead className="bg-[#faf9f7] text-[#a8a099] border-b print:bg-[#ebe8e2] print:text-black">
                                             <tr>
                                                 <th className="py-2 px-3 text-left">Criteria</th>
                                                 <th className="py-2 px-3 text-right">Points</th>
