@@ -218,6 +218,10 @@ const RucamCard = ({
   );
 };
 
+// ULN constants (RUCAM 2016 — lab-specific values for Chaophraya Yommarat Hospital)
+const ALT_ULN = 40;   // U/L
+const ALP_ULN = 120;  // U/L
+
 // --- 3. MAIN COMPONENT ---
 const DiliAssessment = ({
   patientData,
@@ -351,10 +355,7 @@ const DiliAssessment = ({
   }, [analyzeCount]);
 
   const performAnalysis = () => {
-    // ULN ตาม RUCAM 2016: ALT_ULN = 40 U/L, ALP_ULN = 120 U/L (unisex conservative)
-    // Note: ในทางปฏิบัติอาจแยกตาม sex: ALT ชาย=40, หญิง=35; ALP ชาย=120, หญิง=100
-    const ALT_ULN = 40;
-    const ALP_ULN = 120;
+    // ใช้ ALT_ULN = 40, ALP_ULN = 120 จาก module scope ด้านบน
 
     let rFactor = 0,
       type = 'Inconclusive',
