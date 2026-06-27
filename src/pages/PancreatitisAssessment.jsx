@@ -403,7 +403,7 @@ const PancreatitisAssessment = (props) => {
                     <div className="md:col-span-6 space-y-4">
                         
                         {/* AP Criteria Checklist */}
-                        <div className="flex flex-col gap-2 mb-4 bg-rose-50/50 p-4 rounded-lg border border-rose-100 print:border-black print:bg-transparent">
+                        <div className="flex flex-col gap-2 mb-4 bg-rose-50/50 p-4 rounded-[8px] border border-rose-100 print:border-black print:bg-transparent">
                             <label className="text-sm font-bold text-rose-700 uppercase print:text-black">Acute Pancreatitis Criteria</label>
                             <div className="text-xs text-[#6b6360] mb-2">Check at least 2 out of 3 to confirm diagnosis:</div>
                             
@@ -429,7 +429,7 @@ const PancreatitisAssessment = (props) => {
                             <label className="text-xs font-bold text-rose-600 uppercase w-28 print:text-black">ONSET DATE:</label>
                             <input type="date" value={onset} onChange={e=>{syncToParent(undefined,undefined,e.target.value,undefined,undefined); setIsAnalyzed(false);}} className="border rounded px-2 py-1 text-sm font-bold print:border-black"/>
                         </div>
-                        <div className="bg-[#faf9f7] p-3 rounded-lg border border-[#ebe8e2] print:bg-transparent print:border-black">
+                        <div className="bg-[#faf9f7] p-3 rounded-[8px] border border-[#ebe8e2] print:bg-transparent print:border-black">
                             <div className="grid grid-cols-12 gap-2 mb-2 items-end print:hidden">
                                 <div className="col-span-5">
                                     <label className="text-[10px] font-bold text-[#a8a099] block mb-1 uppercase">Culprit Drug</label>

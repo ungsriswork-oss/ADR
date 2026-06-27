@@ -59,7 +59,7 @@ const AgepTimeline = ({ drugs, labs, onsetDate }) => {
   }, [safeDrugs, safeLabs, onsetDate]);
 
   if (safeDrugs.length === 0 && safeLabs.length === 0) 
-      return <div className="h-24 flex items-center justify-center text-[#a8a099] border-dashed border-2 rounded-lg bg-[#faf9f7]">Add data to generate timeline</div>;
+      return <div className="h-24 flex items-center justify-center text-[#a8a099] border-dashed border-2 rounded-[8px] bg-[#faf9f7]">Add data to generate timeline</div>;
 
   return (
     // ✅ เพิ่ม print:print-color-adjust-exact เพื่อบังคับให้ Browser พิมพ์สีพื้นหลังและเส้น
@@ -252,7 +252,7 @@ const AgepDrugAnalysis = ({ drugs, onsetDate, onMoreInfo }) => {
                  }
              }
              return (
-                 <div key={i} className={`p-4 rounded-lg flex justify-between items-center ${style} print:border-[#d6d0c8] print:bg-white print:text-black`}>
+                 <div key={i} className={`p-4 rounded-[8px] flex justify-between items-center ${style} print:border-[#d6d0c8] print:bg-white print:text-black`}>
                      <div>
                         <div className="font-bold text-base">{name}</div>
                         <div className="text-xs opacity-90 mt-1">Start: {drug.startDate} {drug.endDate ? ` ➝ End: ${drug.endDate}` : ''}</div>
@@ -341,20 +341,20 @@ const AgepAssessment = (props) => {
                 <h3 className="font-bold text-[#1a6b62] mb-4 flex items-center gap-2 text-lg"><Pill size={24}/> Drugs & Onset</h3>
                 <div className="mb-6">
                     <label className="text-xs font-bold text-[#a8a099] mb-1 block">ONSET DATE</label>
-                    <input type="date" className="w-full border-2 border-[#ebe8e2] rounded-lg p-3 text-base font-bold text-[#1a6b62] focus:border-[#2a9d8f] focus:ring-teal-200" value={onsetDate} onChange={e => setOnsetDate(e.target.value)} />
+                    <input type="date" className="w-full border-2 border-[#ebe8e2] rounded-[8px] p-3 text-base font-bold text-[#1a6b62] focus:border-[#0071e3] focus:ring-[rgba(0,113,227,0.18)]" value={onsetDate} onChange={e => setOnsetDate(e.target.value)} />
                 </div>
                 <div className="flex flex-col gap-3 mb-4 bg-[#e6f4f1] p-4 rounded-[10px] border border-[#b2ddd7]">
-                    <div><label className="text-xs text-[#a8a099] font-bold block mb-1">DRUG NAME</label><input className="w-full border border-[#d6d0c8] rounded-lg p-2.5 text-base" placeholder="Enter Drug Name..." value={newDrug.name} onChange={e => setNewDrug({...newDrug, name: e.target.value})} /></div>
+                    <div><label className="text-xs text-[#a8a099] font-bold block mb-1">DRUG NAME</label><input className="w-full border border-[#d6d0c8] rounded-[8px] p-2.5 text-base" placeholder="Enter Drug Name..." value={newDrug.name} onChange={e => setNewDrug({...newDrug, name: e.target.value})} /></div>
                     <div className="flex gap-3">
-                        <div className="flex-1"><label className="text-xs text-[#a8a099] font-bold block mb-1">START DATE</label><input type="date" className="w-full border border-[#d6d0c8] rounded-lg p-2.5 text-base" value={newDrug.startDate} onChange={e => setNewDrug({...newDrug, startDate: e.target.value})} /></div>
-                        <div className="flex-1"><label className="text-xs text-[#a8a099] font-bold block mb-1">END DATE (Optional)</label><input type="date" className="w-full border border-[#d6d0c8] rounded-lg p-2.5 text-base" value={newDrug.endDate} onChange={e => setNewDrug({...newDrug, endDate: e.target.value})} /></div>
+                        <div className="flex-1"><label className="text-xs text-[#a8a099] font-bold block mb-1">START DATE</label><input type="date" className="w-full border border-[#d6d0c8] rounded-[8px] p-2.5 text-base" value={newDrug.startDate} onChange={e => setNewDrug({...newDrug, startDate: e.target.value})} /></div>
+                        <div className="flex-1"><label className="text-xs text-[#a8a099] font-bold block mb-1">END DATE (Optional)</label><input type="date" className="w-full border border-[#d6d0c8] rounded-[8px] p-2.5 text-base" value={newDrug.endDate} onChange={e => setNewDrug({...newDrug, endDate: e.target.value})} /></div>
                     </div>
-                    <button onClick={() => { if(newDrug.name && newDrug.startDate) { setDrugs([...drugs, {...newDrug, id: Date.now()}]); setNewDrug({name:'', startDate:'', endDate: ''}); } }} className="bg-[#2a9d8f] text-white py-3 rounded-lg text-base font-bold shadow-[0_1px_4px_rgba(0,0,0,0.05)] hover:bg-[#1a6b62] mt-2 w-full">+ Add Drug</button>
+                    <button onClick={() => { if(newDrug.name && newDrug.startDate) { setDrugs([...drugs, {...newDrug, id: Date.now()}]); setNewDrug({name:'', startDate:'', endDate: ''}); } }} className="bg-[#2a9d8f] text-white py-3 rounded-[8px] text-base font-bold shadow-[0_1px_4px_rgba(0,0,0,0.05)] hover:bg-[#1a6b62] mt-2 w-full">+ Add Drug</button>
                 </div>
                 <div className="max-h-[300px] overflow-y-auto bg-white p-1 rounded space-y-2">
                     {drugs.length === 0 && <div className="text-center text-slate-300 py-6 italic">No drugs added yet</div>}
                     {drugs.map(d => (
-                        <div key={d.id} className="flex justify-between border border-[#f4f2ee] p-3 rounded-lg items-center bg-[#faf9f7]">
+                        <div key={d.id} className="flex justify-between border border-[#f4f2ee] p-3 rounded-[8px] items-center bg-[#faf9f7]">
                             <div><span className="font-bold block text-[#2d2926] text-base">{d.name}</span><span className="text-sm text-[#a8a099]">{d.startDate} {d.endDate ? `➝ ${d.endDate}` : '(Ongoing)'}</span></div>
                             <button onClick={() => setDrugs(drugs.filter(x => x.id !== d.id))} className="text-[#a8a099] hover:text-[#e07060] p-2"><Trash2 size={18}/></button>
                         </div>
@@ -367,18 +367,18 @@ const AgepAssessment = (props) => {
                 <h3 className="font-bold text-[#1a6b62] mb-4 flex items-center gap-2 text-lg"><Droplet size={24}/> Labs (WBC/Neutro)</h3>
                 <div className="bg-[#e6f4f1] p-4 rounded-[10px] border border-[#b2ddd7] mb-4">
                     <div className="flex gap-3 mb-3 items-end">
-                        <div className="w-32"><label className="text-xs text-[#a8a099] font-bold block mb-1">DATE</label><input type="date" className="w-full border border-[#d6d0c8] rounded-lg p-2 text-sm" value={newLab.date} onChange={e => setNewLab({...newLab, date: e.target.value})} /></div>
+                        <div className="w-32"><label className="text-xs text-[#a8a099] font-bold block mb-1">DATE</label><input type="date" className="w-full border border-[#d6d0c8] rounded-[8px] p-2 text-sm" value={newLab.date} onChange={e => setNewLab({...newLab, date: e.target.value})} /></div>
                         <div className="flex-1 grid grid-cols-3 gap-2">
-                            <div><label className="text-xs text-[#a8a099] font-bold block mb-1">TEMP</label><input type="number" className="w-full border border-[#d6d0c8] rounded-lg p-2 text-sm" placeholder="°C" value={newLab.temp} onChange={e => setNewLab({...newLab, temp: e.target.value})} /></div>
-                            <div><label className="text-xs text-[#a8a099] font-bold block mb-1">WBC</label><input type="number" className="w-full border border-[#d6d0c8] rounded-lg p-2 text-sm" placeholder="x10³" value={newLab.wbc} onChange={e => setNewLab({...newLab, wbc: e.target.value})} /></div>
-                            <div><label className="text-xs text-[#a8a099] font-bold block mb-1">NEU%</label><input type="number" className="w-full border border-[#d6d0c8] rounded-lg p-2 text-sm" placeholder="%" value={newLab.neutrophil} onChange={e => setNewLab({...newLab, neutrophil: e.target.value})} /></div>
+                            <div><label className="text-xs text-[#a8a099] font-bold block mb-1">TEMP</label><input type="number" className="w-full border border-[#d6d0c8] rounded-[8px] p-2 text-sm" placeholder="°C" value={newLab.temp} onChange={e => setNewLab({...newLab, temp: e.target.value})} /></div>
+                            <div><label className="text-xs text-[#a8a099] font-bold block mb-1">WBC</label><input type="number" className="w-full border border-[#d6d0c8] rounded-[8px] p-2 text-sm" placeholder="x10³" value={newLab.wbc} onChange={e => setNewLab({...newLab, wbc: e.target.value})} /></div>
+                            <div><label className="text-xs text-[#a8a099] font-bold block mb-1">NEU%</label><input type="number" className="w-full border border-[#d6d0c8] rounded-[8px] p-2 text-sm" placeholder="%" value={newLab.neutrophil} onChange={e => setNewLab({...newLab, neutrophil: e.target.value})} /></div>
                         </div>
                     </div>
-                    <button onClick={() => { if(newLab.date) { setLabs([...labs, {...newLab, id: Date.now()}].sort((a,b)=>new Date(a.date)-new Date(b.date))); setNewLab({date:'', temp:'', wbc:'', neutrophil:''}); } }} className="bg-[#2a9d8f] text-white py-2.5 w-full rounded-lg text-base font-bold shadow-[0_1px_4px_rgba(0,0,0,0.05)] hover:bg-[#1a6b62]">+ Add Lab Entry</button>
+                    <button onClick={() => { if(newLab.date) { setLabs([...labs, {...newLab, id: Date.now()}].sort((a,b)=>new Date(a.date)-new Date(b.date))); setNewLab({date:'', temp:'', wbc:'', neutrophil:''}); } }} className="bg-[#2a9d8f] text-white py-2.5 w-full rounded-[8px] text-base font-bold shadow-[0_1px_4px_rgba(0,0,0,0.05)] hover:bg-[#1a6b62]">+ Add Lab Entry</button>
                 </div>
                 <div className="max-h-[300px] overflow-y-auto bg-white p-1 rounded space-y-2">
                     {labs.length === 0 && <div className="text-center text-slate-300 py-6 italic">No labs added yet</div>}
-                    {labs.map(l => <div key={l.id} className="flex justify-between border border-[#f4f2ee] p-3 rounded-lg items-center bg-[#faf9f7] text-base"><span><span className="font-mono text-[#a8a099] font-bold mr-2">{l.date}:</span> T{l.temp} W{l.wbc} N{l.neutrophil}</span> <button onClick={() => setLabs(labs.filter(x => x.id !== l.id))} className="text-[#a8a099] hover:text-[#e07060] p-2"><Trash2 size={18}/></button></div>)}
+                    {labs.map(l => <div key={l.id} className="flex justify-between border border-[#f4f2ee] p-3 rounded-[8px] items-center bg-[#faf9f7] text-base"><span><span className="font-mono text-[#a8a099] font-bold mr-2">{l.date}:</span> T{l.temp} W{l.wbc} N{l.neutrophil}</span> <button onClick={() => setLabs(labs.filter(x => x.id !== l.id))} className="text-[#a8a099] hover:text-[#e07060] p-2"><Trash2 size={18}/></button></div>)}
                 </div>
             </div>
         </div>
@@ -394,7 +394,7 @@ const AgepAssessment = (props) => {
                     </label>
                     <div className="p-4 border border-[#ebe8e2] rounded-[10px] bg-[#faf9f7] flex items-center justify-between print:bg-white print:border-slate-400 print:p-2">
                         <div className="flex items-center gap-3 text-[#2d2926] print:text-black"><Scale size={24} className="print:w-5 print:h-5"/><span className="font-bold text-lg print:text-sm">BMI ≥ 30 (+1)</span></div>
-                        <input type="number" placeholder="Enter BMI" className="w-28 border-2 border-[#d6d0c8] rounded-lg p-2 text-lg text-center focus:border-[#2a9d8f] font-bold print:border-slate-400 print:text-sm print:w-20 print:p-1" value={bmi} onChange={e => setBmi(e.target.value)} />
+                        <input type="number" placeholder="Enter BMI" className="w-28 border-2 border-[#d6d0c8] rounded-[8px] p-2 text-lg text-center focus:border-[#0071e3] font-bold print:border-slate-400 print:text-sm print:w-20 print:p-1" value={bmi} onChange={e => setBmi(e.target.value)} />
                     </div>
                 </div>
                 <div className="space-y-4">
@@ -411,7 +411,7 @@ const AgepAssessment = (props) => {
         </div>
 
         {/* ANALYZE BUTTON */}
-        <button onClick={handleAnalyze} className="w-full bg-from-[#2a9d8f] to-[#2a9d8f] text-white font-bold py-4 rounded-[10px] shadow-[0_4px_16px_rgba(0,0,0,0.08)] hover:scale-[1.01] transition-transform flex items-center justify-center gap-3 text-xl print:hidden">
+        <button onClick={handleAnalyze} className="w-full bg-bg-[#2a9d8f] text-white font-bold py-4 rounded-[10px] shadow-[0_4px_16px_rgba(0,0,0,0.08)] hover:scale-[1.01] transition-transform flex items-center justify-center gap-3 text-xl print:hidden">
             <Zap size={28} /> Analyze Score
         </button>
 

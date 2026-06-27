@@ -811,7 +811,7 @@ const DiliAssessment = ({
               + Add
             </button>
           </div>
-          <div className="w-full overflow-hidden border border-[#ebe8e2] rounded-lg print:border-black">
+          <div className="w-full overflow-hidden border border-[#ebe8e2] rounded-[8px] print:border-black">
             <table className="w-full text-sm text-left border-collapse table-fixed">
               <thead className="bg-[#f4f2ee] print:bg-[#ebe8e2]">
                 <tr>
@@ -884,7 +884,7 @@ const DiliAssessment = ({
               className="border p-1 rounded print:border-0 print:p-0 print:font-bold"
             />
           </div>
-          <div className="w-full overflow-hidden mb-4 border border-[#ebe8e2] rounded-lg print:border-black">
+          <div className="w-full overflow-hidden mb-4 border border-[#ebe8e2] rounded-[8px] print:border-black">
             <table className="w-full text-sm text-left border-collapse table-fixed">
               <thead className="bg-[#f4f2ee] print:bg-[#ebe8e2]">
                 <tr>
@@ -976,19 +976,19 @@ const DiliAssessment = ({
           <div className="mt-6 flex flex-col gap-4 no-print">
             <button
               onClick={performAnalysis}
-              className="w-full bg-[#2a9d8f] hover:bg-[#1a6b62] text-white text-lg px-8 py-3 rounded-lg font-bold shadow hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-all transform active:scale-95 flex items-center justify-center gap-2"
+              className="w-full bg-[#0071e3] hover:bg-[#0077ed] text-white text-lg px-8 py-3 rounded-[8px] font-bold shadow hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-all transform active:scale-95 flex items-center justify-center gap-2"
             >
               <span className="text-xl">⚡</span> Analyze Assessment
             </button>
 
             {/* --- Pharmacist Note Section --- */}
-            <div className="bg-white border border-[#ebe8e2] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.06)] p-4 text-left">
+            <div className="bg-white border border-[#ebe8e2] rounded-[8px] shadow-[0_1px_4px_rgba(0,0,0,0.06)] p-4 text-left">
               <div className="flex items-center gap-2 mb-3 border-b border-[#f4f2ee] pb-2">
                 <span className="text-lg">📝</span>
                 <h3 className="font-bold text-[#2d2926]">Pharmacist Note</h3>
               </div>
               <textarea
-                className="w-full p-3 border border-[#ebe8e2] rounded-lg text-sm text-[#2d2926] focus:outline-none focus:ring-1 focus:ring-[#e6f4f1] focus:border-[#2a9d8f] transition-all placeholder:text-[#a8a099] resize-none"
+                className="w-full p-3 border border-[#ebe8e2] rounded-[8px] text-sm text-[#2d2926] focus:outline-none focus:outline-none focus:ring-[3px] focus:ring-[rgba(0,113,227,0.18)] focus:border-[#0071e3] focus:border-[#0071e3] transition-all placeholder:text-[#a8a099] resize-none"
                 rows="4"
                 placeholder="Enter additional notes..."
                 value={pharmacistNote}
@@ -1276,7 +1276,7 @@ const DiliAssessment = ({
 
           <div className="mb-8 break-inside-avoid">
             <div
-              className="flex items-center gap-4 bg-[#fff0e4] p-4 rounded-lg border border-[#f5cfa8] cursor-pointer hover:bg-[#fff0e4] transition print:border-black print:bg-transparent"
+              className="flex items-center gap-4 bg-[#fff0e4] p-4 rounded-[8px] border border-[#f5cfa8] cursor-pointer hover:bg-[#fff0e4] transition print:border-black print:bg-transparent"
               onClick={() => setShowRLogic(!showRLogic)}
             >
               <div className="text-center">

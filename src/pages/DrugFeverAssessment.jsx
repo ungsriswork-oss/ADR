@@ -7,7 +7,7 @@ import drugFeverCauseImg from '../assets/drug_fever_causes.png';
 
 // --- 1. PHARMACIST NOTE COMPONENT ---
 const PharmacistNoteSection = ({ note, setNote }) => (
-    <div className="border border-[#d6d0c8] rounded-lg overflow-hidden bg-white print:border-black mb-6 shadow-[0_1px_4px_rgba(0,0,0,0.05)] print:break-inside-avoid">
+    <div className="border border-[#d6d0c8] rounded-[8px] overflow-hidden bg-white print:border-black mb-6 shadow-[0_1px_4px_rgba(0,0,0,0.05)] print:break-inside-avoid">
         <div className="bg-[#f4f2ee] px-4 py-2 border-b border-[#d6d0c8] flex items-center gap-2 print:bg-[#ebe8e2] print:border-black">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#6b6360]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -52,7 +52,7 @@ const CommonCausesModal = ({ isOpen, onClose }) => {
                 </div>
                 
                 <div className="mt-4 text-right">
-                    <button onClick={onClose} className="px-4 py-2 bg-[#ebe8e2] hover:bg-slate-300 text-[#2d2926] rounded-lg text-sm font-bold transition">
+                    <button onClick={onClose} className="px-4 py-2 bg-[#ebe8e2] hover:bg-slate-300 text-[#2d2926] rounded-[8px] text-sm font-bold transition">
                         Close
                     </button>
                 </div>
@@ -589,7 +589,7 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
             <div className="bg-[#f0eeff] p-4 rounded-[10px] border border-[#cec8f6] print:hidden">
                 <h3 className="text-sm font-bold text-indigo-800 mb-3 uppercase">1. Data Entry Panel</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-white p-3 rounded-lg border border-[#cec8f6]">
+                    <div className="bg-white p-3 rounded-[8px] border border-[#cec8f6]">
                         <label className="text-xs font-bold text-[#a8a099] block mb-2">Add Suspected Drug</label>
                         <div className="flex gap-2 items-end">
                             <div className="flex-1">
@@ -607,7 +607,7 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
                             <button onClick={handleAddDrug} className="bg-[#2a9d8f] text-white rounded px-3 py-1.5 text-xs font-bold mb-[1px]">+</button>
                         </div>
                     </div>
-                    <div className="bg-white p-3 rounded-lg border border-[#cec8f6]">
+                    <div className="bg-white p-3 rounded-[8px] border border-[#cec8f6]">
                         <label className="text-xs font-bold text-[#a8a099] block mb-2">Fever Onset (Time Specific)</label>
                         <div className="flex flex-col gap-2">
                             <label className="text-[10px] text-[#a8a099]">Select Date & Time:</label>
@@ -616,7 +616,7 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
                     </div>
                 </div>
 
-                <div className="mt-2 bg-white p-3 rounded-lg border border-[#cec8f6]">
+                <div className="mt-2 bg-white p-3 rounded-[8px] border border-[#cec8f6]">
                     <label className="text-xs font-bold text-[#a8a099] block mb-1">Add Clinical Log (Temp/Pulse)</label>
                     <div className="grid grid-cols-5 gap-2">
                         <input type="datetime-local" className="col-span-2 border p-1 rounded text-xs" value={currentLog.date} onChange={e=>setCurrentLog({...currentLog, date: e.target.value})} />
@@ -629,7 +629,7 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
 
             {/* DATA DISPLAY */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:hidden">
-                <div className="border border-[#ebe8e2] rounded-lg overflow-hidden h-full flex flex-col">
+                <div className="border border-[#ebe8e2] rounded-[8px] overflow-hidden h-full flex flex-col">
                     <div className="bg-[#faf9f7] px-3 py-2 border-b font-bold text-xs text-[#6b6360] flex justify-between items-center">
                         <span>Raw Data: Daily Logs</span>
                         <span className="text-[10px] text-[#a8a099]">Add in Panel above</span>
@@ -652,7 +652,7 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
                     </div>
                 </div>
 
-                <div className="border border-[#ebe8e2] rounded-lg overflow-hidden h-full flex flex-col">
+                <div className="border border-[#ebe8e2] rounded-[8px] overflow-hidden h-full flex flex-col">
                     <div className="bg-[#faf9f7] px-3 py-2 border-b font-bold text-xs text-[#6b6360] flex justify-between items-center">
                         <span>Suspected Drugs List</span>
                         <span className="text-[10px] text-[#a8a099]">Add in Panel above</span>

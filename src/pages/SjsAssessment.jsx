@@ -625,13 +625,13 @@ const SjsAssessment = (props) => {
         <h2 className="text-[#8c3322] font-bold text-xl mb-6 flex items-center gap-2 border-b border-[#f5b8b8] pb-4">
           🔥 SJS/TEN Assessment (ALDEN)
         </h2>
-        <div className="mb-8 flex items-center gap-4 bg-white p-4 rounded-lg border border-[#f5b8b8] shadow-[0_1px_4px_rgba(0,0,0,0.05)] max-w-md">
+        <div className="mb-8 flex items-center gap-4 bg-white p-4 rounded-[8px] border border-[#f5b8b8] shadow-[0_1px_4px_rgba(0,0,0,0.05)] max-w-md">
           <label className="font-bold text-[#2d2926] text-base">
             Index Day (Onset):
           </label>
           <input
             type="date"
-            className="flex-1 border p-2 rounded shadow-[0_1px_4px_rgba(0,0,0,0.05)] focus:ring-1 focus:ring-[#e6f4f1] outline-none font-bold text-[#8c3322] text-lg"
+            className="flex-1 border p-2 rounded shadow-[0_1px_4px_rgba(0,0,0,0.05)] focus:outline-none focus:ring-[3px] focus:ring-[rgba(0,113,227,0.18)] focus:border-[#0071e3] outline-none font-bold text-[#8c3322] text-lg"
             value={indexDate}
             onChange={(e) => {
               setIndexDate(e.target.value);
@@ -647,7 +647,7 @@ const SjsAssessment = (props) => {
             <div className="space-y-4 flex-grow">
               <input
                 placeholder="Drug Name"
-                className="w-full border border-[#d6d0c8] p-2.5 rounded-lg text-base focus:ring-1 focus:ring-[#e6f4f1] outline-none"
+                className="w-full border border-[#d6d0c8] p-2.5 rounded-[8px] text-base focus:outline-none focus:ring-[3px] focus:ring-[rgba(0,113,227,0.18)] focus:border-[#0071e3] outline-none"
                 value={currentDrug.name}
                 onChange={(e) =>
                   setCurrentDrug({ ...currentDrug, name: e.target.value })
@@ -689,7 +689,7 @@ const SjsAssessment = (props) => {
               </div>
               <button
                 onClick={handleAddDrug}
-                className="w-full bg-slate-700 text-white font-bold py-2.5 rounded-lg hover:bg-[#2d2926] transition shadow-[0_1px_4px_rgba(0,0,0,0.05)] hover:shadow"
+                className="w-full bg-slate-700 text-white font-bold py-2.5 rounded-[8px] hover:bg-[#2d2926] transition shadow-[0_1px_4px_rgba(0,0,0,0.05)] hover:shadow"
               >
                 + Add Drug
               </button>
@@ -697,7 +697,7 @@ const SjsAssessment = (props) => {
                 {drugList.map((d) => (
                   <div
                     key={d.id}
-                    className="w-full bg-white border border-[#ebe8e2] p-3 rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.05)] flex items-center justify-between group hover:border-[#f5b8b8] transition-all"
+                    className="w-full bg-white border border-[#ebe8e2] p-3 rounded-[8px] shadow-[0_1px_4px_rgba(0,0,0,0.05)] flex items-center justify-between group hover:border-[#f5b8b8] transition-all"
                   >
                     <div className="flex items-center gap-3 w-full overflow-hidden">
                       <strong className="text-[#2d2926] text-base min-w-[100px] truncate">
@@ -745,7 +745,7 @@ const SjsAssessment = (props) => {
                   </span>
                   <input
                     type="date"
-                    className="w-full border border-[#d6d0c8] p-2.5 rounded-lg text-base"
+                    className="w-full border border-[#d6d0c8] p-2.5 rounded-[8px] text-base"
                     value={currentLog.date}
                     onChange={(e) =>
                       setCurrentLog({ ...currentLog, date: e.target.value })
@@ -759,7 +759,7 @@ const SjsAssessment = (props) => {
                   <input
                     type="number"
                     placeholder="%"
-                    className="w-full border border-[#d6d0c8] p-2.5 rounded-lg text-base text-center font-bold text-[#b83232] bg-red-50 focus:bg-white transition-colors"
+                    className="w-full border border-[#d6d0c8] p-2.5 rounded-[8px] text-base text-center font-bold text-[#b83232] bg-red-50 focus:bg-white transition-colors"
                     value={currentLog.detachment}
                     onChange={(e) =>
                       setCurrentLog({
@@ -770,7 +770,7 @@ const SjsAssessment = (props) => {
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4 bg-[#faf9f7] p-3 rounded-lg border border-[#f4f2ee]">
+              <div className="grid grid-cols-2 gap-4 bg-[#faf9f7] p-3 rounded-[8px] border border-[#f4f2ee]">
                 <div>
                   <span className="text-xs font-bold text-[#a8a099] block mb-1">
                     Max Temp (°C)
@@ -778,7 +778,7 @@ const SjsAssessment = (props) => {
                   <input
                     type="number"
                     placeholder="37.0"
-                    className={`w-full border p-2 rounded-lg text-base font-medium ${
+                    className={`w-full border p-2 rounded-[8px] text-base font-medium ${
                       parseFloat(currentLog.temp) > 38
                         ? 'border-red-300 bg-white text-red-700'
                         : 'border-[#d6d0c8]'
@@ -840,7 +840,7 @@ const SjsAssessment = (props) => {
               </div>
               <input
                 placeholder="Note (e.g. Hypotension)"
-                className="w-full border border-[#d6d0c8] p-2.5 rounded-lg text-base"
+                className="w-full border border-[#d6d0c8] p-2.5 rounded-[8px] text-base"
                 value={currentLog.note}
                 onChange={(e) =>
                   setCurrentLog({ ...currentLog, note: e.target.value })
@@ -848,7 +848,7 @@ const SjsAssessment = (props) => {
               />
               <button
                 onClick={handleAddLog}
-                className="w-full bg-[#fdf0ee] text-[#8c3322] border border-[#f5b8b8] font-bold py-2.5 rounded-lg hover:bg-orange-200 transition"
+                className="w-full bg-[#fdf0ee] text-[#8c3322] border border-[#f5b8b8] font-bold py-2.5 rounded-[8px] hover:bg-orange-200 transition"
               >
                 + Add Log
               </button>
@@ -861,7 +861,7 @@ const SjsAssessment = (props) => {
                 return (
                   <div
                     key={l.id}
-                    className="bg-white p-3 rounded-lg border border-[#ebe8e2] shadow-[0_1px_4px_rgba(0,0,0,0.05)] flex flex-col gap-1.5 hover:border-blue-300 transition-colors"
+                    className="bg-white p-3 rounded-[8px] border border-[#ebe8e2] shadow-[0_1px_4px_rgba(0,0,0,0.05)] flex flex-col gap-1.5 hover:border-blue-300 transition-colors"
                   >
                     <div className="flex justify-between items-center border-b border-slate-50 pb-1">
                       <span className="font-bold text-[#2d2926] text-sm">
@@ -917,7 +917,7 @@ const SjsAssessment = (props) => {
             📝 Pharmacist Note
           </h3>
           <textarea
-            className="w-full border border-[#d6d0c8] rounded-lg p-3 text-sm focus:ring-1 focus:ring-[#e6f4f1] outline-none resize-y min-h-[100px]"
+            className="w-full border border-[#d6d0c8] rounded-[8px] p-3 text-sm focus:outline-none focus:ring-[3px] focus:ring-[rgba(0,113,227,0.18)] focus:border-[#0071e3] outline-none resize-y min-h-[100px]"
             value={pharmacistNote}
             onChange={(e) => setPharmacistNote(e.target.value)}
           />

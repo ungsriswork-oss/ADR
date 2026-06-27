@@ -307,7 +307,7 @@ const SingleDrugAnalysis = ({ name, segments, onsetDate, labs }) => {
   }
 
   return (
-    <div className={`flex items-center justify-between p-4 rounded-lg border ${riskColor} mb-2 print:border-[#d6d0c8] print:text-black`}>
+    <div className={`flex items-center justify-between p-4 rounded-[8px] border ${riskColor} mb-2 print:border-[#d6d0c8] print:text-black`}>
       <div className="flex items-center gap-4">
         <div className={`p-2.5 rounded-full bg-white/50 border border-black/5`}> <Pill size={20} /> </div>
         <div>
@@ -537,14 +537,14 @@ const DressAssessment = (props) => {
                 onChange={(e) => { setOnsetDate(e.target.value); setAnalyzed(false); }} 
               />
             </div>
-            <div className="flex-[3] bg-[#f0eeff] p-3 rounded-lg border border-[#cec8f6] flex flex-col md:flex-row gap-2 items-end">
+            <div className="flex-[3] bg-[#f0eeff] p-3 rounded-[8px] border border-[#cec8f6] flex flex-col md:flex-row gap-2 items-end">
               <div className="flex-1 w-full"><label className="text-xs font-bold text-[#4a3ab8] uppercase mb-1 block">Drug Name</label><input className="text-sm border rounded p-2 w-full" placeholder="Drug Name" value={newDrug.name} onChange={(e) => setNewDrug({ ...newDrug, name: e.target.value })} /></div>
               <div className="w-full md:w-[160px]"><label className="text-[10px] font-bold text-[#a8a099] block mb-0.5">Start Date</label><input type="date" className="w-full text-xs border rounded p-2" value={newDrug.startDate} onChange={(e) => setNewDrug({ ...newDrug, startDate: e.target.value })} /></div>
               <div className="w-full md:w-[160px]"><label className="text-[10px] font-bold text-[#a8a099] block mb-0.5">End Date</label><input type="date" className="w-full text-xs border rounded p-2" value={newDrug.endDate} onChange={(e) => setNewDrug({ ...newDrug, endDate: e.target.value })} /></div>
               <button onClick={addDrug} className="w-full md:w-auto bg-[#534ab7] text-white text-sm font-bold py-2 px-6 rounded hover:bg-[#3d3499] shadow-[0_1px_4px_rgba(0,0,0,0.05)] h-[38px]">+ Add</button>
             </div>
           </div>
-          <div className="h-[200px] overflow-y-auto border border-dashed border-[#ebe8e2] rounded-lg p-1 bg-[#faf9f7]/50 custom-scrollbar">
+          <div className="h-[200px] overflow-y-auto border border-dashed border-[#ebe8e2] rounded-[8px] p-1 bg-[#faf9f7]/50 custom-scrollbar">
             {drugs.length === 0 ? <div className="h-full flex items-center justify-center text-[#a8a099] text-sm">No drugs added</div> : 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 p-1">
                 {drugs.map((drug) => (
@@ -561,7 +561,7 @@ const DressAssessment = (props) => {
         {/* ROW 2: LABS - HIDDEN ON PRINT */}
         <div className="bg-white p-6 rounded-[10px] shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-[#ebe8e2] print:hidden">
           <h3 className="text-base font-bold text-[#4a3ab8] uppercase mb-4 flex items-center gap-2 border-b border-purple-50 pb-3"><Droplet className="w-5 h-5" /> 2. Clinical Data Points</h3>
-          <div className="bg-[#f0eeff] p-3 rounded-lg border border-[#cec8f6] mb-4 flex flex-col md:flex-row gap-4 items-end">
+          <div className="bg-[#f0eeff] p-3 rounded-[8px] border border-[#cec8f6] mb-4 flex flex-col md:flex-row gap-4 items-end">
             <div className="w-full md:w-[200px]"><label className="text-xs font-bold text-[#4a3ab8] uppercase mb-1 block">Date</label><input type="date" className="w-full text-xs border rounded p-2 bg-white" value={newLab.date} onChange={(e) => setNewLab({ ...newLab, date: e.target.value })} /></div>
             <div className="flex-1 flex gap-2 w-full">
               <div className="flex-1"><label className="text-[10px] font-bold text-[#a8a099] block mb-0.5">Temp</label><input type="number" className="w-full text-xs border rounded p-2" placeholder="Temp" value={newLab.temp} onChange={(e) => setNewLab({ ...newLab, temp: e.target.value })} /></div>
@@ -570,7 +570,7 @@ const DressAssessment = (props) => {
             </div>
             <button onClick={addLab} className="w-full md:w-auto bg-[#534ab7] text-white text-sm font-bold py-2 px-6 rounded hover:bg-[#3d3499] shadow-[0_1px_4px_rgba(0,0,0,0.05)] h-[36px]">+ Add / Update</button>
           </div>
-          <div className="h-[200px] overflow-y-auto border border-dashed border-[#ebe8e2] rounded-lg p-1 bg-[#faf9f7]/50 custom-scrollbar">
+          <div className="h-[200px] overflow-y-auto border border-dashed border-[#ebe8e2] rounded-[8px] p-1 bg-[#faf9f7]/50 custom-scrollbar">
             {labs.length === 0 ? <div className="h-full flex items-center justify-center text-[#a8a099] text-sm">No labs added</div> : 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 p-1">
                 {labs.map((lab) => (
@@ -623,7 +623,7 @@ const DressAssessment = (props) => {
                 )}
               </div>
               {clinical.rashPresent && (
-                <div className="grid grid-cols-2 gap-2 p-2 bg-[#faf9f7] rounded-lg border border-[#f4f2ee]">
+                <div className="grid grid-cols-2 gap-2 p-2 bg-[#faf9f7] rounded-[8px] border border-[#f4f2ee]">
                   {['Facial Edema', 'Infiltration', 'Purpura', 'Scaling'].map((f) => (
                     <label key={f} className="text-xs flex items-center gap-2 cursor-pointer p-1">
                       <input type="checkbox" className="accent-[#534ab7]" checked={clinical.rashFeatures.includes(f)} onChange={() => handleRashFeature(f)} /> {f}
@@ -672,7 +672,7 @@ const DressAssessment = (props) => {
         {/* --- PHARMACIST NOTE - HIDDEN ON PRINT --- */}
         <div className="bg-white p-6 rounded-[10px] shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-[#ebe8e2] mt-8 mb-8 print:hidden">
           <div className="flex items-center gap-2 mb-4 text-[#2d2926] font-bold border-b border-[#f4f2ee] pb-2"><Edit3 className="w-5 h-5 text-[#534ab7]" /><h3>Pharmacist Note</h3></div>
-          <textarea className="w-full border border-[#d6d0c8] rounded-lg p-3 text-sm focus:ring-1 focus:ring-[#e6f4f1] focus:border-[#2a9d8f] outline-none h-24 resize-none" placeholder="Enter clinical observations, drug interactions, or recommendations..." value={pharmacistNote} onChange={(e) => setPharmacistNote(e.target.value)}></textarea>
+          <textarea className="w-full border border-[#d6d0c8] rounded-[8px] p-3 text-sm focus:outline-none focus:ring-[3px] focus:ring-[rgba(0,113,227,0.18)] focus:border-[#0071e3] focus:border-[#0071e3] outline-none h-24 resize-none" placeholder="Enter clinical observations, drug interactions, or recommendations..." value={pharmacistNote} onChange={(e) => setPharmacistNote(e.target.value)}></textarea>
         </div>
 
         {/* --- RESULTS (Hidden until analyzed, VISIBLE ON PRINT) --- */}

@@ -390,7 +390,7 @@ const ElectroAssessment = (props) => {
                             <label className="text-xs font-bold text-indigo-600 uppercase w-28 print:text-black">ONSET DATE:</label>
                             <input type="date" value={onset} onChange={e=>{syncToParent(undefined,undefined,e.target.value,undefined); setIsAnalyzed(false);}} className="border rounded px-2 py-1 text-sm font-bold print:border-black"/>
                         </div>
-                        <div className="bg-[#faf9f7] p-3 rounded-lg border border-[#ebe8e2] print:bg-transparent print:border-black">
+                        <div className="bg-[#faf9f7] p-3 rounded-[8px] border border-[#ebe8e2] print:bg-transparent print:border-black">
                             <div className="grid grid-cols-12 gap-2 mb-2 items-end print:hidden">
                                 <input className="col-span-5 border rounded px-2 py-1 text-sm" placeholder="Drug Name" value={currentDrug.name} onChange={e=>setCurrentDrug({...currentDrug,name:e.target.value})}/>
                                 <div className="col-span-3"><label className="text-[10px] font-bold text-[#a8a099] block mb-1">Start</label><input type="date" className="border rounded w-full px-1 py-1 text-sm" value={currentDrug.startDate} onChange={e=>setCurrentDrug({...currentDrug,startDate:e.target.value})}/></div>

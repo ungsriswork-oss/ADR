@@ -343,7 +343,7 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
                         <label className="text-xs text-[#a8a099] font-bold block mb-1">SUSPECTED STATIN / DRUG</label>
                         <input 
                             type="text" 
-                            className="w-full text-sm border-[#d6d0c8] rounded-md p-2 focus:ring-teal-500 focus:border-teal-500 placeholder:text-slate-300"
+                            className="w-full text-sm border-[#d6d0c8] rounded-md p-2 focus:ring-teal-500 focus:border-[#0071e3] placeholder:text-slate-300"
                             placeholder="e.g. Atorvastatin 40mg"
                             value={clinicalData.suspectedDrug}
                             onChange={e => handleChange('suspectedDrug', e.target.value)}
@@ -351,7 +351,7 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
                     </div>
 
                     {/* Onset Phase */}
-                    <div className="bg-teal-50/50 p-4 rounded-lg border border-teal-100 space-y-3 print:bg-white print:border-[#d6d0c8]">
+                    <div className="bg-teal-50/50 p-4 rounded-[8px] border border-teal-100 space-y-3 print:bg-white print:border-[#d6d0c8]">
                         <div className="flex items-center gap-2 text-teal-700 font-bold text-xs mb-2 print:text-black">
                             <PlayCircle className="w-4 h-4" /> ONSET PHASE
                         </div>
@@ -366,7 +366,7 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
                     </div>
 
                     {/* Dechallenge Phase */}
-                    <div className="bg-[#faf9f7] p-4 rounded-lg border border-[#ebe8e2] space-y-3 print:bg-white print:border-[#d6d0c8]">
+                    <div className="bg-[#faf9f7] p-4 rounded-[8px] border border-[#ebe8e2] space-y-3 print:bg-white print:border-[#d6d0c8]">
                         <div className="flex items-center gap-2 text-[#6b6360] font-bold text-xs mb-2 print:text-black">
                             <StopCircle className="w-4 h-4" /> DECHALLENGE PHASE
                         </div>
@@ -381,7 +381,7 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
                     </div>
 
                     {/* CPK Data Entry */}
-                    <div className="md:col-span-2 bg-purple-50 p-4 rounded-lg border border-purple-100 print:bg-white print:border-[#d6d0c8]">
+                    <div className="md:col-span-2 bg-purple-50 p-4 rounded-[8px] border border-purple-100 print:bg-white print:border-[#d6d0c8]">
                          <div className="flex items-center justify-between mb-3">
                             <label className="text-xs font-bold text-purple-700 flex items-center gap-2 print:text-black">
                                 <Activity className="w-4 h-4" /> CPK DATA (Creatine Phosphokinase)
@@ -462,7 +462,7 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
                         </div>
                         
                         {clinicalData.hasRechallenge && (
-                            <div className="grid grid-cols-2 gap-4 bg-orange-50 p-4 rounded-lg border border-orange-100 animate-fade-in print:bg-white print:border-[#d6d0c8]">
+                            <div className="grid grid-cols-2 gap-4 bg-orange-50 p-4 rounded-[8px] border border-orange-100 animate-fade-in print:bg-white print:border-[#d6d0c8]">
                                 <div>
                                     <label className="text-xs text-[#a8a099] font-bold block mb-1">Date Restarted</label>
                                     <input type="date" className="w-full text-sm border-[#d6d0c8] rounded-md" value={clinicalData.restartDate} onChange={e => handleChange('restartDate', e.target.value)} />
@@ -503,7 +503,7 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
                             <div className="md:col-span-2">
                                 <label className="text-xs text-[#a8a099] font-bold block mb-1">1. DISTRIBUTION OF SYMPTOMS (Manual Select)</label>
                                 <select 
-                                    className="w-full text-sm border-[#d6d0c8] rounded-md p-2 bg-yellow-50 focus:ring-teal-500 focus:border-teal-500 print:appearance-none print:bg-white print:border-0 print:p-0 print:font-bold" 
+                                    className="w-full text-sm border-[#d6d0c8] rounded-md p-2 bg-yellow-50 focus:ring-teal-500 focus:border-[#0071e3] print:appearance-none print:bg-white print:border-0 print:p-0 print:font-bold" 
                                     value={answers.distribution} 
                                     onChange={e => handleScoreChange('distribution', e.target.value)}
                                 >
@@ -521,7 +521,7 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
                                     Duration: {getDaysDiff(clinicalData.startDate, clinicalData.symptomDate) ?? '-'} days
                                 </div>
                                 <select 
-                                    className="w-full text-sm border-[#d6d0c8] rounded-md p-2 focus:ring-teal-500 focus:border-teal-500 print:appearance-none print:bg-white print:border-0 print:p-0 print:font-bold" 
+                                    className="w-full text-sm border-[#d6d0c8] rounded-md p-2 focus:ring-teal-500 focus:border-[#0071e3] print:appearance-none print:bg-white print:border-0 print:p-0 print:font-bold" 
                                     value={answers.onset} 
                                     onChange={e => handleScoreChange('onset', e.target.value)}
                                 >
@@ -538,7 +538,7 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
                                     Improvement within: {getDaysDiff(clinicalData.stopDate, clinicalData.improvementDate) ?? '-'} days
                                 </div>
                                 <select 
-                                    className="w-full text-sm border-[#d6d0c8] rounded-md p-2 focus:ring-teal-500 focus:border-teal-500 print:appearance-none print:bg-white print:border-0 print:p-0 print:font-bold" 
+                                    className="w-full text-sm border-[#d6d0c8] rounded-md p-2 focus:ring-teal-500 focus:border-[#0071e3] print:appearance-none print:bg-white print:border-0 print:p-0 print:font-bold" 
                                     value={answers.dechallenge} 
                                     onChange={e => handleScoreChange('dechallenge', e.target.value)}
                                 >
@@ -552,7 +552,7 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
                             <div>
                                 <label className="text-xs text-[#a8a099] font-bold block mb-1">4. RECHALLENGE (Auto-calculated)</label>
                                 <select 
-                                    className="w-full text-sm border-[#d6d0c8] rounded-md p-2 focus:ring-teal-500 focus:border-teal-500 print:appearance-none print:bg-white print:border-0 print:p-0 print:font-bold" 
+                                    className="w-full text-sm border-[#d6d0c8] rounded-md p-2 focus:ring-teal-500 focus:border-[#0071e3] print:appearance-none print:bg-white print:border-0 print:p-0 print:font-bold" 
                                     value={answers.rechallenge} 
                                     onChange={e => handleScoreChange('rechallenge', e.target.value)}
                                 >
