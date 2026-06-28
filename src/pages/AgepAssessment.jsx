@@ -64,7 +64,7 @@ const AgepTimeline = ({ drugs, labs, onsetDate }) => {
   return (
     // ✅ เพิ่ม print:print-color-adjust-exact เพื่อบังคับให้ Browser พิมพ์สีพื้นหลังและเส้น
     <div className="bg-white p-6 rounded-[10px] shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-[#ebe8e2] mb-8 print:border-0 print:shadow-none print:print-color-adjust-exact">
-      <div className="flex items-center gap-2 mb-6 border-b border-[#b2ddd7] pb-3 print:border-slate-400">
+      <div className="flex items-center gap-2 mb-6 border-b border-[#b2ddd7] pb-3 print:border-[#d6d0c8]">
         <Activity className="text-[#2a9d8f] print:text-black" size={24} />
         <h3 className="font-bold text-[#1a6b62] text-xl print:text-black">Clinical Timeline</h3>
       </div>
@@ -73,8 +73,8 @@ const AgepTimeline = ({ drugs, labs, onsetDate }) => {
         
         {/* --- GRID LAYER (Fixed for Print Visibility) --- */}
         <div className={`absolute inset-0 pl-[140px] pointer-events-none`}>
-            {/* ✅ เปลี่ยน border-[#ebe8e2] เป็น print:border-slate-400 เพื่อให้เส้นเข้มขึ้นตอนพิมพ์ */}
-            <div className="relative w-full h-full border-l border-[#ebe8e2] print:border-slate-400">
+            {/* ✅ เปลี่ยน border-[#ebe8e2] เป็น print:border-[#d6d0c8] เพื่อให้เส้นเข้มขึ้นตอนพิมพ์ */}
+            <div className="relative w-full h-full border-l border-[#ebe8e2] print:border-[#d6d0c8]">
                 {timelineData.gridPoints.map((t, i) => {
                     const pct = ((t - timelineData.minTime) / timelineData.timeSpan) * 100;
                     if (pct < 0 || pct > 100) return null;
@@ -106,7 +106,7 @@ const AgepTimeline = ({ drugs, labs, onsetDate }) => {
             )}
 
             {/* 1. HEADER ROW */}
-            <div className="flex h-6 items-end pb-1 border-b border-[#f4f2ee] print:border-slate-400">
+            <div className="flex h-6 items-end pb-1 border-b border-[#f4f2ee] print:border-[#d6d0c8]">
                 <div className={`${LABEL_WIDTH_CLASS} shrink-0 font-bold text-xs text-right pr-6 text-[#a8a099] print:text-black`}>DRUG</div>
                 <div className="flex-1"></div>
             </div>
@@ -131,9 +131,9 @@ const AgepTimeline = ({ drugs, labs, onsetDate }) => {
 
                                 return (
                                     <React.Fragment key={idx}>
-                                        {/* ✅ ปรับสีแท่งยาตอนพิมพ์ (print:bg-slate-600) */}
-                                        <div className={`absolute h-1.5 top-[13px] bg-slate-400 opacity-70 group-hover:bg-[#e6f4f1] transition-colors
-                                            ${isLongTerm ? 'rounded-r-full' : 'rounded-full'} print:bg-slate-600 print:opacity-100
+                                        {/* ✅ ปรับสีแท่งยาตอนพิมพ์ (print:bg-[#2d2926]) */}
+                                        <div className={`absolute h-1.5 top-[13px] bg-[#a8a099] opacity-70 group-hover:bg-[#e6f4f1] transition-colors
+                                            ${isLongTerm ? 'rounded-r-full' : 'rounded-full'} print:bg-[#2d2926] print:opacity-100
                                         `} style={{ left: `${displayStart}%`, width: `${width}%` }}></div>
 
                                         {!isLongTerm && (
@@ -155,7 +155,7 @@ const AgepTimeline = ({ drugs, labs, onsetDate }) => {
 
             {/* 3. LABS ROW */}
             <div className="pt-4">
-                <div className="flex h-6 items-end pb-1 border-b border-[#f4f2ee] mb-2 print:border-slate-400">
+                <div className="flex h-6 items-end pb-1 border-b border-[#f4f2ee] mb-2 print:border-[#d6d0c8]">
                     <div className={`${LABEL_WIDTH_CLASS} shrink-0 font-bold text-xs text-right pr-6 text-[#a8a099] print:text-black`}>LAB DATA</div>
                     <div className="flex-1"></div>
                 </div>
@@ -170,8 +170,8 @@ const AgepTimeline = ({ drugs, labs, onsetDate }) => {
                             if (pos < 0 || pos > 100) return null;
                             return (
                                 <div key={i} className="absolute top-1/2 -translate-y-1/2 flex flex-col items-center group" style={{ left: `${pos}%`, transform: 'translateX(-50%)' }}>
-                                    <div className="w-2.5 h-2.5 rounded-full bg-slate-400 border border-white shadow-[0_1px_4px_rgba(0,0,0,0.05)] group-hover:bg-[#2a9d8f] transition-colors print:bg-black print:border-black"></div>
-                                    <div className="absolute top-4 bg-white/90 border border-[#ebe8e2] shadow-[0_1px_4px_rgba(0,0,0,0.05)] p-1.5 rounded text-[9px] leading-tight whitespace-nowrap text-center z-20 print:border-slate-400 print:bg-white">
+                                    <div className="w-2.5 h-2.5 rounded-full bg-[#a8a099] border border-white shadow-[0_1px_4px_rgba(0,0,0,0.05)] group-hover:bg-[#2a9d8f] transition-colors print:bg-black print:border-black"></div>
+                                    <div className="absolute top-4 bg-white/90 border border-[#ebe8e2] shadow-[0_1px_4px_rgba(0,0,0,0.05)] p-1.5 rounded text-[9px] leading-tight whitespace-nowrap text-center z-20 print:border-[#d6d0c8] print:bg-white">
                                         {l.temp && <div className={`${parseFloat(l.temp)>=38 ? 'text-[#b83232] font-bold' : 'text-[#6b6360]'} print:text-black`}>T: {l.temp}</div>}
                                         {l.wbc && <div className="text-[#1a6b62] font-bold print:text-black">W: {l.wbc}</div>}
                                         {l.neutrophil && <div className="text-emerald-600 font-bold print:text-black">N: {l.neutrophil}%</div>}
@@ -210,7 +210,7 @@ const AgepDrugAnalysis = ({ drugs, onsetDate, onMoreInfo }) => {
 
   return (
     <div className="bg-white p-6 rounded-[10px] shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-[#ebe8e2] mb-8 print:border-[#d6d0c8]">
-       <div className="flex items-center gap-3 mb-6 border-b border-[#b2ddd7] pb-3 print:border-slate-400">
+       <div className="flex items-center gap-3 mb-6 border-b border-[#b2ddd7] pb-3 print:border-[#d6d0c8]">
           <AlertTriangle className="text-[#2a9d8f] print:text-black" size={24} />
           <h3 className="font-bold text-[#2d2926] text-xl print:text-black">Latency Analysis</h3>
           <button 
@@ -352,7 +352,7 @@ const AgepAssessment = (props) => {
                     <button onClick={() => { if(newDrug.name && newDrug.startDate) { setDrugs([...drugs, {...newDrug, id: Date.now()}]); setNewDrug({name:'', startDate:'', endDate: ''}); } }} className="bg-[#2a9d8f] text-white py-3 rounded-[8px] text-base font-bold shadow-[0_1px_4px_rgba(0,0,0,0.05)] hover:bg-[#1a6b62] mt-2 w-full">+ Add Drug</button>
                 </div>
                 <div className="max-h-[300px] overflow-y-auto bg-white p-1 rounded space-y-2">
-                    {drugs.length === 0 && <div className="text-center text-slate-300 py-6 italic">No drugs added yet</div>}
+                    {drugs.length === 0 && <div className="text-center text-[#d6d0c8] py-6 italic">No drugs added yet</div>}
                     {drugs.map(d => (
                         <div key={d.id} className="flex justify-between border border-[#f4f2ee] p-3 rounded-[8px] items-center bg-[#faf9f7]">
                             <div><span className="font-bold block text-[#2d2926] text-base">{d.name}</span><span className="text-sm text-[#a8a099]">{d.startDate} {d.endDate ? `➝ ${d.endDate}` : '(Ongoing)'}</span></div>
@@ -377,7 +377,7 @@ const AgepAssessment = (props) => {
                     <button onClick={() => { if(newLab.date) { setLabs([...labs, {...newLab, id: Date.now()}].sort((a,b)=>new Date(a.date)-new Date(b.date))); setNewLab({date:'', temp:'', wbc:'', neutrophil:''}); } }} className="bg-[#2a9d8f] text-white py-2.5 w-full rounded-[8px] text-base font-bold shadow-[0_1px_4px_rgba(0,0,0,0.05)] hover:bg-[#1a6b62]">+ Add Lab Entry</button>
                 </div>
                 <div className="max-h-[300px] overflow-y-auto bg-white p-1 rounded space-y-2">
-                    {labs.length === 0 && <div className="text-center text-slate-300 py-6 italic">No labs added yet</div>}
+                    {labs.length === 0 && <div className="text-center text-[#d6d0c8] py-6 italic">No labs added yet</div>}
                     {labs.map(l => <div key={l.id} className="flex justify-between border border-[#f4f2ee] p-3 rounded-[8px] items-center bg-[#faf9f7] text-base"><span><span className="font-mono text-[#a8a099] font-bold mr-2">{l.date}:</span> T{l.temp} W{l.wbc} N{l.neutrophil}</span> <button onClick={() => setLabs(labs.filter(x => x.id !== l.id))} className="text-[#a8a099] hover:text-[#e07060] p-2"><Trash2 size={18}/></button></div>)}
                 </div>
             </div>
@@ -385,24 +385,24 @@ const AgepAssessment = (props) => {
 
         {/* CRITERIA CHECKLIST */}
         <div className="bg-white p-8 rounded-[10px] shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-[#ebe8e2] print:border-[#d6d0c8] print:p-4 print:mb-4 break-inside-avoid">
-            <h3 className="font-bold text-[#1a6b62] mb-6 border-b border-[#b2ddd7] pb-3 text-xl print:text-black print:border-slate-400">Optimized AGEP Criteria (2025)</h3>
+            <h3 className="font-bold text-[#1a6b62] mb-6 border-b border-[#b2ddd7] pb-3 text-xl print:text-black print:border-[#d6d0c8]">Optimized AGEP Criteria (2025)</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 print:gap-4">
                 <div className="space-y-4">
-                    <label className="flex items-center gap-4 p-4 border border-[#ebe8e2] rounded-[10px] hover:bg-[#e6f4f1] cursor-pointer transition-colors bg-[#faf9f7] 50 print:bg-white print:border-slate-400 print:p-2">
+                    <label className="flex items-center gap-4 p-4 border border-[#ebe8e2] rounded-[10px] hover:bg-[#e6f4f1] cursor-pointer transition-colors bg-[#faf9f7] 50 print:bg-white print:border-[#d6d0c8] print:p-2">
                         <input type="checkbox" className="accent-[#2a9d8f] w-6 h-6 print:w-4 print:h-4" checked={clinical.typicalPustules} onChange={e => setClinical({...clinical, typicalPustules: e.target.checked})} />
                         <div><div className="font-bold text-lg text-[#2d2926] print:text-black print:text-sm">Typical Pustules (+1)</div><div className="text-sm text-[#a8a099] print:text-[#2d2926] print:text-xs">Non-follicular, &lt;5mm, numerous</div></div>
                     </label>
-                    <div className="p-4 border border-[#ebe8e2] rounded-[10px] bg-[#faf9f7] flex items-center justify-between print:bg-white print:border-slate-400 print:p-2">
+                    <div className="p-4 border border-[#ebe8e2] rounded-[10px] bg-[#faf9f7] flex items-center justify-between print:bg-white print:border-[#d6d0c8] print:p-2">
                         <div className="flex items-center gap-3 text-[#2d2926] print:text-black"><Scale size={24} className="print:w-5 print:h-5"/><span className="font-bold text-lg print:text-sm">BMI ≥ 30 (+1)</span></div>
-                        <input type="number" placeholder="Enter BMI" className="w-28 border-2 border-[#d6d0c8] rounded-[8px] p-2 text-lg text-center focus:border-[#2a9d8f] font-bold print:border-slate-400 print:text-sm print:w-20 print:p-1" value={bmi} onChange={e => setBmi(e.target.value)} />
+                        <input type="number" placeholder="Enter BMI" className="w-28 border-2 border-[#d6d0c8] rounded-[8px] p-2 text-lg text-center focus:border-[#2a9d8f] font-bold print:border-[#d6d0c8] print:text-sm print:w-20 print:p-1" value={bmi} onChange={e => setBmi(e.target.value)} />
                     </div>
                 </div>
                 <div className="space-y-4">
-                    <label className="flex items-center gap-4 p-4 border border-[#ebe8e2] rounded-[10px] hover:bg-[#e6f4f1] cursor-pointer transition-colors bg-[#faf9f7] 50 print:bg-white print:border-slate-400 print:p-2">
+                    <label className="flex items-center gap-4 p-4 border border-[#ebe8e2] rounded-[10px] hover:bg-[#e6f4f1] cursor-pointer transition-colors bg-[#faf9f7] 50 print:bg-white print:border-[#d6d0c8] print:p-2">
                         <input type="checkbox" className="accent-[#2a9d8f] w-6 h-6 print:w-4 print:h-4" checked={clinical.acuteOnset} onChange={e => setClinical({...clinical, acuteOnset: e.target.checked})} />
                         <div><div className="font-bold text-lg text-[#2d2926] print:text-black print:text-sm">Acute Onset (+1)</div><div className="text-sm text-[#a8a099] print:text-[#2d2926] print:text-xs">≤ 10 days latency from drug start</div></div>
                     </label>
-                    <label className="flex items-center gap-4 p-4 border border-[#ebe8e2] rounded-[10px] hover:bg-[#e6f4f1] cursor-pointer transition-colors bg-[#faf9f7] 50 print:bg-white print:border-slate-400 print:p-2">
+                    <label className="flex items-center gap-4 p-4 border border-[#ebe8e2] rounded-[10px] hover:bg-[#e6f4f1] cursor-pointer transition-colors bg-[#faf9f7] 50 print:bg-white print:border-[#d6d0c8] print:p-2">
                         <input type="checkbox" className="accent-[#2a9d8f] w-6 h-6 print:w-4 print:h-4" checked={clinical.noMucosalInvolvement} onChange={e => setClinical({...clinical, noMucosalInvolvement: e.target.checked})} />
                         <div><div className="font-bold text-lg text-[#2d2926] print:text-black print:text-sm">No Mucosal Involvement (+1)</div><div className="text-sm text-[#2a9d8f] font-bold print:text-[#1a6b62] print:text-xs">Check if mucosa is SPARED (Not affected)</div></div>
                     </label>
@@ -450,8 +450,8 @@ const AgepAssessment = (props) => {
                 {/* Result Card */}
                 <div className="bg-white border-2 border-[#b2ddd7] p-8 rounded-[10px] text-center shadow-[0_4px_16px_rgba(0,0,0,0.08)] print:shadow-none print:border-[#d6d0c8] print:p-4 break-inside-avoid">
                     <div className="text-sm font-bold text-[#a8a099] uppercase tracking-widest mb-3 print:mb-1 print:text-black">Final Diagnosis Score</div>
-                    <div className="text-7xl font-black text-[#1a6b62] print:text-black print:text-5xl">{score.total} <span className="text-3xl text-slate-300 font-normal print:text-[#a8a099]">/ 4</span></div>
-                    <div className="inline-block px-6 py-2 bg-[#e6f4f1] text-[#0f4d48] rounded-full font-bold mt-4 text-lg border border-[#b2ddd7] print:bg-white print:border-slate-400 print:text-black print:text-sm print:mt-2">{score.interpretation}</div>
+                    <div className="text-7xl font-black text-[#1a6b62] print:text-black print:text-5xl">{score.total} <span className="text-3xl text-[#d6d0c8] font-normal print:text-[#a8a099]">/ 4</span></div>
+                    <div className="inline-block px-6 py-2 bg-[#e6f4f1] text-[#0f4d48] rounded-full font-bold mt-4 text-lg border border-[#b2ddd7] print:bg-white print:border-[#d6d0c8] print:text-black print:text-sm print:mt-2">{score.interpretation}</div>
                 </div>
 
                 {/* Timeline - Force Page Break */}

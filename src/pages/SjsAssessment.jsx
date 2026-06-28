@@ -122,8 +122,8 @@ const AldenCard = ({
   );
   let result = {
     text: 'Unlikely',
-    color: 'bg-slate-400',
-    border: 'border-slate-400',
+    color: 'bg-[#a8a099]',
+    border: 'border-[#d6d0c8]',
   };
   if (totalScore >= 6)
     result = {
@@ -518,7 +518,7 @@ const SjsAssessment = (props) => {
     performAnalysisRef.current = performAnalysis;
   });
 
-  // 🟢 IMPROVED: Trigger Analysis Automatically when Data is Ready
+  //  IMPROVED: Trigger Analysis Automatically when Data is Ready
   useEffect(() => {
     // เช็คว่ามีข้อมูลยาและวันที่มาครบแล้ว และยังเป็นการโหลดครั้งแรกอยู่
     if (isInitialLoad.current && drugList.length > 0 && indexDate) {
@@ -575,7 +575,7 @@ const SjsAssessment = (props) => {
       : 0;
   const getSmartDateTicks = () => timelinePoints.map((ts) => new Date(ts));
 
-  // 🟢 SMART STACKING (Waterfall Logic)
+  //  SMART STACKING (Waterfall Logic)
   const stackedLogs = useMemo(() => {
     const logs = [...symptomLogs].sort(
       (a, b) => normalizeDate(a.date) - normalizeDate(b.date)
@@ -713,7 +713,7 @@ const SjsAssessment = (props) => {
                     </div>
                     <button
                       onClick={() => handleDeleteDrug(d.id)}
-                      className="text-slate-300 hover:text-[#e07060] font-bold px-2 text-lg ml-2"
+                      className="text-[#d6d0c8] hover:text-[#e07060] font-bold px-2 text-lg ml-2"
                     >
                       ×
                     </button>
@@ -722,10 +722,10 @@ const SjsAssessment = (props) => {
               </div>
             </div>
           </div>
-          {/* 🟢 FIXED: INPUT UI for Daily Log */}
+          {/*  FIXED: INPUT UI for Daily Log */}
           <div className="bg-white p-5 rounded-[10px] border border-[#ebe8e2] shadow-[0_1px_4px_rgba(0,0,0,0.05)] flex flex-col h-full">
             <h3 className="text-base font-bold text-[#2d2926] mb-4 border-b pb-2 flex items-center gap-2">
-              📝 Daily Clinical Log
+               Daily Clinical Log
             </h3>
             <div className="space-y-4 flex-grow">
               <div className="flex gap-3">
@@ -779,7 +779,7 @@ const SjsAssessment = (props) => {
                     }
                   />
                 </div>
-                {/* 🟢 BEAUTIFUL CHECKBOX LAYOUT */}
+                {/*  BEAUTIFUL CHECKBOX LAYOUT */}
                 <div>
                   <span className="text-xs font-bold text-[#a8a099] block mb-1">
                     Mucosal Sites
@@ -862,7 +862,7 @@ const SjsAssessment = (props) => {
                       </span>
                       <button
                         onClick={() => handleDeleteLog(l.id)}
-                        className="text-slate-300 hover:text-[#e07060] font-bold text-lg"
+                        className="text-[#d6d0c8] hover:text-[#e07060] font-bold text-lg"
                       >
                         ×
                       </button>
@@ -878,7 +878,7 @@ const SjsAssessment = (props) => {
                           🌡 Fever
                         </span>
                       )}
-                      {/* 🟢 SHOW MUCOSITIS BADGES IN LIST */}
+                      {/*  SHOW MUCOSITIS BADGES IN LIST */}
                       {activeSites.length > 0 && (
                         <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded border border-purple-200 font-bold">
                           {activeSites.join(', ')}
@@ -923,9 +923,9 @@ const SjsAssessment = (props) => {
             </h3>
 
             <div className="relative w-full min-h-[200px] mb-6">
-              {/* 🟢 2. DRUGS SECTION */}
+              {/*  2. DRUGS SECTION */}
               <div className="relative mb-0 pb-6 border-b border-[#ebe8e2] z-10">
-                {/* 🟢 ย้ายเส้น ONSET มาไว้ตรงนี้ เพื่อให้ความยาวสุดแค่ขอบเขตของส่วนยา (เส้นสีเทา) */}
+                {/*  ย้ายเส้น ONSET มาไว้ตรงนี้ เพื่อให้ความยาวสุดแค่ขอบเขตของส่วนยา (เส้นสีเทา) */}
                 <div className="absolute inset-0 pointer-events-none">
                   <div className="w-full h-full flex">
                     <div className="w-[15%]"></div>
@@ -967,7 +967,7 @@ const SjsAssessment = (props) => {
                           return (
                             <React.Fragment key={idx}>
                               <div
-                                className="absolute h-1.5 bg-slate-400 rounded-full transition-colors print:bg-[#faf9f7] print-color-exact"
+                                className="absolute h-1.5 bg-[#a8a099] rounded-full transition-colors print:bg-[#faf9f7] print-color-exact"
                                 style={{
                                   left: barProps.left,
                                   width: barProps.width,
@@ -975,7 +975,7 @@ const SjsAssessment = (props) => {
                               ></div>
                               {barProps.showStart && (
                                 <div
-                                  className="absolute w-3.5 h-3.5 bg-slate-400 rounded-full border border-white shadow z-10 transform -translate-x-1/2 print:bg-[#faf9f7] print-color-exact"
+                                  className="absolute w-3.5 h-3.5 bg-[#a8a099] rounded-full border border-white shadow z-10 transform -translate-x-1/2 print:bg-[#faf9f7] print-color-exact"
                                   style={{
                                     left: `${getTimelinePos(
                                       normalizeDate(iv.startDate)
@@ -986,7 +986,7 @@ const SjsAssessment = (props) => {
                               )}
                               {barProps.showEnd && (
                                 <div
-                                  className="absolute w-3.5 h-3.5 bg-slate-400 rounded-full border border-white shadow z-10 transform -translate-x-1/2 print:bg-[#faf9f7] print-color-exact"
+                                  className="absolute w-3.5 h-3.5 bg-[#a8a099] rounded-full border border-white shadow z-10 transform -translate-x-1/2 print:bg-[#faf9f7] print-color-exact"
                                   style={{
                                     left: `${getTimelinePos(
                                       normalizeDate(
@@ -1006,7 +1006,7 @@ const SjsAssessment = (props) => {
                 </div>
               </div>
 
-              {/* 🟢 3. DETAILED CLINICAL DATA */}
+              {/*  3. DETAILED CLINICAL DATA */}
               <div className="pt-4 space-y-4 relative z-10">
                 {/* Detachment */}
                 <div className="flex w-full items-center min-h-[40px] relative">
@@ -1027,7 +1027,7 @@ const SjsAssessment = (props) => {
                           >
                             {l.level > 0 && (
                               <div
-                                className="w-px bg-[#ebe8e2] mb-0.5 print:bg-slate-400 print-color-exact"
+                                className="w-px bg-[#ebe8e2] mb-0.5 print:bg-[#a8a099] print-color-exact"
                                 style={{ height: `${l.level * 24}px` }}
                               ></div>
                             )}
@@ -1058,7 +1058,7 @@ const SjsAssessment = (props) => {
                           >
                             {l.level > 0 && (
                               <div
-                                className="w-px bg-[#ebe8e2] mb-0.5 print:bg-slate-400 print-color-exact"
+                                className="w-px bg-[#ebe8e2] mb-0.5 print:bg-[#a8a099] print-color-exact"
                                 style={{ height: `${l.level * 24}px` }}
                               ></div>
                             )}
@@ -1077,7 +1077,7 @@ const SjsAssessment = (props) => {
                   </div>
                 </div>
 
-                {/* 🟢 NEW: Single Mucositis Row with Vertical Stack */}
+                {/*  NEW: Single Mucositis Row with Vertical Stack */}
                 <div className="mt-6 border-t border-[#f4f2ee] pt-2 print:border-[#d6d0c8]">
                   <div className="flex w-full items-start min-h-[40px] relative">
                     <div className="w-[15%] text-right pr-4 text-xs font-bold text-purple-700 pt-2">
@@ -1160,7 +1160,7 @@ const SjsAssessment = (props) => {
                       : 'bg-[#faf9f7] border-transparent text-[#a8a099] hover:bg-[#f4f2ee]'
                   }`}
                 >
-                  {/* 🟢 Modified: Show Score in Tab */}
+                  {/*  Modified: Show Score in Tab */}
                   <div className="flex items-center gap-2">
                     {g.displayName}
                     <span

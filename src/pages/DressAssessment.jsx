@@ -148,10 +148,10 @@ const RevisedTimeline = ({ drugs, labs, onsetDate }) => {
                                 const width = Math.max(end - start, 0.5);
                                 return (
                                     // *** FIXED HERE: Added print classes to force visibility ***
-                                    <div key={idx} className="absolute h-2.5 bg-[#faf9f7] rounded-full opacity-80 top-[11px] print:bg-slate-600 print:opacity-100 print:border print:border-slate-800" style={{ left: `${start}%`, width: `${width}%` }}>
+                                    <div key={idx} className="absolute h-2.5 bg-[#faf9f7] rounded-full opacity-80 top-[11px] print:bg-[#2d2926] print:opacity-100 print:border print:border-[#ebe8e2]" style={{ left: `${start}%`, width: `${width}%` }}>
                                         {/* ✅ Dots Larger & Styled */}
-                                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-slate-700 rounded-full border-2 border-white shadow-[0_1px_4px_rgba(0,0,0,0.05)] -ml-1.5 print:bg-black print:border-black"></div>
-                                        {seg.endDate && <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-slate-700 rounded-full border-2 border-white shadow-[0_1px_4px_rgba(0,0,0,0.05)] -mr-1.5 print:bg-black print:border-black"></div>}
+                                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-[#2d2926] rounded-full border-2 border-white shadow-[0_1px_4px_rgba(0,0,0,0.05)] -ml-1.5 print:bg-black print:border-black"></div>
+                                        {seg.endDate && <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-[#2d2926] rounded-full border-2 border-white shadow-[0_1px_4px_rgba(0,0,0,0.05)] -mr-1.5 print:bg-black print:border-black"></div>}
                                     </div>
                                 )
                             })}
@@ -199,12 +199,12 @@ const RevisedTimeline = ({ drugs, labs, onsetDate }) => {
 
                  {/* ALT */}
                  <div className="flex h-8 items-center">
-                    <div className={`${LABEL_WIDTH_CLASS} shrink-0 pr-6 text-right text-xs font-bold text-blue-500 uppercase`}>ALT (U/L)</div>
+                    <div className={`${LABEL_WIDTH_CLASS} shrink-0 pr-6 text-right text-xs font-bold text-[#2a9d8f] uppercase`}>ALT (U/L)</div>
                     <div className="flex-1 relative h-full">
                         {safeLabs.filter(l => l.alt).map((lab, i) => {
                             const pos = timelineData.getPos(lab.date);
                             return (
-                                <div key={i} className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 min-w-[24px] px-2 py-0.5 text-center text-[10px] font-bold rounded-full border shadow-[0_1px_4px_rgba(0,0,0,0.05)] z-10 ${parseFloat(lab.alt) > 100 ? 'bg-blue-50 text-blue-700 border-blue-300' : 'bg-white text-blue-600 border-[#ebe8e2]'}`} style={{ left: `${pos}%` }}>
+                                <div key={i} className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 min-w-[24px] px-2 py-0.5 text-center text-[10px] font-bold rounded-full border shadow-[0_1px_4px_rgba(0,0,0,0.05)] z-10 ${parseFloat(lab.alt) > 100 ? 'bg-blue-50 text-blue-700 border-blue-300' : 'bg-white text-[#2a9d8f] border-[#ebe8e2]'}`} style={{ left: `${pos}%` }}>
                                     {lab.alt}
                                 </div>
                             )
@@ -240,7 +240,7 @@ const DrugAnalysisSection = ({ drugs, onsetDate, labs }) => {
   return (
     // Added print classes for proper sizing and color
     <div className="bg-[#2d2926] text-white p-6 rounded-[10px] border border-[#3d3532] mt-6 print:bg-white print:text-black print:border-[#d6d0c8] print:mt-4">
-      <div className="flex items-center gap-3 mb-6 border-b border-slate-700 pb-4 print:border-[#d6d0c8]">
+      <div className="flex items-center gap-3 mb-6 border-b border-[#ebe8e2] pb-4 print:border-[#d6d0c8]">
         <AlertTriangle className="text-yellow-400 print:text-black" size={24} />
         <div>
           <h3 className="font-bold text-lg">Suspected Drug Analysis</h3>
@@ -326,7 +326,7 @@ const SingleDrugAnalysis = ({ name, segments, onsetDate, labs }) => {
 const ScoreBadge = ({ score }) => {
   let color = 'bg-[#f4f2ee] text-[#a8a099]';
   if (score > 0) color = 'bg-rose-100 text-rose-700 border-rose-200';
-  if (score < 0) color = 'bg-blue-50 text-blue-600 border-blue-200';
+  if (score < 0) color = 'bg-blue-50 text-[#2a9d8f] border-blue-200';
   return <span className={`inline-flex items-center justify-center min-w-[32px] px-2 py-0.5 rounded text-sm font-bold border ${color} print:border-[#d6d0c8] print:bg-white print:text-black`}>{score > 0 ? `+${score}` : score}</span>;
 };
 
@@ -550,7 +550,7 @@ const DressAssessment = (props) => {
                 {drugs.map((drug) => (
                   <div key={drug.id} className="flex justify-between items-center text-sm bg-white border border-[#f4f2ee] p-3 rounded shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
                     <div><span className="font-bold block text-[#2d2926]">{drug.name}</span><div className="text-xs text-[#a8a099] mt-0.5">{drug.startDate} ➝ {drug.endDate || 'Ongoing'}</div></div>
-                    <button onClick={() => removeDrug(drug.id)}><Trash2 size={16} className="text-slate-300 hover:text-[#e07060]" /></button>
+                    <button onClick={() => removeDrug(drug.id)}><Trash2 size={16} className="text-[#d6d0c8] hover:text-[#e07060]" /></button>
                   </div>
                 ))}
               </div>
@@ -579,9 +579,9 @@ const DressAssessment = (props) => {
                     <div className="col-span-8 flex flex-wrap gap-1.5">
                       {lab.temp && <span className={`px-1.5 py-0.5 rounded border ${parseFloat(lab.temp) >= 38.5 ? 'bg-red-50 text-[#b83232] border-red-100 font-bold' : 'bg-white text-[#a8a099]'}`}>T:{lab.temp}</span>}
                       {lab.eosin && <span className={`px-1.5 py-0.5 rounded border ${parseFloat(lab.eosin) >= 700 ? 'bg-[#f0eeff] text-[#534ab7] border-[#cec8f6] font-bold' : 'bg-white text-[#a8a099]'}`}>Eo:{lab.eosin}</span>}
-                      {lab.alt && <span className="px-1.5 py-0.5 rounded border bg-blue-50 text-blue-600 border-blue-100 font-bold">ALT:{lab.alt}</span>}
+                      {lab.alt && <span className="px-1.5 py-0.5 rounded border bg-blue-50 text-[#2a9d8f] border-blue-100 font-bold">ALT:{lab.alt}</span>}
                     </div>
-                    <button onClick={() => removeLab(lab.id)} className="col-span-1 text-right text-slate-300 hover:text-[#e07060]"><Trash2 size={14} /></button>
+                    <button onClick={() => removeLab(lab.id)} className="col-span-1 text-right text-[#d6d0c8] hover:text-[#e07060]"><Trash2 size={14} /></button>
                   </div>
                 ))}
               </div>

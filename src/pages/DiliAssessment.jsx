@@ -710,7 +710,7 @@ const DiliAssessment = ({
     if (isExcludedTime || rechallengeScore === -2 || score <= 0) {
       return {
         text: 'Excluded',
-        color: 'bg-slate-300',
+        color: 'bg-[#d6d0c8]',
         textCol: 'text-[#a8a099]',
         border: 'border-[#d6d0c8]',
         light: 'bg-[#f4f2ee]',
@@ -743,9 +743,9 @@ const DiliAssessment = ({
       };
     return {
       text: 'Unlikely',
-      color: 'bg-slate-400',
+      color: 'bg-[#a8a099]',
       textCol: 'text-[#a8a099]',
-      border: 'border-slate-400',
+      border: 'border-[#d6d0c8]',
       light: 'bg-[#faf9f7]',
     };
   };
@@ -996,11 +996,11 @@ const DiliAssessment = ({
             {/* --- Pharmacist Note Section --- */}
             <div className="bg-white border border-[#ebe8e2] rounded-[8px] shadow-[0_1px_4px_rgba(0,0,0,0.06)] p-4 text-left">
               <div className="flex items-center gap-2 mb-3 border-b border-[#f4f2ee] pb-2">
-                <span className="text-lg">📝</span>
+                <span className="text-lg"></span>
                 <h3 className="font-bold text-[#2d2926]">Pharmacist Note</h3>
               </div>
               <textarea
-                className="w-full p-3 border border-[#ebe8e2] rounded-[8px] text-sm text-[#2d2926] focus:outline-none focus:outline-none focus:ring-[3px] focus:ring-[rgba(42,157,143,0.18)] focus:border-[#2a9d8f] focus:border-[#2a9d8f] transition-all placeholder:text-[#a8a099] resize-none"
+                className="w-full p-3 border border-[#ebe8e2] rounded-[8px] text-sm text-[#2d2926] focus:outline-none focus:ring-[3px] focus:ring-[rgba(42,157,143,0.18)] focus:border-[#2a9d8f] focus:border-[#2a9d8f] transition-all placeholder:text-[#a8a099] resize-none"
                 rows="4"
                 placeholder="Enter additional notes..."
                 value={pharmacistNote}
@@ -1035,9 +1035,9 @@ const DiliAssessment = ({
                     <div className="w-[15%] border-r border-[#f4f2ee] h-full bg-[#faf9f7] 30"></div>
                     <div className="w-[85%] relative h-full">
                       <div className="absolute inset-0 flex justify-between opacity-20">
-                        <div className="w-px bg-slate-400 h-full border-l border-dashed"></div>
-                        <div className="w-px bg-slate-400 h-full border-l border-dashed"></div>
-                        <div className="w-px bg-slate-400 h-full border-l border-dashed"></div>
+                        <div className="w-px bg-[#a8a099] h-full border-l border-dashed"></div>
+                        <div className="w-px bg-[#a8a099] h-full border-l border-dashed"></div>
+                        <div className="w-px bg-[#a8a099] h-full border-l border-dashed"></div>
                       </div>
                     </div>
                   </div>
@@ -1123,7 +1123,7 @@ const DiliAssessment = ({
                                 return (
                                   <div
                                     key={i}
-                                    className="absolute h-1 top-1/2 -translate-y-1/2 bg-slate-400 rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.06)] group-hover/row:bg-[#faf9f7] transition-colors"
+                                    className="absolute h-1 top-1/2 -translate-y-1/2 bg-[#a8a099] rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.06)] group-hover/row:bg-[#faf9f7] transition-colors"
                                     style={{
                                       left: `${Math.max(0, leftPct)}%`,
                                       width: `${Math.max(1, widthPct)}%`,
@@ -1132,14 +1132,14 @@ const DiliAssessment = ({
                                     }}
                                   >
                                     <div
-                                      className="absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 bg-slate-400 rounded-full"
+                                      className="absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 bg-[#a8a099] rounded-full"
                                       style={{
                                         WebkitPrintColorAdjust: 'exact',
                                         printColorAdjust: 'exact',
                                       }}
                                     ></div>
                                     <div
-                                      className="absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 bg-slate-400 rounded-full"
+                                      className="absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 bg-[#a8a099] rounded-full"
                                       style={{
                                         WebkitPrintColorAdjust: 'exact',
                                         printColorAdjust: 'exact',

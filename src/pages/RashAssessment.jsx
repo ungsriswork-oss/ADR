@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 const QUESTIONS = [
     { id: 1, text: "1. มีรายงานสรุปเกี่ยวกับปฏิกิริยานี้มาก่อนหรือไม่?", scores: [1, 0, 0], required: true },
     { id: 2, text: "2. อาการไม่พึงประสงค์เกิดขึ้นหลังจากได้รับยาที่สงสัยหรือไม่?", scores: [2, -1, 0], auto: true },
-    { id: 3, text: "3. อาการไม่พึงประสงค์ดีขึ้นเมื่อหยุดยาหรือไม่ (Dechallenge)?", scores: [1, 0, 0], auto: true },
+    { id: 3, text: "3. อาการไม่พึงประสงค์เมื่อหยุดยาหรือไม่ (Dechallenge)?", scores: [1, 0, 0], auto: true },
     { id: 4, text: "4. อาการไม่พึงประสงค์กลับมาเป็นซ้ำเมื่อได้รับยาอีกครั้งหรือไม่ (Rechallenge)?", scores: [2, -1, 0], auto: true },
     { id: 5, text: "5. มีสาเหตุอื่น (นอกจากยา) ที่ทำให้เกิดปฏิกิริยานี้ได้หรือไม่?", scores: [-1, 2, 0], required: true },
     { id: 6, text: "6. ปฏิกิริยากลับมาเป็นซ้ำเมื่อได้รับยาหลอก (Placebo) หรือไม่?", scores: [-1, 1, 0], auto: true },
@@ -133,7 +133,7 @@ const NaranjoCard = ({ group, scoreMap, total, onScoreChange }) => {
     const isExcluded = scoreMap && scoreMap[4] === -1;
 
     if (isExcluded) {
-        interp = 'EXCLUDED'; color = 'bg-slate-400'; border = 'border-slate-400';
+        interp = 'EXCLUDED'; color = 'bg-[#a8a099]'; border = 'border-[#d6d0c8]';
     } else {
         if (total >= 9) { interp = 'Definite'; color = 'bg-rose-900'; border = 'border-rose-900'; } 
         else if (total >= 5) { interp = 'Probable'; color = 'bg-orange-500'; border = 'border-orange-500'; }
@@ -334,7 +334,7 @@ const RashAssessment = (props) => {
 
     const addDrug = () => { if(!currentDrug.name || !currentDrug.startDate) return; const n=[...drugs, {...currentDrug, id:Date.now()}]; syncToParent(n,undefined,undefined,undefined); setCurrentDrug({name:'',startDate:'',stopDate:''}); setIsAnalyzed(false); };
     const removeDrug = (id) => { const n=drugs.filter(d=>d.id!==id); syncToParent(n,undefined,undefined,undefined); setIsAnalyzed(false); };
-    const addLog = () => { if(!currentLog.date) return; const isDuplicate = logs.some(l => l.date === currentLog.date); if (isDuplicate) { alert(`วันที่ ${formatDate(currentLog.date)} มีข้อมูลบันทึกไว้อยู่แล้ว กรุณาลบอันเก่าออกก่อนหากต้องการแก้ไข`); return; } const n=[...logs, {...currentLog, id:Date.now()}].sort((a,b)=>new Date(a.date)-new Date(b.date)); syncToParent(undefined,n,undefined,undefined); setCurrentLog({...currentLog, date:''}); setIsAnalyzed(false); };
+    const addLog = () => { if(!currentLog.date) return; const isDuplicate = logs.some(l => l.date === currentLog.date); if (isDuplicate) { alert(`วันที่ ${formatDate(currentLog.date)} Data already recorded. Remove existing entry to edit.`); return; } const n=[...logs, {...currentLog, id:Date.now()}].sort((a,b)=>new Date(a.date)-new Date(b.date)); syncToParent(undefined,n,undefined,undefined); setCurrentLog({...currentLog, date:''}); setIsAnalyzed(false); };
     const removeLog = (id) => { const n=logs.filter(l=>l.id!==id); syncToParent(undefined,n,undefined,undefined); setIsAnalyzed(false); };
     const changeScore = (k,q,v) => { const n={...scores, [k]:{...(scores[k]||{}), [q]:parseInt(v)}}; syncToParent(undefined,undefined,undefined,n); };
     const handleNoteChange = (e) => { const val = e.target.value; setNote(val); if(props.setPharmacistNote) props.setPharmacistNote(val); };
@@ -368,7 +368,12 @@ const RashAssessment = (props) => {
         };
     }, [onset, drugs, logs]);
 
-    const getLogColor = (s) => s==='Better'?'bg-green-500':s==='Worse'?'bg-red-500':s==='No Symptoms'?'bg-slate-400':'bg-yellow-400';
+    const getLogColor = (s) => {
+        if (s === 'Better')      return { bg: '#2e9e5b', text: '#fff' };
+        if (s === 'Worse')       return { bg: '#e07060', text: '#fff' };
+        if (s === 'No Symptoms') return { bg: '#d6d0c8', text: '#6b6360' };
+        return { bg: '#e09520', text: '#fff' }; // Stable
+    };
     const uniqueDrugs = useMemo(()=> [...new Set(drugs.map(d=>d.name.trim().toLowerCase()))].map(k=>drugs.find(d=>d.name.trim().toLowerCase()===k)), [drugs]);
 
     return (
@@ -376,7 +381,7 @@ const RashAssessment = (props) => {
             {/* INPUTS - No Changes */}
             <div className="bg-white rounded-[10px] border border-[#ebe8e2] shadow-[0_1px_4px_rgba(0,0,0,0.05)] p-6 mb-6 print:border-black print:shadow-none break-inside-avoid">
                 <div className="text-sm font-bold text-[#2d2926] border-b pb-3 mb-4 flex justify-between print:text-black print:border-black">
-                    <span>🏥 Clinical Data Entry</span>
+                    <span>Clinical data entry</span>
                     {onset && <span className="text-[#9b3060] bg-[#fbeaf0] px-2 rounded border border-[#f4c0d1] print:text-black print:border-black print:bg-transparent">Onset: {formatDate(onset)}</span>}
                 </div>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -393,10 +398,15 @@ const RashAssessment = (props) => {
                         </div>
                     </div>
                     <div className="space-y-4 bg-blue-50/30 p-4 rounded border border-blue-100 print:bg-transparent print:border-black">
-                        <div className="text-xs font-bold text-blue-600 mb-2 print:text-black">DAILY SYMPTOM LOG</div>
-                        <div className="flex gap-2 mb-2 print:hidden"><input type="date" className="border rounded px-2 py-1 text-sm w-full" value={currentLog.date} onChange={e=>setCurrentLog({...currentLog,date:e.target.value})}/><button onClick={addLog} className="bg-blue-600 text-white px-3 rounded text-sm">Add</button></div>
-                        <select className="border rounded px-2 py-1.5 w-full text-sm mb-2 font-bold text-[#2d2926] print:hidden" value={currentLog.status} onChange={e=>setCurrentLog({...currentLog,status:e.target.value})}><option value="Stable">🟡 Stable (คงเดิม)</option><option value="Better">🟢 Better (ดีขึ้น)</option><option value="Worse">🔴 Worse (แย่ลง)</option><option value="No Symptoms">⚪ No Symptoms (ปกติ)</option></select>
-                        <div className="space-y-1 max-h-32 overflow-y-auto print:max-h-none">{logs.map(l=><div key={l.id} className="flex justify-between items-center text-xs bg-white p-2 rounded border shadow-[0_1px_4px_rgba(0,0,0,0.05)] print:border-black print:bg-transparent print:shadow-none"><div className="flex items-center gap-2"><span className="font-mono">{formatDate(l.date)}</span><div className={`w-2 h-2 rounded-full ${getLogColor(l.status).split(' ')[0]} print:border print:border-black`}></div><span className="font-bold text-[#2d2926] print:text-black">{l.status}</span></div><button onClick={()=>removeLog(l.id)} className="text-slate-300 hover:text-[#e07060] print:hidden">×</button></div>)}</div>
+                        <div className="text-xs font-bold text-[#2a9d8f] mb-2 print:text-black">DAILY SYMPTOM LOG</div>
+                        <div className="flex gap-2 mb-2 print:hidden"><input type="date" className="border rounded px-2 py-1 text-sm w-full" value={currentLog.date} onChange={e=>setCurrentLog({...currentLog,date:e.target.value})}/><button onClick={addLog} className="bg-[#2a9d8f] text-white px-3 rounded text-sm">Add</button></div>
+                        <select className="border border-[#d6d0c8] rounded-[6px] px-2 py-1.5 w-full text-sm mb-2 text-[#2d2926] focus:outline-none focus:border-[#2a9d8f] print:hidden" value={currentLog.status} onChange={e=>setCurrentLog({...currentLog,status:e.target.value})}>
+                            <option value="Better">Better — improving</option>
+                            <option value="Stable">Stable — unchanged</option>
+                            <option value="Worse">Worse — deteriorating</option>
+                            <option value="No Symptoms">No symptoms</option>
+                        </select>
+                        <div className="space-y-1 max-h-32 overflow-y-auto print:max-h-none">{logs.map(l=><div key={l.id} className="flex justify-between items-center text-xs bg-white p-2 rounded border shadow-[0_1px_4px_rgba(0,0,0,0.05)] print:border-black print:bg-transparent print:shadow-none"><div className="flex items-center gap-2"><span className="font-mono">{formatDate(l.date)}</span><div style={{ width: 8, height: 8, borderRadius: '50%', background: getLogColor(l.status).bg, flexShrink: 0 }}></div><span className="font-bold text-[#2d2926] print:text-black">{l.status}</span></div><button onClick={()=>removeLog(l.id)} className="text-[#d6d0c8] hover:text-[#e07060] print:hidden">×</button></div>)}</div>
                     </div>
                 </div>
             </div>
@@ -411,7 +421,7 @@ const RashAssessment = (props) => {
             </div>
 
             <div className="bg-white rounded-[10px] border border-[#ebe8e2] shadow-[0_1px_4px_rgba(0,0,0,0.05)] p-6 mb-6 print:border-black print:shadow-none break-inside-avoid">
-                <div className="text-sm font-bold text-[#2d2926] border-b pb-3 mb-4 print:text-black print:border-black text-left">📝 Pharmacist Note</div>
+                <div className="text-sm font-bold text-[#2d2926] border-b pb-3 mb-4 print:text-black print:border-black text-left">Pharmacist note</div>
                 <textarea className="w-full h-32 border rounded p-3 text-sm focus:outline-blue-500 print:border-black print:h-auto" placeholder="Enter additional notes..." value={note} onChange={handleNoteChange}></textarea>
             </div>
 
@@ -499,10 +509,10 @@ const RashAssessment = (props) => {
                             </div>
                         </div>
                         <div className="flex justify-end gap-4 mt-10 text-[9px] text-[#a8a099] print:text-black font-medium border-t border-[#f4f2ee] pt-2 print:border-transparent">
-                             <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-full bg-green-500 border border-[#2e9e5b]" style={{WebkitPrintColorAdjust:'exact'}}></div> Better (ดีขึ้น)</div>
-                             <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-full bg-yellow-400 border border-yellow-500" style={{WebkitPrintColorAdjust:'exact'}}></div> Stable (คงเดิม)</div>
-                             <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-full bg-red-500 border border-[#b83232]" style={{WebkitPrintColorAdjust:'exact'}}></div> Worse (แย่ลง)</div>
-                             <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-full bg-white border-2 border-slate-400 print:border-black"></div> Normal (ปกติ)</div>
+                             <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-full bg-green-500 border border-[#2e9e5b]" style={{WebkitPrintColorAdjust:'exact'}}></div> Better </div>
+                             <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-full bg-yellow-400 border border-yellow-500" style={{WebkitPrintColorAdjust:'exact'}}></div> Stable </div>
+                             <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-full bg-red-500 border border-[#b83232]" style={{WebkitPrintColorAdjust:'exact'}}></div> Worse </div>
+                             <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-full bg-white border-2 border-[#d6d0c8] print:border-black"></div> Normal </div>
                         </div>
                     </div>
 

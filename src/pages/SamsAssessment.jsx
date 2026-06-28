@@ -286,7 +286,7 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
                         { date: clinicalData.startDate, icon: PlayCircle, color: 'text-green-500', label: 'Start' },
                         { date: clinicalData.symptomDate, icon: AlertCircle, color: 'text-[#e07060]', label: 'Symptom' },
                         { date: clinicalData.stopDate, icon: StopCircle, color: 'text-[#a8a099]', label: 'Stop' },
-                        { date: clinicalData.improvementDate, icon: CheckCircle, color: 'text-blue-500', label: 'Improved' },
+                        { date: clinicalData.improvementDate, icon: CheckCircle, color: 'text-[#2a9d8f]', label: 'Improved' },
                     ].map((ev, i) => {
                         const pos = getPos(ev.date);
                         if (pos < 0 || pos > 100) return null;
@@ -297,7 +297,7 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
                                 <div className="text-[9px] font-bold text-[#a8a099] mt-1 uppercase print:text-black">{ev.label}</div>
                                 <div className="text-[9px] text-[#a8a099] print:hidden">{new Date(ev.date).toLocaleDateString(undefined, {month:'short', day:'numeric'})}</div>
                                 {/* Tooltip Line */}
-                                <div className="h-24 w-px border-l border-dashed border-[#d6d0c8] absolute top-5 -z-10 print:border-slate-400"></div>
+                                <div className="h-24 w-px border-l border-dashed border-[#d6d0c8] absolute top-5 -z-10 print:border-[#d6d0c8]"></div>
                             </div>
                         );
                     })}
@@ -343,7 +343,7 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
                         <label className="text-xs text-[#a8a099] font-bold block mb-1">SUSPECTED STATIN / DRUG</label>
                         <input 
                             type="text" 
-                            className="w-full text-sm border-[#d6d0c8] rounded-md p-2 focus:ring-teal-500 focus:border-[#2a9d8f] placeholder:text-slate-300"
+                            className="w-full text-sm border-[#d6d0c8] rounded-md p-2 focus:ring-teal-500 focus:border-[#2a9d8f] placeholder:text-[#d6d0c8]"
                             placeholder="e.g. Atorvastatin 40mg"
                             value={clinicalData.suspectedDrug}
                             onChange={e => handleChange('suspectedDrug', e.target.value)}

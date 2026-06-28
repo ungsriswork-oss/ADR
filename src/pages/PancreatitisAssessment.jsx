@@ -223,7 +223,7 @@ const WeissmanScoreCard = ({ group, scoreMap, total, onScoreChange }) => {
     if (total > 9) { interp = 'Highly Probable'; color = 'bg-rose-900'; border = 'border-rose-900'; } 
     else if (total >= 6) { interp = 'Probable'; color = 'bg-rose-600'; border = 'border-rose-600'; }
     else if (total >= 3) { interp = 'Possible'; color = 'bg-rose-400'; border = 'border-rose-400'; }
-    else { interp = 'Doubtful'; color = 'bg-[#faf9f7]'; border = 'border-slate-500'; }
+    else { interp = 'Doubtful'; color = 'bg-[#faf9f7]'; border = 'border-[#d6d0c8]'; }
 
     return (
         <div className={`print-section border-2 ${border} rounded-[10px] overflow-hidden bg-white mb-4 break-inside-avoid print:mb-3`}>
@@ -538,11 +538,11 @@ const PancreatitisAssessment = (props) => {
                                                 </div>
                                             </td>
                                             <td className="p-2 text-right align-top print:hidden">
-                                                <button onClick={() => items.forEach(i => removeLab(i.id))} className="text-slate-300 hover:text-[#e07060] font-bold">×</button>
+                                                <button onClick={() => items.forEach(i => removeLab(i.id))} className="text-[#d6d0c8] hover:text-[#e07060] font-bold">×</button>
                                             </td>
                                         </tr>
                                     ))}
-                                    {labs.length === 0 && <tr><td colSpan="3" className="p-4 text-center text-slate-300">No lab data recorded</td></tr>}
+                                    {labs.length === 0 && <tr><td colSpan="3" className="p-4 text-center text-[#d6d0c8]">No lab data recorded</td></tr>}
                                 </tbody>
                             </table>
                         </div>
@@ -558,7 +558,7 @@ const PancreatitisAssessment = (props) => {
             </div>
 
             <div className="bg-white rounded-[10px] border border-[#ebe8e2] shadow-[0_1px_4px_rgba(0,0,0,0.05)] p-6 mb-6 print:border-black print:shadow-none break-inside-avoid">
-                <div className="text-sm font-bold text-[#2d2926] border-b pb-3 mb-4 print:text-black print:border-black text-left">📝 Pharmacist Note</div>
+                <div className="text-sm font-bold text-[#2d2926] border-b pb-3 mb-4 print:text-black print:border-black text-left">Pharmacist note</div>
                 <textarea className="w-full h-32 border rounded p-3 text-sm focus:outline-rose-500 print:border-black print:h-auto" placeholder="Enter clinical assessment notes..." value={note} onChange={handleNoteChange}></textarea>
             </div>
 
@@ -647,7 +647,7 @@ const PancreatitisAssessment = (props) => {
                                                              )
                                                         })}
                                                     </div>
-                                                    <div className="w-2 h-2 rounded-full bg-slate-300 ring-2 ring-white print:bg-black"></div>
+                                                    <div className="w-2 h-2 rounded-full bg-[#d6d0c8] ring-2 ring-white print:bg-black"></div>
                                                 </div>
                                             );
                                         })}

@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 const QUESTIONS = [
     { id: 1, text: "1. มีรายงานสรุปเกี่ยวกับปฏิกิริยานี้มาก่อนหรือไม่?", scores: [1, 0, 0], required: true },
     { id: 2, text: "2. อาการไม่พึงประสงค์เกิดขึ้นหลังจากได้รับยาที่สงสัยหรือไม่?", scores: [2, -1, 0], auto: true },
-    { id: 3, text: "3. อาการไม่พึงประสงค์ดีขึ้นเมื่อหยุดยาหรือไม่ (Dechallenge)?", scores: [1, 0, 0], auto: true },
+    { id: 3, text: "3. อาการไม่พึงประสงค์เมื่อหยุดยาหรือไม่ (Dechallenge)?", scores: [1, 0, 0], auto: true },
     { id: 4, text: "4. อาการไม่พึงประสงค์กลับมาเป็นซ้ำเมื่อได้รับยาอีกครั้งหรือไม่ (Rechallenge)?", scores: [2, -1, 0], auto: true },
     { id: 5, text: "5. มีสาเหตุอื่น (นอกจากยา) ที่ทำให้เกิดปฏิกิริยานี้ได้หรือไม่?", scores: [-1, 2, 0], required: true },
     { id: 6, text: "6. ปฏิกิริยากลับมาเป็นซ้ำเมื่อได้รับยาหลอก (Placebo) หรือไม่?", scores: [-1, 1, 0], auto: true },
@@ -112,7 +112,7 @@ const calculateScores = (drugs, labs, onset, currentScores) => {
             }
         });
 
-        // Q3: Dechallenge (หยุดยาแล้วดีขึ้นไหม?)
+        // Q3: Dechallenge (หยุดยาแล้วไหม?)
         const stoppedPeriods = g.periods.filter(p => p.stopDate);
         if (stoppedPeriods.length > 0) {
             const lastStopDate = new Date(stoppedPeriods[stoppedPeriods.length-1].stopDate).getTime();
@@ -126,7 +126,7 @@ const calculateScores = (drugs, labs, onset, currentScores) => {
                 const improvedLab = afterLabs.find(l => {
                     if (l.type !== type) return false;
                     const ans = analyzeLabValue(l.type, l.value);
-                    // ดีขึ้นคือ กลับมา Normal (dev=0) หรือ Deviation ลดลงอย่างชัดเจน (เช่น ลดลงครึ่งนึง)
+                    // คือ กลับมา Normal (dev=0) หรือ Deviation ลดลงอย่างชัดเจน (เช่น ลดลงครึ่งนึง)
                     return ans.status === 'Normal' || ans.deviation < (maxDev * 0.5); 
                 });
                 if (improvedLab) improved = true;
@@ -134,7 +134,7 @@ const calculateScores = (drugs, labs, onset, currentScores) => {
             if (improved) s3 = 1;
         }
 
-        // Q4: Rechallenge (ได้รับยาซ้ำแล้วแย่ลงไหม?)
+        // Q4: Rechallenge (ได้รับยาซ้ำแล้วไหม?)
         if (g.periods.length > 1) {
             let recurred = false;
             // วนดูการเริ่มยาครั้งที่ 2, 3...
@@ -149,7 +149,7 @@ const calculateScores = (drugs, labs, onset, currentScores) => {
                     return t >= pStart && t <= pEnd;
                 });
 
-                // ดูว่ามันแย่ลงไหม (Deviation สูงขึ้น หรือ กลับมา High/Low)
+                // ดูว่ามันไหม (Deviation สูงขึ้น หรือ กลับมา High/Low)
                 reLabs.forEach(l => {
                     const ans = analyzeLabValue(l.type, l.value);
                     if (ans.status !== 'Normal') {
@@ -228,10 +228,10 @@ const NaranjoCard = ({ group, scoreMap, total, onScoreChange }) => {
     const isExcluded = scoreMap && scoreMap[4] === -1;
 
     if (isExcluded) {
-        interp = 'EXCLUDED'; color = 'bg-slate-400'; border = 'border-slate-400';
+        interp = 'EXCLUDED'; color = 'bg-[#a8a099]'; border = 'border-[#d6d0c8]';
     } else {
         if (total >= 9) { interp = 'Definite'; color = 'bg-indigo-900'; border = 'border-indigo-900'; } 
-        else if (total >= 5) { interp = 'Probable'; color = 'bg-blue-600'; border = 'border-blue-600'; }
+        else if (total >= 5) { interp = 'Probable'; color = 'bg-[#2a9d8f]'; border = 'border-[#2a9d8f]'; }
         else if (total >= 1) { interp = 'Possible'; color = 'bg-sky-500'; border = 'border-sky-500'; }
     }
 
@@ -321,7 +321,7 @@ const ElectroAssessment = (props) => {
     
     // ADD BATCH LABS
     const addBatchLabs = () => {
-        if (!batchDate) return alert("กรุณาระบุวันที่เจาะเลือด");
+        if (!batchDate) return alert("Please enter collection date.");
         
         const newEntries = [];
         Object.entries(batchValues).forEach(([type, value]) => {
@@ -424,7 +424,7 @@ const ElectroAssessment = (props) => {
 
                     {/* Practical Lab Input Panel (No Clinical Trend) */}
                     <div className="bg-blue-50/30 p-4 rounded border border-blue-100 print:bg-transparent print:border-black">
-                        <div className="text-xs font-bold text-blue-600 mb-2 print:text-black uppercase flex justify-between items-center">
+                        <div className="text-xs font-bold text-[#2a9d8f] mb-2 print:text-black uppercase flex justify-between items-center">
                             <span>Electrolyte Panel Entry</span>
                         </div>
                         
@@ -460,7 +460,7 @@ const ElectroAssessment = (props) => {
                                 })}
                             </div>
 
-                            <button onClick={addBatchLabs} className="w-full bg-blue-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-blue-700 shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
+                            <button onClick={addBatchLabs} className="w-full bg-[#2a9d8f] text-white px-4 py-2 rounded text-sm font-bold hover:bg-[#1a6b62] shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
                                 Record Lab Results
                             </button>
                         </div>
@@ -492,11 +492,11 @@ const ElectroAssessment = (props) => {
                                                 </div>
                                             </td>
                                             <td className="p-2 text-right align-top print:hidden">
-                                                <button onClick={() => items.forEach(i => removeLab(i.id))} className="text-slate-300 hover:text-[#e07060] font-bold">×</button>
+                                                <button onClick={() => items.forEach(i => removeLab(i.id))} className="text-[#d6d0c8] hover:text-[#e07060] font-bold">×</button>
                                             </td>
                                         </tr>
                                     ))}
-                                    {labs.length === 0 && <tr><td colSpan="3" className="p-4 text-center text-slate-300">No lab data recorded</td></tr>}
+                                    {labs.length === 0 && <tr><td colSpan="3" className="p-4 text-center text-[#d6d0c8]">No lab data recorded</td></tr>}
                                 </tbody>
                             </table>
                         </div>
@@ -512,7 +512,7 @@ const ElectroAssessment = (props) => {
             </div>
 
             <div className="bg-white rounded-[10px] border border-[#ebe8e2] shadow-[0_1px_4px_rgba(0,0,0,0.05)] p-6 mb-6 print:border-black print:shadow-none break-inside-avoid">
-                <div className="text-sm font-bold text-[#2d2926] border-b pb-3 mb-4 print:text-black print:border-black text-left">📝 Pharmacist Note</div>
+                <div className="text-sm font-bold text-[#2d2926] border-b pb-3 mb-4 print:text-black print:border-black text-left">Pharmacist note</div>
                 <textarea className="w-full h-32 border rounded p-3 text-sm focus:outline-blue-500 print:border-black print:h-auto" placeholder="Enter clinical assessment notes..." value={note} onChange={handleNoteChange}></textarea>
             </div>
 
@@ -603,7 +603,7 @@ const ElectroAssessment = (props) => {
                                                     </div>
                                                     
                                                     {/* ✅ Single Neutral Anchor (No Colored Dots) */}
-                                                    <div className="w-2 h-2 rounded-full bg-slate-300 ring-2 ring-white print:bg-black"></div>
+                                                    <div className="w-2 h-2 rounded-full bg-[#d6d0c8] ring-2 ring-white print:bg-black"></div>
                                                 </div>
                                             );
                                         })}

@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 const QUESTIONS = [
     { id: 1, text: "1. มีรายงานสรุปเกี่ยวกับปฏิกิริยานี้มาก่อนหรือไม่?", scores: [1, 0, 0], required: true },
     { id: 2, text: "2. อาการไม่พึงประสงค์เกิดขึ้นหลังจากได้รับยาที่สงสัยหรือไม่?", scores: [2, -1, 0], auto: true },
-    { id: 3, text: "3. อาการไม่พึงประสงค์ดีขึ้นเมื่อหยุดยาหรือไม่ (Dechallenge)?", scores: [1, 0, 0], auto: true },
+    { id: 3, text: "3. อาการไม่พึงประสงค์เมื่อหยุดยาหรือไม่ (Dechallenge)?", scores: [1, 0, 0], auto: true },
     { id: 4, text: "4. อาการไม่พึงประสงค์กลับมาเป็นซ้ำเมื่อได้รับยาอีกครั้งหรือไม่ (Rechallenge)?", scores: [2, -1, 0], auto: true },
     { id: 5, text: "5. มีสาเหตุอื่น (นอกจากยา) ที่ทำให้เกิดปฏิกิริยานี้ได้หรือไม่?", scores: [-1, 2, 0], required: true },
     { id: 6, text: "6. ปฏิกิริยากลับมาเป็นซ้ำเมื่อได้รับยาหลอก (Placebo) หรือไม่?", scores: [-1, 1, 0], auto: true },
@@ -133,7 +133,7 @@ const calculateScores = (drugs, labs, onset, currentScores, disorderType) => {
             dechallengeWindowDays = 14;
         }
 
-        // Q3: Dechallenge (หยุดยาแล้วดีขึ้นไหม?)
+        // Q3: Dechallenge (หยุดยาแล้วไหม?)
         const stoppedPeriods = g.periods.filter(p => p.stopDate);
         if (stoppedPeriods.length > 0) {
             const lastStopDate = new Date(stoppedPeriods[stoppedPeriods.length-1].stopDate).getTime();
@@ -158,7 +158,7 @@ const calculateScores = (drugs, labs, onset, currentScores, disorderType) => {
             if (improved) s3 = 1;
         }
 
-        // Q4: Rechallenge (ได้รับยาซ้ำแล้วแย่ลงไหม?)
+        // Q4: Rechallenge (ได้รับยาซ้ำแล้วไหม?)
         if (g.periods.length > 1) {
             let recurred = false;
             for (let i = 1; i < g.periods.length; i++) {
@@ -245,7 +245,7 @@ const NaranjoCard = ({ group, scoreMap, total, onScoreChange }) => {
     const isExcluded = scoreMap && scoreMap[4] === -1;
 
     if (isExcluded) {
-        interp = 'EXCLUDED'; color = 'bg-slate-400'; border = 'border-slate-400';
+        interp = 'EXCLUDED'; color = 'bg-[#a8a099]'; border = 'border-[#d6d0c8]';
     } else {
         if (total >= 9) { interp = 'Definite'; color = 'bg-rose-900'; border = 'border-rose-900'; } 
         else if (total >= 5) { interp = 'Probable'; color = 'bg-[#2a9d8f]'; border = 'border-rose-600'; }
@@ -354,7 +354,7 @@ const HemeAssessment = (props) => {
     
     // ADD BATCH LABS
     const addBatchLabs = () => {
-        if (!batchDate) return alert("กรุณาระบุวันที่เจาะเลือด");
+        if (!batchDate) return alert("Please enter collection date.");
         
         const newEntries = [];
         Object.entries(batchValues).forEach(([type, value]) => {
@@ -368,7 +368,7 @@ const HemeAssessment = (props) => {
             }
         });
 
-        if (newEntries.length === 0) return alert("กรุณากรอกค่า Lab อย่างน้อย 1 ค่า");
+        if (newEntries.length === 0) return alert("Please enter value Lab อย่างน้อย 1 ค่า");
 
         const combinedLabs = [...labs, ...newEntries].sort((a,b)=>new Date(a.date)-new Date(b.date));
         syncToParent(undefined, combinedLabs, undefined, undefined, undefined);
@@ -541,11 +541,11 @@ const HemeAssessment = (props) => {
                                                 </div>
                                             </td>
                                             <td className="p-2 text-right align-top print:hidden">
-                                                <button onClick={() => items.forEach(i => removeLab(i.id))} className="text-slate-300 hover:text-[#e07060] font-bold">×</button>
+                                                <button onClick={() => items.forEach(i => removeLab(i.id))} className="text-[#d6d0c8] hover:text-[#e07060] font-bold">×</button>
                                             </td>
                                         </tr>
                                     ))}
-                                    {labs.length === 0 && <tr><td colSpan="3" className="p-4 text-center text-slate-300">No lab data recorded</td></tr>}
+                                    {labs.length === 0 && <tr><td colSpan="3" className="p-4 text-center text-[#d6d0c8]">No lab data recorded</td></tr>}
                                 </tbody>
                             </table>
                         </div>
@@ -561,8 +561,8 @@ const HemeAssessment = (props) => {
             </div>
 
             <div className="bg-white rounded-[10px] border border-[#ebe8e2] shadow-[0_1px_4px_rgba(0,0,0,0.05)] p-6 mb-6 print:border-black print:shadow-none break-inside-avoid">
-                <div className="text-sm font-bold text-[#2d2926] border-b pb-3 mb-4 print:text-black print:border-black text-left">📝 Pharmacist Note</div>
-                <textarea className="w-full h-32 border rounded p-3 text-sm focus:outline-rose-500 print:border-black print:h-auto" placeholder="Enter clinical assessment notes..." value={note} onChange={handleNoteChange}></textarea>
+                <div className="text-sm font-bold text-[#2d2926] border-b pb-3 mb-4 print:text-black print:border-black text-left">Pharmacist note</div>
+                <textarea className="w-full h-32 border rounded p-3 text-sm focus:outline-rose-500 print:border-black print:h-auto" placeholder="Enter clinical assessment notes..." value={note || externalNote} onChange={e => { handleNoteChange(e); setPharmacistNote && setPharmacistNote(e.target.value); }}></textarea>
             </div>
 
             {/* RESULTS & TIMELINE */}
@@ -642,7 +642,7 @@ const HemeAssessment = (props) => {
                                                 <div key={date} className="absolute top-0 -translate-x-1/2 flex flex-col items-center group cursor-pointer print:z-50" style={{left:`${pos}%`}}>
                                                     
                                                     {/* ✅ Single Neutral Anchor อยู่ด้านบนสุดของ Lab (ติดแกน x) */}
-                                                    <div className="w-2 h-2 rounded-full bg-slate-300 ring-2 ring-white print:bg-black z-10"></div>
+                                                    <div className="w-2 h-2 rounded-full bg-[#d6d0c8] ring-2 ring-white print:bg-black z-10"></div>
                                                     
                                                     {/* ✅ Values Stack งอกลงด้านล่างแทน */}
                                                     <div className="mt-1.5 flex flex-col gap-1 items-center">

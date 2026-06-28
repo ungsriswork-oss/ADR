@@ -12,11 +12,11 @@ const PharmacistNoteSection = ({ note, setNote }) => (
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#6b6360]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
-            <span className="font-bold text-[#2d2926] text-sm">Pharmacist Note / ความเห็นเภสัชกร</span>
+            <span className="font-bold text-[#2d2926] text-sm">Pharmacist note</span>
         </div>
         <textarea
             className="w-full p-4 text-sm text-[#2d2926] focus:outline-none min-h-[100px] resize-y print:text-black"
-            placeholder="บันทึกความเห็นเพิ่มเติม..."
+            placeholder="Enter additional notes..."
             value={note}
             onChange={(e) => setNote(e.target.value)}
         />
@@ -52,7 +52,7 @@ const CommonCausesModal = ({ isOpen, onClose }) => {
                 </div>
                 
                 <div className="mt-4 text-right">
-                    <button onClick={onClose} className="px-4 py-2 bg-[#ebe8e2] hover:bg-slate-300 text-[#2d2926] rounded-[8px] text-sm font-bold transition">
+                    <button onClick={onClose} className="px-4 py-2 bg-[#ebe8e2] hover:bg-[#d6d0c8] text-[#2d2926] rounded-[8px] text-sm font-bold transition">
                         Close
                     </button>
                 </div>
@@ -166,7 +166,7 @@ const SmartVisualTimeline = ({ groupedDrugs, logs, feverOnset }) => {
                 <span>Timeline Analysis (Time-based Plot)</span>
                 <div className="flex gap-4 text-xs">
                     <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500 print:bg-[#b83232]"></span> Temp</span>
-                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500 print:bg-blue-600"></span> Pulse</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#2a9d8f] print:bg-[#2a9d8f]"></span> Pulse</span>
                 </div>
             </h3>
             <div style={{ width: '100%', minWidth: totalWidth }}>
@@ -319,7 +319,7 @@ const DrugAssessmentCard = ({ drugGroup, logs, feverDate, onChangeCriteria, onDe
     const totalScore = c1 + c2 + c3 + c4 + c5;
     
     let result = "Unlikely";
-    let badgeColor = "bg-[#f4f2ee] text-[#a8a099] print:border print:border-slate-400";
+    let badgeColor = "bg-[#f4f2ee] text-[#a8a099] print:border print:border-[#d6d0c8]";
     if (totalScore >= 5) { result = "Definite"; badgeColor = "bg-[#2a9d8f] text-white print:text-black print:bg-transparent print:border-black"; }
     else if (totalScore >= 3) { result = "Probable"; badgeColor = "bg-indigo-100 text-[#4a3ab8] print:text-black print:bg-transparent"; }
     else if (totalScore >= 1) { result = "Possible"; badgeColor = "bg-yellow-100 text-yellow-700 print:text-black print:bg-transparent"; }
@@ -329,7 +329,7 @@ const DrugAssessmentCard = ({ drugGroup, logs, feverDate, onChangeCriteria, onDe
     };
 
     return (
-        <div className="border border-[#cec8f6] rounded-b-xl rounded-tr-xl overflow-hidden bg-white shadow-[0_1px_4px_rgba(0,0,0,0.05)] mb-4 transition animate-fade-in p-5 print:shadow-none print:border print:border-slate-400 print:rounded-[10px] print:mb-8 print:break-inside-avoid">
+        <div className="border border-[#cec8f6] rounded-b-xl rounded-tr-xl overflow-hidden bg-white shadow-[0_1px_4px_rgba(0,0,0,0.05)] mb-4 transition animate-fade-in p-5 print:shadow-none print:border print:border-[#d6d0c8] print:rounded-[10px] print:mb-8 print:break-inside-avoid">
             <div className="flex justify-between items-start mb-6 border-b pb-4">
                 <div>
                     <h3 className="text-xl font-bold text-indigo-900 flex items-center gap-2 print:text-black">
@@ -340,7 +340,7 @@ const DrugAssessmentCard = ({ drugGroup, logs, feverDate, onChangeCriteria, onDe
                     </h3>
                     <div className="flex flex-wrap gap-2 mt-2">
                         {drugGroup.intervals.map((inv, idx) => (
-                            <span key={idx} className="text-xs text-[#a8a099] bg-[#f4f2ee] px-2 py-1 rounded border border-[#ebe8e2] print:border-slate-400 print:text-black">
+                            <span key={idx} className="text-xs text-[#a8a099] bg-[#f4f2ee] px-2 py-1 rounded border border-[#ebe8e2] print:border-[#d6d0c8] print:text-black">
                                 {inv.start} → {inv.stop || 'Ongoing'}
                             </span>
                         ))}
@@ -369,7 +369,7 @@ const DrugAssessmentCard = ({ drugGroup, logs, feverDate, onChangeCriteria, onDe
                 </div>
 
                 <div className="flex items-start gap-4 p-3 rounded border border-[#f4f2ee] hover:bg-[#faf9f7] transition print:bg-white print:border-[#d6d0c8]">
-                    <div className={`mt-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${c2 > 0 ? 'bg-green-500 text-white' : c2 < 0 ? 'bg-red-500 text-white' : 'bg-slate-400 text-white'} print:text-black print:bg-transparent print:border print:border-black`}>2</div>
+                    <div className={`mt-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${c2 > 0 ? 'bg-green-500 text-white' : c2 < 0 ? 'bg-red-500 text-white' : 'bg-[#a8a099] text-white'} print:text-black print:bg-transparent print:border print:border-black`}>2</div>
                     <div className="flex-1">
                         <div className="flex justify-between items-center mb-1">
                             <span className="text-sm font-bold text-[#2d2926]">Dechallenge</span>
@@ -435,7 +435,7 @@ const DrugAssessmentCard = ({ drugGroup, logs, feverDate, onChangeCriteria, onDe
                 </div>
 
                 <div className="flex justify-end pt-3 border-t mt-4 print:hidden">
-                    <button onClick={() => drugGroup.ids.forEach(id => onDelete(id))} className="text-sm text-red-400 hover:text-[#b83232] font-bold flex items-center gap-1 px-2 py-1 rounded hover:bg-red-50">
+                    <button onClick={() => drugGroup.ids.forEach(id => onDelete(id))} className="text-sm text-red-400 hover:text-[#b83232] font-bold flex items-center gap-1 px-2 py-1 rounded hover:bg-[#fdf0ee]">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
                         Remove Drug Group
                     </button>
@@ -446,7 +446,8 @@ const DrugAssessmentCard = ({ drugGroup, logs, feverDate, onChangeCriteria, onDe
 };
 
 // --- MAIN COMPONENT ---
-const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
+const DrugFeverAssessment = ({ onAnalysisComplete, initialData,
+  setPharmacistNote,}) => {
     // State
     const [feverOnsetDate, setFeverOnsetDate] = useState('');
     const [drugEntries, setDrugEntries] = useState([]);
@@ -457,7 +458,7 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
     // Inputs
     const [currentDrug, setCurrentDrug] = useState({ name: '', startDate: '', stopDate: '' });
     const [currentLog, setCurrentLog] = useState({ date: '', temp: '', pulse: '', remark: '' });
-    const [pharmacistNote, setPharmacistNote] = useState('');
+    const [localNote, setLocalNote] = useState('');
     const [showAnalysis, setShowAnalysis] = useState(false);
 
     // --- Load Data ---
@@ -673,7 +674,7 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
                                 ) : dailyLogs.map(l => (
                                     <tr key={l.id} className={l.temp>=38?'bg-red-50':''}>
                                         <td className="p-2">{new Date(l.date).toLocaleString()}</td>
-                                        <td className="p-2 font-bold">{l.temp}° | <span className="text-blue-600">{l.pulse}</span></td>
+                                        <td className="p-2 font-bold">{l.temp}° | <span className="text-[#2a9d8f]">{l.pulse}</span></td>
                                         <td className="p-2 text-center"><button onClick={()=>setDailyLogs(dailyLogs.filter(x=>x.id!==l.id))} className="text-red-400 hover:text-[#b83232]">×</button></td>
                                     </tr>
                                 ))}
@@ -709,7 +710,13 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
             </div>
 
             {/* 2. PHARMACIST NOTE */}
-            <PharmacistNoteSection note={pharmacistNote} setNote={setPharmacistNote} />
+            <PharmacistNoteSection
+            note={localNote}
+            setNote={(val) => {
+              setLocalNote(val);
+              setPharmacistNote && setPharmacistNote(val);
+            }}
+          />
 
             {/* 3. TIMELINE */}
             <div className="print:break-after-page print:landscape">
