@@ -347,7 +347,7 @@ const DressAssessment = (props) => {
   const [analyzed, setAnalyzed] = useState(false);
   const [pharmacistNote, setPharmacistNote] = useState('');
   const [clinical, setClinical] = useState({
-    fever: false, enlargedNodes: false, rashPresent: false, rashBSA: false, rashFeatures: [], selectedOrgans: [], atypicalLymph: false, resolutionDays: false, exclusions: false,
+    fever: null, enlargedNodes: false, rashPresent: false, rashBSA: false, rashFeatures: [], selectedOrgans: [], atypicalLymph: false, resolutionDays: false, exclusions: false,
   });
 
   const [newLab, setNewLab] = useState({ date: '', temp: '', eosin: '', alt: '' });
@@ -389,8 +389,9 @@ const DressAssessment = (props) => {
     const safeLabs = Array.isArray(labs) ? labs : [];
 
     const maxTemp = Math.max(0, ...safeLabs.map((l) => parseFloat(l.temp) || 0));
-    let feverScore = -1; let feverDetail = 'Absent (-1)';
-    if (clinical.fever || maxTemp >= 38.5) { feverScore = 0; feverDetail = 'Present (0)'; }
+    let feverScore = 0; let feverDetail = 'Unknown (0)';
+    if (clinical.fever === true || maxTemp >= 38.5) { feverScore = 0; feverDetail = 'Present (0)'; }
+    else if (clinical.fever === false) { feverScore = -1; feverDetail = 'Absent (-1)'; }
     breakdown.push({ label: 'Fever ≥ 38.5°C', detail: feverDetail, score: feverScore });
     total += feverScore;
 
@@ -596,8 +597,26 @@ const DressAssessment = (props) => {
             <div className="space-y-4">
               <div className="font-bold text-sm text-[#2d2926] border-b pb-1 mb-2">General Criteria</div>
               <label className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-[#faf9f7] transition-colors border border-transparent hover:border-[#f4f2ee]">
-                <input type="checkbox" className="w-4 h-4 accent-[#534ab7]" checked={clinical.fever} onChange={(e) => handleClinicalChange('fever', e.target.checked)} />
-                <span className="text-sm font-bold text-[#2d2926]">Fever ≥ 38.5°C (-1 if No)</span>
+                <span className="text-sm font-semibold text-[#2d2926]">Fever ≥ 38.5°C</span>
+                <span className="text-xs text-[#a8a099] ml-1">(Yes=0, No=−1, Unknown=0)</span>
+                <div className="flex gap-1 mt-1.5">
+                  {[['yes', true, '+0'], ['no', false, '−1'], ['unknown', null, '0']].map(([label, val, sc]) => (
+                    <button key={label}
+                      onClick={() => handleClinicalChange('fever', val)}
+                      className={`px-3 py-1 rounded-[5px] text-xs font-semibold border transition-all ${
+                        clinical.fever === val
+                          ? val === false
+                            ? 'bg-[#fdf0ee] text-[#8c3322] border-[#f5b8b8]'
+                            : val === true
+                            ? 'bg-[#e6f4f1] text-[#1a6b62] border-[#b2ddd7]'
+                            : 'bg-[#f4f2ee] text-[#6b6360] border-[#d6d0c8]'
+                          : 'bg-white text-[#a8a099] border-[#ebe8e2]'
+                      }`}
+                    >
+                      {label.charAt(0).toUpperCase() + label.slice(1)} <span className="opacity-60">({sc})</span>
+                    </button>
+                  ))}
+                </div>
               </label>
               <label className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-[#faf9f7] transition-colors border border-transparent hover:border-[#f4f2ee]">
                 <input type="checkbox" className="w-4 h-4 accent-[#534ab7]" checked={clinical.enlargedNodes} onChange={(e) => handleClinicalChange('enlargedNodes', e.target.checked)} />

@@ -446,8 +446,7 @@ const DrugAssessmentCard = ({ drugGroup, logs, feverDate, onChangeCriteria, onDe
 };
 
 // --- MAIN COMPONENT ---
-const DrugFeverAssessment = ({ onAnalysisComplete, initialData,
-  setPharmacistNote,}) => {
+const DrugFeverAssessment = ({ onAnalysisComplete, initialData, pharmacistNote: initNote = '', setPharmacistNote }) => {
     // State
     const [feverOnsetDate, setFeverOnsetDate] = useState('');
     const [drugEntries, setDrugEntries] = useState([]);
@@ -458,7 +457,7 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData,
     // Inputs
     const [currentDrug, setCurrentDrug] = useState({ name: '', startDate: '', stopDate: '' });
     const [currentLog, setCurrentLog] = useState({ date: '', temp: '', pulse: '', remark: '' });
-    const [localNote, setLocalNote] = useState('');
+    const [localNote, setLocalNote] = useState(initNote || '');
     const [showAnalysis, setShowAnalysis] = useState(false);
 
     // --- Load Data ---

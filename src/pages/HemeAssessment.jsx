@@ -267,12 +267,13 @@ const NaranjoCard = ({ group, scoreMap, total, onScoreChange }) => {
 
 // --- MAIN COMPONENT ---
 const HemeAssessment = (props) => {
+    const { onAnalysisComplete, pharmacistNote: externalNote = '', setPharmacistNote } = props;
     const [drugs, setDrugs] = useState([]);
     const [labs, setLabs] = useState([]); 
     const [onset, setOnset] = useState('');
-    const [disorderType, setDisorderType] = useState(DISORDER_TYPES[0]); // ✅ New State for Disorder Type
+    const [disorderType, setDisorderType] = useState(DISORDER_TYPES[0]);
     const [scores, setScores] = useState({});
-    const [note, setNote] = useState('');
+    const [note, setNote] = useState(externalNote || '');
     const [hasAutoAnalyzed, setHasAutoAnalyzed] = useState(false);
 
     // Inputs
@@ -562,7 +563,7 @@ const HemeAssessment = (props) => {
 
             <div className="bg-white rounded-[10px] border border-[#ebe8e2] shadow-[0_1px_4px_rgba(0,0,0,0.05)] p-6 mb-6 print:border-black print:shadow-none break-inside-avoid">
                 <div className="text-sm font-bold text-[#2d2926] border-b pb-3 mb-4 print:text-black print:border-black text-left">Pharmacist note</div>
-                <textarea className="w-full h-32 border rounded p-3 text-sm focus:outline-rose-500 print:border-black print:h-auto" placeholder="Enter clinical assessment notes..." value={note || externalNote} onChange={e => { handleNoteChange(e); setPharmacistNote && setPharmacistNote(e.target.value); }}></textarea>
+                <textarea className="w-full h-32 border rounded p-3 text-sm focus:outline-rose-500 print:border-black print:h-auto" placeholder="Enter clinical assessment notes..." value={note || externalNote} onChange={handleNoteChange}></textarea>
             </div>
 
             {/* RESULTS & TIMELINE */}

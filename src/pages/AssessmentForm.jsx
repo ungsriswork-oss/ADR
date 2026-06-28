@@ -187,7 +187,7 @@ export default function AssessmentForm() {
       <div style={{ maxWidth: 1400, margin: '0 auto', padding: 'clamp(16px, 4vw, 48px)', paddingTop: 24, paddingBottom: 0 }}>
 
         {/* ── PATIENT CARD ── */}
-        <div style={{ background: '#fff', border: '1px solid #ebe8e2', borderRadius: 10, padding: '18px 20px', marginBottom: 14 }}>
+        <div className="no-print" style={{ background: '#fff', border: '1px solid #ebe8e2', borderRadius: 10, padding: '18px 20px', marginBottom: 14 }}>
           <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: '#a8a099', marginBottom: 12, paddingBottom: 8, borderBottom: '1px solid #f4f2ee' }}>Patient data</div>
           <div style={{ display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 140px), 1fr))',
