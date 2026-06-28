@@ -467,7 +467,7 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData, pharmacistNote: 
             if (saved.drugEntries) setDrugEntries(saved.drugEntries);
             if (saved.dailyLogs) setDailyLogs(saved.dailyLogs);
             if (saved.feverOnsetDate) setFeverOnsetDate(saved.feverOnsetDate);
-            if (saved.pharmacistNote) setPharmacistNote(saved.pharmacistNote);
+            if (saved.pharmacistNote) { setLocalNote(saved.pharmacistNote); setPharmacistNote && setPharmacistNote(saved.pharmacistNote); }
             if (saved.drugEntries?.length || saved.dailyLogs?.length) setShowAnalysis(true);
         }
     }, [initialData]);
@@ -605,11 +605,11 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData, pharmacistNote: 
                 drugEntries,
                 dailyLogs,
                 feverOnsetDate,
-                pharmacistNote,
+                pharmacistNote: localNote,
                 answers: {}
             });
         }
-    }, [drugEntries, dailyLogs, feverOnsetDate, pharmacistNote]);
+    }, [drugEntries, dailyLogs, feverOnsetDate, localNote]);
 
     return (
         <div className="space-y-6 animate-fade-in">
@@ -711,10 +711,7 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData, pharmacistNote: 
             {/* 2. PHARMACIST NOTE */}
             <PharmacistNoteSection
             note={localNote}
-            setNote={(val) => {
-              setLocalNote(val);
-              setPharmacistNote && setPharmacistNote(val);
-            }}
+            setNote={(val) => { setLocalNote(val); setPharmacistNote && setPharmacistNote(val); }}
           />
 
             {/* 3. TIMELINE */}
