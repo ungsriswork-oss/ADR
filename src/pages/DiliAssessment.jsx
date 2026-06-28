@@ -550,31 +550,51 @@ const DiliAssessment = ({
 
       if (lastSegment.stopDate && labEntries.length > 0 && peakALT > 0) {
         const stopT = new Date(lastSegment.stopDate).getTime();
+
+        // RUCAM 2016: ดู lab ทั้งหมดหลัง stop ไม่ใช่แค่ lab แรก
+        // หา lab ที่มี ALT ต่ำสุดภายใน 8 วัน (score 3) และภายใน 30 วัน (score 2)
         const postLabs = labEntries
-          .filter((l) => new Date(l.date).getTime() > stopT)
-          .sort((a, b) => new Date(a.date) - new Date(b.date));
+          .filter((l) => {
+            const t = new Date(l.date).getTime();
+            return t > stopT && !isNaN(parseFloat(l.alt));
+          })
+          .map((l) => ({
+            ...l,
+            daysAfter: (new Date(l.date).getTime() - stopT) / 86400000,
+            alt: parseFloat(l.alt),
+          }))
+          .sort((a, b) => a.daysAfter - b.daysAfter);
 
         if (postLabs.length > 0) {
-          const firstPost = postLabs[0];
-          const daysAfter = Math.ceil(
-            (new Date(firstPost.date).getTime() - stopT) / 86400000
-          );
-          const decreasePct =
-            ((peakALT - parseFloat(firstPost.alt)) / peakALT) * 100;
+          // หา lab ที่ ALT ต่ำสุดภายใน 8 วัน
+          const within8 = postLabs.filter((l) => l.daysAfter <= 8);
+          const within30 = postLabs.filter((l) => l.daysAfter <= 30);
 
-          if (decreasePct >= 50 && daysAfter <= 8) {
+          // เลือก lab ที่ให้ decrease สูงสุด (ALT ต่ำสุด) ในช่วงเวลาที่กำหนด
+          const bestWithin8 = within8.length > 0
+            ? within8.reduce((best, l) => l.alt < best.alt ? l : best)
+            : null;
+          const bestWithin30 = within30.length > 0
+            ? within30.reduce((best, l) => l.alt < best.alt ? l : best)
+            : null;
+          const bestOverall = postLabs.reduce((best, l) => l.alt < best.alt ? l : best);
+
+          const pct8  = bestWithin8  ? ((peakALT - bestWithin8.alt)  / peakALT) * 100 : 0;
+          const pct30 = bestWithin30 ? ((peakALT - bestWithin30.alt) / peakALT) * 100 : 0;
+          const pctAll = ((peakALT - bestOverall.alt) / peakALT) * 100;
+
+          if (pct8 >= 50) {
+            // Score 3: ลดลง ≥50% ภายใน 8 วัน
             group.dechallengeScore = 3;
-            group.courseLabel = `Decr ${decreasePct.toFixed(
-              0
-            )}% in ${daysAfter}d`;
-          } else if (decreasePct >= 50 && daysAfter <= 30) {
+            group.courseLabel = `Decr ${pct8.toFixed(0)}% in ${Math.ceil(bestWithin8.daysAfter)}d`;
+          } else if (pct30 >= 50) {
+            // Score 2: ลดลง ≥50% ภายใน 30 วัน
             group.dechallengeScore = 2;
-            group.courseLabel = `Decr ${decreasePct.toFixed(
-              0
-            )}% in ${daysAfter}d`;
-          } else if (decreasePct < 50 && daysAfter <= 30) {
+            group.courseLabel = `Decr ${pct30.toFixed(0)}% in ${Math.ceil(bestWithin30.daysAfter)}d`;
+          } else if (pctAll >= 0 && bestOverall.daysAfter <= 30) {
+            // Score 1: ลดลง <50% ภายใน 30 วัน
             group.dechallengeScore = 1;
-            group.courseLabel = `Decr <50% (${decreasePct.toFixed(0)}%)`;
+            group.courseLabel = `Decr <50% (${pctAll.toFixed(0)}%)`;
           } else {
             group.dechallengeScore = 0;
             group.courseLabel = 'No significant decrease';
@@ -929,11 +949,10 @@ const DiliAssessment = ({
               <label className="text-xs text-[#a8a099] block">Drug Name</label>
               <input
                 type="text"
-                className="border p-1 rounded w-full"
+                placeholder="e.g. Isoniazid"
+                className="border border-[#d6d0c8] rounded-[6px] px-2 py-1.5 text-sm w-full focus:outline-none focus:border-[#2a9d8f]"
                 value={currentDrug.name}
-                onChange={(e) =>
-                  setCurrentDrug({ ...currentDrug, name: e.target.value })
-                }
+                onChange={(e) => setCurrentDrug({ ...currentDrug, name: e.target.value })}
               />
             </div>
             <div>

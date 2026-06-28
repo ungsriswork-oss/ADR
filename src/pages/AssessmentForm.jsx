@@ -66,6 +66,13 @@ export default function AssessmentForm() {
   const [prodromeData,     setProdromeData]     = useState({});
   const [apCriteria,       setApCriteria]       = useState({ pain: false, lab: false, imaging: false });
   const [analysisResult,   setAnalysisResult]   = useState(null);
+  const [noteTimestamp,    setNoteTimestamp]    = useState('');
+
+  const handlePharmacistNoteChange = (val) => {
+    setPharmacistNote(val);
+    if (val) setNoteTimestamp(new Date().toISOString());
+    else setNoteTimestamp('');
+  };
   const [analyzeCount,     setAnalyzeCount]     = useState(0);
   const [loadedResult,     setLoadedResult]     = useState(null);
 
@@ -77,6 +84,7 @@ export default function AssessmentForm() {
     setDrugList(src.drugList || src.drugs || src.rashDrugs || loaded.drugList || []);
     setSymptomDate(src.symptomDate || src.rashOnset || src.onset || loaded.symptomDate || '');
     setPharmacistNote(loaded.pharmacistNote || src.pharmacistNote || '');
+    setNoteTimestamp(loaded.noteTimestamp || '');
     if (['dili','dress','agep','heme','electro','pancreatitis'].includes(type)) setLabEntries(loaded.labEntries || src.labEntries || []);
     if (['rash','sjs'].includes(type)) setDailyLogs(src.dailyLogs || src.logs || []);
     if (['rash','electro','pancreatitis'].includes(type)) {
@@ -113,6 +121,7 @@ export default function AssessmentForm() {
       drugList: isDrugFever && analysisResult?.drugEntries ? analysisResult.drugEntries : drugList,
       symptomDate: savedData.symptomDate,
       pharmacistNote: savedData.pharmacistNote,
+      noteTimestamp: pharmacistNote ? new Date().toISOString() : '',
       savedData,
       analysisResultFull: analysisResult,
       rFactor: analysisResult?.rFactor || analysisResult?.total || '-',
@@ -197,19 +206,76 @@ export default function AssessmentForm() {
           </div>
         </div>
 
+        {/* ── PRINT HEADER — แสดงเฉพาะตอน print ── */}
+        <div style={{ display: 'none' }} className="print-only-header">
+          <style>{`
+            @media print {
+              .print-only-header {
+                display: block !important;
+                border-bottom: 2px solid #2d2926;
+                padding-bottom: 10px;
+                margin-bottom: 14px;
+                page-break-inside: avoid;
+              }
+              .print-only-header table { width: 100%; border-collapse: collapse; }
+              .print-only-header td { padding: 2px 6px; font-size: 11px; vertical-align: top; }
+              .print-only-header .label { color: #6b6360; font-weight: 600; width: 80px; }
+              .print-only-header .value { color: #2d2926; font-weight: 400; }
+              .print-only-header .title { font-size: 15px; font-weight: 700; color: #2d2926; margin-bottom: 6px; }
+              .print-only-header .subtitle { font-size: 10px; color: #6b6360; margin-bottom: 8px; }
+            }
+          `}</style>
+          <div className="title">
+            {cfg.title} — {cfg.scale}
+          </div>
+          <div className="subtitle">
+            งานพัฒนาระบบยา โรงพยาบาลเจ้าพระยายมราช · พิมพ์: {new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}
+          </div>
+          <table>
+            <tbody>
+              <tr>
+                <td className="label">HN</td>
+                <td className="value">{patientData.hn || '—'}</td>
+                <td className="label">ชื่อ-สกุล</td>
+                <td className="value">{patientData.name || '—'}</td>
+                <td className="label">อายุ</td>
+                <td className="value">{patientData.age ? `${patientData.age} ปี` : '—'}</td>
+              </tr>
+              <tr>
+                <td className="label">Ward</td>
+                <td className="value">{patientData.ward || '—'}</td>
+                <td className="label">วันที่รับ</td>
+                <td className="value">{patientData.dateReceived ? new Date(patientData.dateReceived).toLocaleDateString('th-TH') : '—'}</td>
+                {noteTimestamp && <>
+                  <td className="label">บันทึกล่าสุด</td>
+                  <td className="value">{new Date(noteTimestamp).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' })}</td>
+                </>}
+                {!noteTimestamp && <><td></td><td></td></>}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
         {/* ── TOOL AREA ── */}
         <div style={{ marginBottom: 14 }}>
           {type==='drugfever'    && <DrugFeverAssessment    onAnalysisComplete={setAnalysisResult} initialData={location.state?.caseData} />}
           {type==='sams'         && <SamsAssessment         onAnalysisComplete={setAnalysisResult} />}
-          {type==='dili'         && <DiliAssessment         patientData={patientData} labEntries={labEntries} setLabEntries={setLabEntries} drugList={drugList} setDrugList={setDrugList} symptomDate={symptomDate} setSymptomDate={setSymptomDate} initialAnalysisResult={loadedResult} analyzeCount={analyzeCount} onAnalysisComplete={setAnalysisResult} pharmacistNote={pharmacistNote} onPharmacistNoteChange={setPharmacistNote} />}
+          {type==='dili'         && <DiliAssessment         patientData={patientData} labEntries={labEntries} setLabEntries={setLabEntries} drugList={drugList} setDrugList={setDrugList} symptomDate={symptomDate} setSymptomDate={setSymptomDate} initialAnalysisResult={loadedResult} analyzeCount={analyzeCount} onAnalysisComplete={setAnalysisResult} pharmacistNote={pharmacistNote} onPharmacistNoteChange={handlePharmacistNoteChange} />}
           {type==='dress'        && <DressAssessment        patientData={patientData} analyzeCount={analyzeCount} onAnalysisComplete={setAnalysisResult} labEntries={labEntries} setLabEntries={setLabEntries} drugList={drugList} setDrugList={setDrugList} symptomDate={symptomDate} setSymptomDate={setSymptomDate} initialData={{ savedData: { drugs: drugList, labs: labEntries, onsetDate: symptomDate, pharmacistNote } }} />}
           {type==='agep'         && <AgepAssessment         patientData={patientData} analyzeCount={analyzeCount} onAnalysisComplete={setAnalysisResult} labEntries={labEntries} setLabEntries={setLabEntries} drugList={drugList} setDrugList={setDrugList} symptomDate={symptomDate} setSymptomDate={setSymptomDate} />}
           {type==='sjs'          && <SjsAssessment          drugList={drugList} setDrugList={setDrugList} indexDate={symptomDate} setIndexDate={setSymptomDate} symptomLogs={dailyLogs} setSymptomLogs={setDailyLogs} onAnalysisComplete={setAnalysisResult} />}
           {type==='heme'         && <HemeAssessment         onAnalysisComplete={setAnalysisResult} />}
-          {type==='electro'      && <ElectroAssessment      drugList={drugList} setDrugList={setDrugList} labList={labEntries} setLabList={setLabEntries} onset={symptomDate} setOnset={setSymptomDate} naranjoScores={naranjoScores} setNaranjoScores={setNaranjoScores} pharmacistNote={pharmacistNote} setPharmacistNote={setPharmacistNote} onAnalysisComplete={setAnalysisResult} initialData={location.state?.caseData} />}
-          {type==='pancreatitis' && <PancreatitisAssessment drugList={drugList} setDrugList={setDrugList} labList={labEntries} setLabList={setLabEntries} onset={symptomDate} setOnset={setSymptomDate} naranjoScores={naranjoScores} setNaranjoScores={setNaranjoScores} pharmacistNote={pharmacistNote} setPharmacistNote={setPharmacistNote} onAnalysisComplete={setAnalysisResult} initialData={{ savedData: { drugs:drugList, labs:labEntries, onsetDate:symptomDate, pharmacistNote, naranjoScores, apCriteria } }} />}
-          {type==='rash'         && <RashAssessment         drugList={drugList} setDrugList={setDrugList} dailyLogs={dailyLogs} setDailyLogs={setDailyLogs} symptomDate={symptomDate} setSymptomDate={setSymptomDate} naranjoScores={naranjoScores} setNaranjoScores={setNaranjoScores} pharmacistNote={pharmacistNote} setPharmacistNote={setPharmacistNote} prodromeData={prodromeData} setProdromeData={setProdromeData} onAnalysisComplete={setAnalysisResult} initialData={{ savedData: { drugList, symptomDate, dailyLogs, naranjoScores, pharmacistNote, prodromeData } }} />}
+          {type==='electro'      && <ElectroAssessment      drugList={drugList} setDrugList={setDrugList} labList={labEntries} setLabList={setLabEntries} onset={symptomDate} setOnset={setSymptomDate} naranjoScores={naranjoScores} setNaranjoScores={setNaranjoScores} pharmacistNote={pharmacistNote} setPharmacistNote={handlePharmacistNoteChange} onAnalysisComplete={setAnalysisResult} initialData={location.state?.caseData} />}
+          {type==='pancreatitis' && <PancreatitisAssessment drugList={drugList} setDrugList={setDrugList} labList={labEntries} setLabList={setLabEntries} onset={symptomDate} setOnset={setSymptomDate} naranjoScores={naranjoScores} setNaranjoScores={setNaranjoScores} pharmacistNote={pharmacistNote} setPharmacistNote={handlePharmacistNoteChange} onAnalysisComplete={setAnalysisResult} initialData={{ savedData: { drugs:drugList, labs:labEntries, onsetDate:symptomDate, pharmacistNote, naranjoScores, apCriteria } }} />}
+          {type==='rash'         && <RashAssessment         drugList={drugList} setDrugList={setDrugList} dailyLogs={dailyLogs} setDailyLogs={setDailyLogs} symptomDate={symptomDate} setSymptomDate={setSymptomDate} naranjoScores={naranjoScores} setNaranjoScores={setNaranjoScores} pharmacistNote={pharmacistNote} setPharmacistNote={handlePharmacistNoteChange} prodromeData={prodromeData} setProdromeData={setProdromeData} onAnalysisComplete={setAnalysisResult} initialData={{ savedData: { drugList, symptomDate, dailyLogs, naranjoScores, pharmacistNote, prodromeData } }} />}
         </div>
+
+        {/* ── PHARMACIST NOTE TIMESTAMP — แสดงถ้ามี note ── */}
+        {noteTimestamp && (
+          <div style={{ fontSize: 11, color: '#a8a099', textAlign: 'right', marginBottom: 4, fontStyle: 'italic' }}>
+            Note last updated: {new Date(noteTimestamp).toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' })}
+          </div>
+        )}
 
         {/* ── FOOTER BUTTONS ── */}
         <div className="no-print" style={{ display: 'flex', justifyContent: 'flex-end', gap: 7, marginTop: 4, paddingTop: 16, borderTop: '1px solid #f4f2ee', position: 'sticky', bottom: 0, background: 'rgba(250,249,247,0.95)', backdropFilter: 'blur(10px)', padding: '12px clamp(16px,4vw,48px)', marginLeft: 'calc(-1 * clamp(16px,4vw,48px))', marginRight: 'calc(-1 * clamp(16px,4vw,48px))', zIndex: 10 }}>

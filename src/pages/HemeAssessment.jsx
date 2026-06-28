@@ -454,10 +454,10 @@ const HemeAssessment = (props) => {
                         </div>
                         <div className="bg-[#faf9f7] p-3 rounded-[8px] border border-[#ebe8e2] print:bg-transparent print:border-black">
                             <div className="flex flex-wrap gap-2 mb-2 print:hidden">
-                                <input className="flex-1 min-w-[140px] border rounded px-2 py-1 text-sm" placeholder="Drug Name" value={currentDrug.name} onChange={e=>setCurrentDrug({...currentDrug,name:e.target.value})}/>
+                                <input className="flex-1 min-w-[140px] border border-[#d6d0c8] rounded-[6px] px-2 py-1.5 text-sm focus:outline-none focus:border-[#2a9d8f]" placeholder="Drug Name" value={currentDrug.name} onChange={e=>setCurrentDrug({...currentDrug,name:e.target.value})}/>
                                 <div className="min-w-[120px] flex-1"><label className="text-[10px] font-bold text-[#a8a099] block mb-1">Start</label><input type="date" className="border rounded w-full px-1 py-1 text-sm" value={currentDrug.startDate} onChange={e=>setCurrentDrug({...currentDrug,startDate:e.target.value})}/></div>
                                 <div className="min-w-[120px] flex-1"><label className="text-[10px] font-bold text-[#a8a099] block mb-1">Stop</label><input type="date" className="border rounded w-full px-1 py-1 text-sm" value={currentDrug.stopDate} onChange={e=>setCurrentDrug({...currentDrug,stopDate:e.target.value})}/></div>
-                                <button onClick={addDrug} className="bg-white text-[#2a9d8f] border border-[#b2ddd7] rounded-[6px] font-[500] px-3 h-8 flex items-center justify-center self-end">+</button>
+                            <button onClick={addDrug} className="bg-white text-[#2a9d8f] border border-[#b2ddd7] rounded-[6px] font-[500] px-3 h-8 flex items-center justify-center self-end">+</button>
                             </div>
                             <div className="space-y-1">
                                 {drugs.map(d=>(

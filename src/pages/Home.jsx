@@ -165,7 +165,7 @@ export default function Home() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
               <tr style={{ background: '#faf9f7', borderBottom: '1px solid #ebe8e2' }}>
-                {['Date', 'HN', 'Patient name', 'ADR type', 'Suspected drugs', ''].map(h => (
+                {['Date', 'HN', 'Patient name', 'Ward', 'ADR type', 'Suspected drugs', ''].map(h => (
                   <th key={h} style={{ padding: '9px 14px', textAlign: 'left', fontSize: 10, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: '#a8a099' }}>{h}</th>
                 ))}
               </tr>
@@ -188,6 +188,7 @@ export default function Home() {
                     <td style={{ padding: '10px 14px', fontFamily: 'monospace', fontSize: 11, color: '#a8a099' }}>{new Date(c.savedAt).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' })}</td>
                     <td style={{ padding: '10px 14px', fontFamily: 'monospace', fontWeight: 600, fontSize: 11, color: '#6b6360' }}>{c.hn}</td>
                     <td style={{ padding: '10px 14px', fontWeight: 500, color: '#2d2926' }}>{c.name}</td>
+                    <td style={{ padding: '10px 14px', fontSize: 12, color: '#6b6360' }}>{c.ward || <span style={{ color: '#d6d0c8', fontStyle: 'italic' }}>—</span>}</td>
                     <td style={{ padding: '10px 14px' }}>
                       <span style={{ padding: '2px 8px', borderRadius: 99, fontSize: 10, fontWeight: 600, letterSpacing: '0.03em', background: b.bg, color: b.text, border: `1px solid ${b.border}` }}>{(c.type || 'N/A').toUpperCase()}</span>
                     </td>
