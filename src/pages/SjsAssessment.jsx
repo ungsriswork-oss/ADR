@@ -78,7 +78,7 @@ const AldenRow = ({ label, subLabel, value, onChange, optionsArr, isAutoCalc }) 
 
   return (
     <tr className="border-b border-[#f4f2ee] last:border-0 hover:bg-[#faf9f7] transition-colors">
-      <td className="py-3 pl-4 w-[36%] align-middle text-[#2d2926] text-sm">
+      <td className="py-3 pl-4 w-[36%] align-middle text-[#2d2926] text-sm print:py-1">
         <span className="font-semibold">{label}</span>
         {isAutoCalc && (
           <span className="ml-1.5 text-[9px] font-semibold text-[#1a6b62] bg-[#e6f4f1] border border-[#b2ddd7] px-1.5 py-0.5 rounded uppercase tracking-wide">Auto</span>
@@ -102,7 +102,7 @@ const AldenRow = ({ label, subLabel, value, onChange, optionsArr, isAutoCalc }) 
           {safeValue > 0 ? `+${safeValue}` : safeValue}
         </span>
       </td>
-      <td className="hidden print:table-cell py-2 pr-4 text-right text-xs">
+      <td className="hidden print:table-cell py-1 pr-3 text-right text-[10px]">
         {selectedLabel} ({safeValue > 0 ? `+${safeValue}` : safeValue})
       </td>
     </tr>
@@ -134,7 +134,7 @@ const AldenCard = ({
   else if (totalScore >= 4)
     result = {
       text: 'Probable',
-      color: 'bg-[#fdf0ee]0',
+      color: 'bg-[#fdf0ee]',
       border: 'border-orange-500',
     };
   else if (totalScore >= 2)
@@ -967,7 +967,7 @@ const SjsAssessment = (props) => {
                           return (
                             <React.Fragment key={idx}>
                               <div
-                                className="absolute h-1.5 bg-slate-400 rounded-full transition-colors print:bg-[#faf9f7]0 print-color-exact"
+                                className="absolute h-1.5 bg-slate-400 rounded-full transition-colors print:bg-[#faf9f7] print-color-exact"
                                 style={{
                                   left: barProps.left,
                                   width: barProps.width,
@@ -975,7 +975,7 @@ const SjsAssessment = (props) => {
                               ></div>
                               {barProps.showStart && (
                                 <div
-                                  className="absolute w-3.5 h-3.5 bg-slate-400 rounded-full border border-white shadow z-10 transform -translate-x-1/2 print:bg-[#faf9f7]0 print-color-exact"
+                                  className="absolute w-3.5 h-3.5 bg-slate-400 rounded-full border border-white shadow z-10 transform -translate-x-1/2 print:bg-[#faf9f7] print-color-exact"
                                   style={{
                                     left: `${getTimelinePos(
                                       normalizeDate(iv.startDate)
@@ -986,7 +986,7 @@ const SjsAssessment = (props) => {
                               )}
                               {barProps.showEnd && (
                                 <div
-                                  className="absolute w-3.5 h-3.5 bg-slate-400 rounded-full border border-white shadow z-10 transform -translate-x-1/2 print:bg-[#faf9f7]0 print-color-exact"
+                                  className="absolute w-3.5 h-3.5 bg-slate-400 rounded-full border border-white shadow z-10 transform -translate-x-1/2 print:bg-[#faf9f7] print-color-exact"
                                   style={{
                                     left: `${getTimelinePos(
                                       normalizeDate(

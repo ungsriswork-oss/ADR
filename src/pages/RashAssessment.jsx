@@ -97,12 +97,12 @@ const NaranjoRow = ({ q, value, onChange }) => {
         : { text: '#a8a099', bg: '#f4f2ee', border: '#ebe8e2' };
 
     return (
-        <tr className={`border-b border-[#f4f2ee] last:border-0 ${q.required ? 'bg-[#fef9f5]' : ''}`}>
-            <td className="py-3 pl-4 align-middle text-left">
-                <div className="font-medium text-[#2d2926] text-sm leading-snug">{q.text}</div>
+        <tr className={`border-b border-[#f4f2ee] last:border-0 print:border-[#d6d0c8] ${q.required ? 'bg-[#fef9f5] print:bg-transparent' : ''}`}>
+            <td className="py-3 pl-4 align-middle text-left print:py-1">
+                <div className="font-medium text-[#2d2926] text-sm leading-snug print:text-[11px] print:leading-tight">{q.text}</div>
                 <div className="flex gap-2 mt-1">
-                    {q.auto && <span className="text-[9px] font-semibold text-[#1a6b62] bg-[#e6f4f1] border border-[#b2ddd7] px-1.5 py-0.5 rounded uppercase tracking-wide">Auto</span>}
-                    {q.required && <span className="text-[9px] font-semibold text-[#c4620a] bg-[#fff0e4] border border-[#f5cfa8] px-1.5 py-0.5 rounded uppercase tracking-wide">Required</span>}
+                    {q.auto && <span className="text-[9px] font-semibold text-[#1a6b62] bg-[#e6f4f1] border border-[#b2ddd7] px-1.5 py-0.5 rounded uppercase tracking-wide print:hidden">Auto</span>}
+                    {q.required && <span className="text-[9px] font-semibold text-[#c4620a] bg-[#fff0e4] border border-[#f5cfa8] px-1.5 py-0.5 rounded uppercase tracking-wide print:hidden">Required</span>}
                 </div>
             </td>
             <td className="py-3 px-3 align-middle w-[38%] print:hidden">
@@ -121,7 +121,7 @@ const NaranjoRow = ({ q, value, onChange }) => {
                     {n > 0 ? `+${n}` : n}
                 </span>
             </td>
-            <td className="hidden print:table-cell py-2 pr-4 text-right text-xs text-[#2d2926]">
+            <td className="hidden print:table-cell py-1 pr-4 text-right text-[10px] text-[#2d2926]">
                 {n > 0 ? `+${n}` : n}
             </td>
         </tr>
@@ -129,7 +129,7 @@ const NaranjoRow = ({ q, value, onChange }) => {
 };
 
 const NaranjoCard = ({ group, scoreMap, total, onScoreChange }) => {
-    let interp = 'Doubtful'; let color = 'bg-[#faf9f7]0'; let border = 'border-slate-500';
+    let interp = 'Doubtful'; let color = 'bg-[#6b6360]'; let border = 'border-[#6b6360]';
     const isExcluded = scoreMap && scoreMap[4] === -1;
 
     if (isExcluded) {
@@ -141,12 +141,12 @@ const NaranjoCard = ({ group, scoreMap, total, onScoreChange }) => {
     }
 
     return (
-        <div className={`print-section border-2 ${border} rounded-[10px] overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.05)] bg-white mb-6 break-inside-avoid page-break-inside-avoid print:break-before-page`}>
-            <div className={`${color} text-white px-5 py-3 flex justify-between items-center print:text-black print:border-b-2 print:border-black print:py-2`} style={{WebkitPrintColorAdjust: 'exact'}}>
-                <div><h3 className="text-xl font-bold print:text-lg">{group.name}</h3><div className="text-xs opacity-90 mt-1"><span className="bg-white/20 px-2 py-0.5 rounded border border-white/20 print:border-black print:text-black">Start: {group.periods[0]?.startDate || '-'}</span></div></div>
-                <div className="text-right"><div className="text-3xl font-bold print:text-2xl">{total}</div><div className="text-sm font-bold uppercase bg-black/20 px-2 py-1 rounded inline-block mt-1 print:bg-transparent print:border print:border-black">{interp}</div></div>
+        <div className={`print-section border-2 ${border} rounded-[10px] overflow-hidden bg-white mb-4 break-inside-avoid print:mb-3`}>
+            <div className={`${color} text-white px-4 py-2 flex justify-between items-center print:text-black print:border-b-2 print:border-black print:py-1`} style={{WebkitPrintColorAdjust: 'exact'}}>
+                <div><h3 className="text-base font-bold print:text-sm">{group.name}</h3><div className="text-xs opacity-90 mt-1"><span className="bg-white/20 px-2 py-0.5 rounded border border-white/20 print:border-black print:text-black">Start: {group.periods[0]?.startDate || '-'}</span></div></div>
+                <div className="text-right"><div className="text-2xl font-bold print:text-xl">{total}</div><div className="text-sm font-bold uppercase bg-black/20 px-2 py-1 rounded inline-block mt-1 print:bg-transparent print:border print:border-black">{interp}</div></div>
             </div>
-            <div className="bg-white p-2 print:p-1">
+            <div className="bg-white p-1 print:p-0">
                 <table className="w-full table-fixed border-collapse"><tbody>{QUESTIONS.map(q => (<NaranjoRow key={q.id} q={q} value={(scoreMap || {})[q.id] || 0} onChange={(e) => onScoreChange(group.key, q.id, e.target.value)}/>))}</tbody></table>
             </div>
         </div>
@@ -385,8 +385,8 @@ const RashAssessment = (props) => {
                         <div className="bg-[#faf9f7] p-3 rounded-[8px] border border-[#ebe8e2] print:bg-transparent print:border-black">
                             <div className="flex flex-wrap gap-2 mb-2 print:hidden">
                                 <input className="flex-1 min-w-[140px] border rounded px-2 py-1 text-sm" placeholder="Drug Name" value={currentDrug.name} onChange={e=>setCurrentDrug({...currentDrug,name:e.target.value})}/>
-                                <div className="min-w-[130px] flex-1"><label className="text-[10px] font-bold text-[#a8a099] block mb-1">วันที่เริ่มยา</label><input type="date" className="border rounded w-full px-1 py-1 text-sm" value={currentDrug.startDate} onChange={e=>setCurrentDrug({...currentDrug,startDate:e.target.value})}/></div>
-                                <div className="min-w-[130px] flex-1"><label className="text-[10px] font-bold text-[#a8a099] block mb-1">วันสุดท้ายที่ได้รับยา</label><input type="date" className="border rounded w-full px-1 py-1 text-sm" value={currentDrug.stopDate} onChange={e=>setCurrentDrug({...currentDrug,stopDate:e.target.value})}/></div>
+                                <div className="min-w-[130px] flex-1"><label className="text-[10px] font-bold text-[#a8a099] block mb-1">Start date</label><input type="date" className="border rounded w-full px-1 py-1 text-sm" value={currentDrug.startDate} onChange={e=>setCurrentDrug({...currentDrug,startDate:e.target.value})}/></div>
+                                <div className="min-w-[130px] flex-1"><label className="text-[10px] font-bold text-[#a8a099] block mb-1">Stop date</label><input type="date" className="border rounded w-full px-1 py-1 text-sm" value={currentDrug.stopDate} onChange={e=>setCurrentDrug({...currentDrug,stopDate:e.target.value})}/></div>
                                 <button onClick={addDrug} className="col-span-1 bg-[#fff] text-[#2a9d8f] border border-[#b2ddd7] rounded-[6px] font-[500] h-8 flex items-center justify-center px-3">+</button>
                             </div>
                             <div className="space-y-1">{drugs.map(d=><div key={d.id} className="flex justify-between items-center bg-white border px-2 py-1 rounded text-xs print:border-black print:bg-transparent"><span className="font-bold w-1/3 truncate">{d.name}</span><span className="text-[#a8a099] print:text-black">{formatDate(d.startDate)} - {d.stopDate?formatDate(d.stopDate):'Ongoing'}</span><button onClick={()=>removeDrug(d.id)} className="text-[#e07060] font-bold px-2 print:hidden">×</button></div>)}</div>
@@ -418,8 +418,8 @@ const RashAssessment = (props) => {
             {/* RESULTS */}
             {isAnalyzed && timelineData && (
                 <div className="animate-fade-in space-y-8">
-                    <div className="bg-white rounded-[10px] border border-[#ebe8e2] shadow-[0_1px_4px_rgba(0,0,0,0.05)] p-6 overflow-hidden break-inside-avoid page-break-inside-avoid print:break-before-page print:border-black print:shadow-none relative flex flex-col">
-                        <div className="text-xs font-bold text-[#a8a099] uppercase mb-4 tracking-wider flex items-center gap-2 print:text-black"><span className="w-2 h-4 bg-[#fbeaf0]0 rounded-sm print:bg-black"></span> Timeline Visualization (Focus View)</div>
+                    <div className="bg-white rounded-[10px] border border-[#ebe8e2] shadow-[0_1px_4px_rgba(0,0,0,0.05)] p-6 overflow-hidden break-inside-avoid page-break-inside-avoid print:border-black print:shadow-none relative flex flex-col">
+                        <div className="text-xs font-bold text-[#a8a099] uppercase mb-4 tracking-wider flex items-center gap-2 print:text-black"><span className="w-2 h-4 bg-[#fbeaf0] rounded-sm print:bg-black"></span> Timeline Visualization (Focus View)</div>
                         <div className="relative w-full pb-8 mt-8">
                             <div className="absolute inset-0 pl-[150px] pointer-events-none">
                                 <div className="relative w-full h-full border-l border-[#f4f2ee] print:border-black">
@@ -461,10 +461,10 @@ const RashAssessment = (props) => {
                                                     const e = p.stopDate ? timelineData.getPos(p.stopDate) : 100; 
                                                     const width = Math.max(0.5, e - s); 
                                                     return (
-                                                        <div key={i} className="absolute h-1 top-2.5 bg-[#faf9f7]0 print:bg-black opacity-80" style={{left:`${s}%`, width:`${width}%`, WebkitPrintColorAdjust:'exact'}}>
+                                                        <div key={i} className="absolute h-1.5 top-2.5 bg-[#2a9d8f] rounded-full opacity-80 print:bg-black" style={{left:`${s}%`, width:`${width}%`, WebkitPrintColorAdjust:'exact'}}>
                                                             {/* ✅ (3) CENTERED DOTS */}
-                                                            <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-[#faf9f7]0 print:bg-black" style={{left: '0%'}}></div>
-                                                            {p.stopDate && <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-[#faf9f7]0 print:bg-black" style={{left: '100%'}}></div>}
+                                                            <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-[#1a6b62] border-2 border-white shadow-sm print:bg-black" style={{left: '0%'}}></div>
+                                                            {p.stopDate && <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-[#e07060] border-2 border-white shadow-sm print:bg-black" style={{left: '100%'}}></div>}
                                                         </div>
                                                     )
                                                 })}

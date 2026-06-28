@@ -209,12 +209,12 @@ const NaranjoRow = ({ q, value, onChange }) => {
         : { text: '#a8a099', bg: '#f4f2ee', border: '#ebe8e2' };
 
     return (
-        <tr className={`border-b border-[#f4f2ee] last:border-0 ${q.required ? 'bg-[#fef9f5]' : ''}`}>
-            <td className="py-3 pl-4 align-middle text-left">
-                <div className="font-medium text-[#2d2926] text-sm leading-snug">{q.text}</div>
+        <tr className={`border-b border-[#f4f2ee] last:border-0 print:border-[#d6d0c8] ${q.required ? 'bg-[#fef9f5] print:bg-transparent' : ''}`}>
+            <td className="py-3 pl-4 align-middle text-left print:py-1">
+                <div className="font-medium text-[#2d2926] text-sm leading-snug print:text-[11px] print:leading-tight">{q.text}</div>
                 <div className="flex gap-2 mt-1">
-                    {q.auto && <span className="text-[9px] font-semibold text-[#1a6b62] bg-[#e6f4f1] border border-[#b2ddd7] px-1.5 py-0.5 rounded uppercase tracking-wide">Auto</span>}
-                    {q.required && <span className="text-[9px] font-semibold text-[#c4620a] bg-[#fff0e4] border border-[#f5cfa8] px-1.5 py-0.5 rounded uppercase tracking-wide">Required</span>}
+                    {q.auto && <span className="text-[9px] font-semibold text-[#1a6b62] bg-[#e6f4f1] border border-[#b2ddd7] px-1.5 py-0.5 rounded uppercase tracking-wide print:hidden">Auto</span>}
+                    {q.required && <span className="text-[9px] font-semibold text-[#c4620a] bg-[#fff0e4] border border-[#f5cfa8] px-1.5 py-0.5 rounded uppercase tracking-wide print:hidden">Required</span>}
                 </div>
             </td>
             <td className="py-3 px-3 align-middle w-[38%] print:hidden">
@@ -233,7 +233,7 @@ const NaranjoRow = ({ q, value, onChange }) => {
                     {n > 0 ? `+${n}` : n}
                 </span>
             </td>
-            <td className="hidden print:table-cell py-2 pr-4 text-right text-xs text-[#2d2926]">
+            <td className="hidden print:table-cell py-1 pr-4 text-right text-[10px] text-[#2d2926]">
                 {n > 0 ? `+${n}` : n}
             </td>
         </tr>
@@ -241,7 +241,7 @@ const NaranjoRow = ({ q, value, onChange }) => {
 };
 
 const NaranjoCard = ({ group, scoreMap, total, onScoreChange }) => {
-    let interp = 'Doubtful'; let color = 'bg-[#faf9f7]0'; let border = 'border-slate-500';
+    let interp = 'Doubtful'; let color = 'bg-[#6b6360]'; let border = 'border-[#6b6360]';
     const isExcluded = scoreMap && scoreMap[4] === -1;
 
     if (isExcluded) {
@@ -253,12 +253,12 @@ const NaranjoCard = ({ group, scoreMap, total, onScoreChange }) => {
     }
 
     return (
-        <div className={`print-section border-2 ${border} rounded-[10px] overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.05)] bg-white mb-6 break-inside-avoid page-break-inside-avoid print:break-before-page`}>
-            <div className={`${color} text-white px-5 py-3 flex justify-between items-center print:text-black print:border-b-2 print:border-black print:py-2`} style={{WebkitPrintColorAdjust: 'exact'}}>
-                <div><h3 className="text-xl font-bold print:text-lg">{group.name}</h3><div className="text-xs opacity-90 mt-1"><span className="bg-white/20 px-2 py-0.5 rounded border border-white/20 print:border-black print:text-black">Start: {group.periods[0]?.startDate || '-'}</span></div></div>
-                <div className="text-right"><div className="text-3xl font-bold print:text-2xl">{total}</div><div className="text-sm font-bold uppercase bg-black/20 px-2 py-1 rounded inline-block mt-1 print:bg-transparent print:border print:border-black">{interp}</div></div>
+        <div className={`print-section border-2 ${border} rounded-[10px] overflow-hidden bg-white mb-4 break-inside-avoid print:mb-3`}>
+            <div className={`${color} text-white px-4 py-2 flex justify-between items-center print:text-black print:border-b-2 print:border-black print:py-1`} style={{WebkitPrintColorAdjust: 'exact'}}>
+                <div><h3 className="text-base font-bold print:text-sm">{group.name}</h3><div className="text-xs opacity-90 mt-1"><span className="bg-white/20 px-2 py-0.5 rounded border border-white/20 print:border-black print:text-black">Start: {group.periods[0]?.startDate || '-'}</span></div></div>
+                <div className="text-right"><div className="text-2xl font-bold print:text-xl">{total}</div><div className="text-sm font-bold uppercase bg-black/20 px-2 py-1 rounded inline-block mt-1 print:bg-transparent print:border print:border-black">{interp}</div></div>
             </div>
-            <div className="bg-white p-2 print:p-1">
+            <div className="bg-white p-1 print:p-0">
                 <table className="w-full table-fixed border-collapse"><tbody>{QUESTIONS.map(q => (<NaranjoRow key={q.id} q={q} value={(scoreMap || {})[q.id] || 0} onChange={(e) => onScoreChange(group.key, q.id, e.target.value)}/>))}</tbody></table>
             </div>
         </div>
@@ -434,7 +434,7 @@ const HemeAssessment = (props) => {
                     <div className="space-y-4">
                         
                         {/* ✅ Disorder Type Selector */}
-                        <div className="flex flex-col gap-1 mb-4 bg-[#fbeaf0]/50 p-3 rounded-[8px] border border-[#f4c0d1] print:border-black print:bg-transparent">
+                        <div className="flex flex-col gap-1 mb-4 bg-[#fbeaf0] 50 p-3 rounded-[8px] border border-[#f4c0d1] print:border-black print:bg-transparent">
                             <label className="text-xs font-bold text-[#9b3060] uppercase print:text-black">Disorder Type:</label>
                             <select 
                                 className="border border-rose-200 rounded px-2 py-1.5 text-sm font-bold text-[#2d2926] focus:outline-rose-500"
@@ -472,7 +472,7 @@ const HemeAssessment = (props) => {
                     </div>
 
                     {/* Practical Lab Input Panel */}
-                    <div className="bg-[#fbeaf0]/30 p-4 rounded border border-[#f4c0d1] print:bg-transparent print:border-black">
+                    <div className="bg-[#fbeaf0] 30 p-4 rounded border border-[#f4c0d1] print:bg-transparent print:border-black">
                         <div className="text-xs font-bold text-[#9b3060] mb-2 print:text-black uppercase flex justify-between items-center">
                             <span>Hematologic Panel Entry</span>
                         </div>
@@ -568,8 +568,8 @@ const HemeAssessment = (props) => {
             {/* RESULTS & TIMELINE */}
             {isAnalyzed && timelineData && (
                 <div className="animate-fade-in space-y-8">
-                    <div className="bg-white rounded-[10px] border border-[#ebe8e2] shadow-[0_1px_4px_rgba(0,0,0,0.05)] p-6 overflow-hidden break-inside-avoid page-break-inside-avoid print:break-before-page print:border-black print:shadow-none relative flex flex-col">
-                        <div className="text-xs font-bold text-[#a8a099] uppercase mb-4 tracking-wider flex items-center gap-2 print:text-black"><span className="w-2 h-4 bg-[#fbeaf0]0 rounded-sm print:bg-black"></span> Timeline Visualization</div>
+                    <div className="bg-white rounded-[10px] border border-[#ebe8e2] shadow-[0_1px_4px_rgba(0,0,0,0.05)] p-6 overflow-hidden break-inside-avoid page-break-inside-avoid print:border-black print:shadow-none relative flex flex-col">
+                        <div className="text-xs font-bold text-[#a8a099] uppercase mb-4 tracking-wider flex items-center gap-2 print:text-black"><span className="w-2 h-4 bg-[#fbeaf0] rounded-sm print:bg-black"></span> Timeline Visualization</div>
                         <div className="relative w-full pb-8 mt-8">
                             {/* Grid Lines */}
                             <div className="absolute inset-0 pl-[150px] pointer-events-none">
@@ -595,7 +595,7 @@ const HemeAssessment = (props) => {
                                 {/* Onset Line */}
                                 {onset && (
                                     <div className="absolute top-0 bottom-0 left-[150px] right-0 pointer-events-none z-0">
-                                        <div className="absolute top-[-30px] bottom-0 w-0.5 bg-[#fbeaf0]0 border-l border-dashed border-rose-500 print:border-black -translate-x-1/2" style={{left:`${timelineData.getPos(onset)}%`}}>
+                                        <div className="absolute top-[-30px] bottom-0 w-0.5 bg-[#fbeaf0] border-l border-dashed border-rose-500 print:border-black -translate-x-1/2" style={{left:`${timelineData.getPos(onset)}%`}}>
                                             <div className="absolute -top-6 -left-0 -translate-x-1/2 bg-[#2a9d8f] text-white text-[9px] px-2 py-0.5 rounded shadow-[0_1px_4px_rgba(0,0,0,0.05)] font-bold whitespace-nowrap print:bg-transparent print:text-black print:border print:border-black" style={{WebkitPrintColorAdjust:'exact'}}>Onset {formatDate(onset)}</div>
                                         </div>
                                     </div>
@@ -612,9 +612,9 @@ const HemeAssessment = (props) => {
                                                     const e = p.stopDate ? timelineData.getPos(p.stopDate) : 100; 
                                                     const width = Math.max(0.5, e - s); 
                                                     return (
-                                                        <div key={i} className="absolute h-1 top-2.5 bg-[#faf9f7]0 print:bg-black opacity-80" style={{left:`${s}%`, width:`${width}%`, WebkitPrintColorAdjust:'exact'}}>
-                                                            <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-[#faf9f7]0 print:bg-black" style={{left: '0%'}}></div>
-                                                            {p.stopDate && <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-[#faf9f7]0 print:bg-black" style={{left: '100%'}}></div>}
+                                                        <div key={i} className="absolute h-1.5 top-2.5 bg-[#2a9d8f] rounded-full opacity-80 print:bg-black" style={{left:`${s}%`, width:`${width}%`, WebkitPrintColorAdjust:'exact'}}>
+                                                            <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-[#1a6b62] border-2 border-white shadow-sm print:bg-black" style={{left: '0%'}}></div>
+                                                            {p.stopDate && <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-[#e07060] border-2 border-white shadow-sm print:bg-black" style={{left: '100%'}}></div>}
                                                         </div>
                                                     )
                                                 })}

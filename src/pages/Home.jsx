@@ -34,7 +34,7 @@ const T = {
     backdropFilter: 'blur(20px)',
     WebkitBackdropFilter: 'blur(20px)',
     borderBottom: '1px solid rgba(0,0,0,0.08)',
-    padding: '0 24px',
+    padding: '0 clamp(16px, 4vw, 48px)',
     height: 52,
     display: 'flex',
     alignItems: 'center',
@@ -114,20 +114,16 @@ export default function Home() {
             Yommarat ADR tools
           </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: '#2d2926' }}>งานพัฒนาระบบยา</div>
-            <div style={{ fontSize: 11, color: '#a8a099' }}>Man Ung</div>
-          </div>
-          <div style={{ width: 30, height: 30, borderRadius: '50%', background: '#e6f4f1', border: '1px solid #b2ddd7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 600, color: '#1a6b62' }}>U</div>
+        <div style={{ fontSize: 12, color: '#a8a099', letterSpacing: '-0.01em' }}>
+          งานพัฒนาระบบยา โรงพยาบาลเจ้าพระยายมราช
         </div>
       </nav>
 
-      <div style={{ maxWidth: 960, margin: '0 auto', padding: '32px 24px 64px' }}>
+      <div style={{ maxWidth: 1400, margin: '0 auto', padding: 'clamp(16px, 4vw, 48px)', paddingTop: 32, paddingBottom: 64 }}>
 
         {/* ── TOOLS GRID ── */}
         <div style={T.sectionLabel}>Assessment tools</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(172px, 1fr))', gap: 8, marginBottom: 28 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 195px), 1fr))', gap: 10, marginBottom: 28 }}>
           {TOOLS.map(tool => (
             <div
               key={tool.id}
@@ -219,6 +215,19 @@ export default function Home() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Easter egg — subtle credit */}
+      <div style={{
+        position: 'fixed', bottom: 14, right: 18,
+        fontSize: 10, color: '#d6d0c8',
+        fontFamily: "'Inter', system-ui, sans-serif",
+        letterSpacing: '0.02em',
+        userSelect: 'none',
+        pointerEvents: 'none',
+        zIndex: 1,
+      }}>
+        Man Ung
       </div>
     </div>
   );

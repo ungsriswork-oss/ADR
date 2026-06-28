@@ -243,6 +243,18 @@ export default function AssessmentForm() {
           >⎙ Print</button>
         </div>
       </div>
+      {/* Easter egg */}
+      <div style={{
+        position: 'fixed', bottom: 14, right: 18,
+        fontSize: 10, color: '#d6d0c8',
+        fontFamily: "'Inter', system-ui, sans-serif",
+        letterSpacing: '0.02em',
+        userSelect: 'none',
+        pointerEvents: 'none',
+        zIndex: 1,
+      }}>
+        Man Ung
+      </div>
     </div>
   );
 }

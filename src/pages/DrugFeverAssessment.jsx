@@ -712,7 +712,7 @@ const DrugFeverAssessment = ({ onAnalysisComplete, initialData }) => {
             <PharmacistNoteSection note={pharmacistNote} setNote={setPharmacistNote} />
 
             {/* 3. TIMELINE */}
-            <div className="print:break-before-page print:break-after-page print:landscape">
+            <div className="print:break-after-page print:landscape">
                 <div className="flex justify-center print:hidden">
                      {!showAnalysis && <button onClick={() => setShowAnalysis(true)} className="text-[#4a3ab8] text-xs font-bold hover:underline mb-2">Show Visual Timeline ▼</button>}
                 </div>

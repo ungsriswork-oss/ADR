@@ -132,17 +132,17 @@ const AgepTimeline = ({ drugs, labs, onsetDate }) => {
                                 return (
                                     <React.Fragment key={idx}>
                                         {/* ✅ ปรับสีแท่งยาตอนพิมพ์ (print:bg-slate-600) */}
-                                        <div className={`absolute h-1.5 top-[13px] bg-slate-400 opacity-70 group-hover:bg-[#e6f4f1]0 transition-colors
+                                        <div className={`absolute h-1.5 top-[13px] bg-slate-400 opacity-70 group-hover:bg-[#e6f4f1] transition-colors
                                             ${isLongTerm ? 'rounded-r-full' : 'rounded-full'} print:bg-slate-600 print:opacity-100
                                         `} style={{ left: `${displayStart}%`, width: `${width}%` }}></div>
 
                                         {!isLongTerm && (
-                                            <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-[#faf9f7]0 border-2 border-white shadow-[0_1px_4px_rgba(0,0,0,0.05)] group-hover:bg-[#2a9d8f] z-10 print:bg-black print:border-black" 
+                                            <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-[#faf9f7] border-2 border-white shadow-[0_1px_4px_rgba(0,0,0,0.05)] group-hover:bg-[#2a9d8f] z-10 print:bg-black print:border-black" 
                                                  style={{ left: `${displayStart}%`, transform: 'translate(-50%, -50%)' }}></div>
                                         )}
 
                                         {s.endDate && (
-                                            <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-[#faf9f7]0 border-2 border-white shadow-[0_1px_4px_rgba(0,0,0,0.05)] group-hover:bg-[#2a9d8f] z-10 print:bg-black print:border-black" 
+                                            <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-[#faf9f7] border-2 border-white shadow-[0_1px_4px_rgba(0,0,0,0.05)] group-hover:bg-[#2a9d8f] z-10 print:bg-black print:border-black" 
                                                  style={{ left: `${displayEnd}%`, transform: 'translate(-50%, -50%)' }}></div>
                                         )}
                                     </React.Fragment>
@@ -388,7 +388,7 @@ const AgepAssessment = (props) => {
             <h3 className="font-bold text-[#1a6b62] mb-6 border-b border-[#b2ddd7] pb-3 text-xl print:text-black print:border-slate-400">Optimized AGEP Criteria (2025)</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 print:gap-4">
                 <div className="space-y-4">
-                    <label className="flex items-center gap-4 p-4 border border-[#ebe8e2] rounded-[10px] hover:bg-[#e6f4f1] cursor-pointer transition-colors bg-[#faf9f7]/50 print:bg-white print:border-slate-400 print:p-2">
+                    <label className="flex items-center gap-4 p-4 border border-[#ebe8e2] rounded-[10px] hover:bg-[#e6f4f1] cursor-pointer transition-colors bg-[#faf9f7] 50 print:bg-white print:border-slate-400 print:p-2">
                         <input type="checkbox" className="accent-[#2a9d8f] w-6 h-6 print:w-4 print:h-4" checked={clinical.typicalPustules} onChange={e => setClinical({...clinical, typicalPustules: e.target.checked})} />
                         <div><div className="font-bold text-lg text-[#2d2926] print:text-black print:text-sm">Typical Pustules (+1)</div><div className="text-sm text-[#a8a099] print:text-[#2d2926] print:text-xs">Non-follicular, &lt;5mm, numerous</div></div>
                     </label>
@@ -398,11 +398,11 @@ const AgepAssessment = (props) => {
                     </div>
                 </div>
                 <div className="space-y-4">
-                    <label className="flex items-center gap-4 p-4 border border-[#ebe8e2] rounded-[10px] hover:bg-[#e6f4f1] cursor-pointer transition-colors bg-[#faf9f7]/50 print:bg-white print:border-slate-400 print:p-2">
+                    <label className="flex items-center gap-4 p-4 border border-[#ebe8e2] rounded-[10px] hover:bg-[#e6f4f1] cursor-pointer transition-colors bg-[#faf9f7] 50 print:bg-white print:border-slate-400 print:p-2">
                         <input type="checkbox" className="accent-[#2a9d8f] w-6 h-6 print:w-4 print:h-4" checked={clinical.acuteOnset} onChange={e => setClinical({...clinical, acuteOnset: e.target.checked})} />
                         <div><div className="font-bold text-lg text-[#2d2926] print:text-black print:text-sm">Acute Onset (+1)</div><div className="text-sm text-[#a8a099] print:text-[#2d2926] print:text-xs">≤ 10 days latency from drug start</div></div>
                     </label>
-                    <label className="flex items-center gap-4 p-4 border border-[#ebe8e2] rounded-[10px] hover:bg-[#e6f4f1] cursor-pointer transition-colors bg-[#faf9f7]/50 print:bg-white print:border-slate-400 print:p-2">
+                    <label className="flex items-center gap-4 p-4 border border-[#ebe8e2] rounded-[10px] hover:bg-[#e6f4f1] cursor-pointer transition-colors bg-[#faf9f7] 50 print:bg-white print:border-slate-400 print:p-2">
                         <input type="checkbox" className="accent-[#2a9d8f] w-6 h-6 print:w-4 print:h-4" checked={clinical.noMucosalInvolvement} onChange={e => setClinical({...clinical, noMucosalInvolvement: e.target.checked})} />
                         <div><div className="font-bold text-lg text-[#2d2926] print:text-black print:text-sm">No Mucosal Involvement (+1)</div><div className="text-sm text-[#2a9d8f] font-bold print:text-[#1a6b62] print:text-xs">Check if mucosa is SPARED (Not affected)</div></div>
                     </label>
@@ -455,12 +455,12 @@ const AgepAssessment = (props) => {
                 </div>
 
                 {/* Timeline - Force Page Break */}
-                <div className="print:break-before-page">
+                <div className="">
                     <AgepTimeline drugs={drugs} labs={labs} onsetDate={onsetDate} />
                 </div>
                 
                 {/* Drug Analysis - Force Page Break */}
-                <div className="print:break-before-page">
+                <div className="">
                     <AgepDrugAnalysis drugs={drugs} onsetDate={onsetDate} onMoreInfo={() => setShowInfo(true)} />
                 </div>
             </div>

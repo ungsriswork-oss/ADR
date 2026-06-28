@@ -186,7 +186,7 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
         const total = Object.values(breakdown).reduce((a, b) => a + b, 0);
 
         let text = "Unlikely (< 7)";
-        let colorClass = "bg-[#faf9f7]0";
+        let colorClass = "bg-[#faf9f7]";
         if (total >= 9) {
             text = "Probable (9-11)";
             colorClass = "bg-teal-600";
@@ -576,7 +576,7 @@ const SamsAssessment = ({ onAnalysisComplete, initialData }) => {
                                         <p className="text-sm text-white/90 print:text-black/60 mt-1">Likelihood of Statin-Associated Muscle Symptoms</p>
                                     </div>
                                     <div className="text-right">
-                                        <div className="text-5xl font-bold">{result.total}</div>
+                                        <div className="text-3xl font-bold print:text-xl">{result.total}</div>
                                         <div className="text-sm font-bold uppercase tracking-wide bg-black/20 px-3 py-1 rounded inline-block mt-2 print:bg-[#f4f2ee] print:text-black">
                                             {result.text}
                                         </div>

@@ -58,7 +58,7 @@ const RucamRow = ({ label, subLabel, value, onChange, optionsArr, isRequired }) 
 
   return (
     <tr className={`border-b border-[#f4f2ee] last:border-0 break-inside-avoid ${isRequired ? 'bg-[#fef9f5]' : ''}`}>
-      <td className="py-3 pl-4 w-[36%] align-middle text-[#2d2926] text-sm">
+      <td className="py-3 pl-4 w-[36%] align-middle text-[#2d2926] text-sm print:py-1">
         <span className="font-semibold">{label}</span>
         {isRequired && (
           <span className="ml-1.5 text-[9px] font-bold text-[#c4620a] bg-[#fff0e4] border border-[#f5cfa8] px-1.5 py-0.5 rounded uppercase tracking-wide">required</span>
@@ -82,7 +82,7 @@ const RucamRow = ({ label, subLabel, value, onChange, optionsArr, isRequired }) 
           {parseInt(safeValue) > 0 ? `+${safeValue}` : safeValue}
         </span>
       </td>
-      <td className="hidden print:table-cell py-2 pr-4 text-right text-xs">
+      <td className="hidden print:table-cell py-1 pr-3 text-right text-[10px]">
         {displayValue} ({parseInt(safeValue) > 0 ? `+${safeValue}` : safeValue})
       </td>
     </tr>
@@ -131,7 +131,7 @@ const RucamCard = ({
         </div>
         <div className="text-right">
           {!result.isExcluded && (
-            <div className="text-4xl font-bold leading-none">{total > 0 ? `+${total}` : total}</div>
+            <div className="text-4xl font-bold leading-none print:text-xl">{total > 0 ? `+${total}` : total}</div>
           )}
           <div className="text-xs font-semibold uppercase tracking-widest opacity-90 bg-black/20 px-3 py-1 rounded-full inline-block mt-2">
             {result.text}
@@ -716,7 +716,7 @@ const DiliAssessment = ({
     if (score >= 3)
       return {
         text: 'Possible',
-        color: 'bg-[#fef6e4]0',
+        color: 'bg-[#fef6e4]',
         textCol: 'text-yellow-600',
         border: 'border-yellow-500',
         light: 'bg-[#fef6e4]',
@@ -1013,7 +1013,7 @@ const DiliAssessment = ({
 
                 <div className="relative">
                   <div className="absolute inset-0 flex pointer-events-none z-0">
-                    <div className="w-[15%] border-r border-[#f4f2ee] h-full bg-[#faf9f7]/30"></div>
+                    <div className="w-[15%] border-r border-[#f4f2ee] h-full bg-[#faf9f7] 30"></div>
                     <div className="w-[85%] relative h-full">
                       <div className="absolute inset-0 flex justify-between opacity-20">
                         <div className="w-px bg-slate-400 h-full border-l border-dashed"></div>
@@ -1104,7 +1104,7 @@ const DiliAssessment = ({
                                 return (
                                   <div
                                     key={i}
-                                    className="absolute h-1 top-1/2 -translate-y-1/2 bg-slate-400 rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.06)] group-hover/row:bg-[#faf9f7]0 transition-colors"
+                                    className="absolute h-1 top-1/2 -translate-y-1/2 bg-slate-400 rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.06)] group-hover/row:bg-[#faf9f7] transition-colors"
                                     style={{
                                       left: `${Math.max(0, leftPct)}%`,
                                       width: `${Math.max(1, widthPct)}%`,

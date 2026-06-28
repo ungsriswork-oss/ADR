@@ -148,7 +148,7 @@ const RevisedTimeline = ({ drugs, labs, onsetDate }) => {
                                 const width = Math.max(end - start, 0.5);
                                 return (
                                     // *** FIXED HERE: Added print classes to force visibility ***
-                                    <div key={idx} className="absolute h-2.5 bg-[#faf9f7]0 rounded-full opacity-80 top-[11px] print:bg-slate-600 print:opacity-100 print:border print:border-slate-800" style={{ left: `${start}%`, width: `${width}%` }}>
+                                    <div key={idx} className="absolute h-2.5 bg-[#faf9f7] rounded-full opacity-80 top-[11px] print:bg-slate-600 print:opacity-100 print:border print:border-slate-800" style={{ left: `${start}%`, width: `${width}%` }}>
                                         {/* ✅ Dots Larger & Styled */}
                                         <div className="absolute left-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-slate-700 rounded-full border-2 border-white shadow-[0_1px_4px_rgba(0,0,0,0.05)] -ml-1.5 print:bg-black print:border-black"></div>
                                         {seg.endDate && <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-slate-700 rounded-full border-2 border-white shadow-[0_1px_4px_rgba(0,0,0,0.05)] -mr-1.5 print:bg-black print:border-black"></div>}
@@ -544,7 +544,7 @@ const DressAssessment = (props) => {
               <button onClick={addDrug} className="w-full md:w-auto bg-[#534ab7] text-white text-sm font-bold py-2 px-6 rounded hover:bg-[#3d3499] shadow-[0_1px_4px_rgba(0,0,0,0.05)] h-[38px]">+ Add</button>
             </div>
           </div>
-          <div className="h-[200px] overflow-y-auto border border-dashed border-[#ebe8e2] rounded-[8px] p-1 bg-[#faf9f7]/50 custom-scrollbar">
+          <div className="h-[200px] overflow-y-auto border border-dashed border-[#ebe8e2] rounded-[8px] p-1 bg-[#faf9f7] 50 custom-scrollbar">
             {drugs.length === 0 ? <div className="h-full flex items-center justify-center text-[#a8a099] text-sm">No drugs added</div> : 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-1">
                 {drugs.map((drug) => (
@@ -570,7 +570,7 @@ const DressAssessment = (props) => {
             </div>
             <button onClick={addLab} className="w-full md:w-auto bg-[#534ab7] text-white text-sm font-bold py-2 px-6 rounded hover:bg-[#3d3499] shadow-[0_1px_4px_rgba(0,0,0,0.05)] h-[36px]">+ Add / Update</button>
           </div>
-          <div className="h-[200px] overflow-y-auto border border-dashed border-[#ebe8e2] rounded-[8px] p-1 bg-[#faf9f7]/50 custom-scrollbar">
+          <div className="h-[200px] overflow-y-auto border border-dashed border-[#ebe8e2] rounded-[8px] p-1 bg-[#faf9f7] 50 custom-scrollbar">
             {labs.length === 0 ? <div className="h-full flex items-center justify-center text-[#a8a099] text-sm">No labs added</div> : 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-1">
                 {labs.map((lab) => (
@@ -704,14 +704,14 @@ const DressAssessment = (props) => {
               <div className="flex flex-col gap-5">
                 <div className={`p-6 text-center rounded-[10px] ${calculateScore.bg} border ${calculateScore.border} min-w-[250px] print:bg-white print:border-[#d6d0c8]`}>
                   <h3 className="text-xs font-bold uppercase tracking-wider text-[#a8a099] mb-2">RegiSCAR Final Score</h3>
-                  <div className="flex items-baseline justify-center gap-2"><span className={`text-6xl font-black ${calculateScore.color} leading-none print:text-black`}>{calculateScore.total}</span></div>
+                  <div className="flex items-baseline justify-center gap-2"><span className={`text-6xl font-black print:text-2xl ${calculateScore.color} leading-none print:text-black`}>{calculateScore.total}</span></div>
                   <span className={`inline-block px-4 py-1 mt-2 rounded-full text-sm font-bold bg-white border shadow-[0_1px_4px_rgba(0,0,0,0.05)] ${calculateScore.color} border-${calculateScore.color.split('-')[1]}-200 print:text-black print:border-black`}>{calculateScore.interpretation}</span>
                 </div>
                 <div className="flex-1 w-full">
                   <h4 className="text-sm font-bold text-[#a8a099] uppercase tracking-wider mb-3 print:text-black">Score Breakdown</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {calculateScore.breakdown.map((item, i) => (
-                      <div key={i} className="flex justify-between items-center p-2 border border-[#f4f2ee] rounded bg-[#faf9f7]/50 print:bg-white print:border-[#ebe8e2]">
+                      <div key={i} className="flex justify-between items-center p-2 border border-[#f4f2ee] rounded bg-[#faf9f7] 50 print:bg-white print:border-[#ebe8e2]">
                         <div><span className="font-bold text-xs text-[#2d2926] block">{item.label}</span>{item.detail && (<span className="text-[10px] text-[#a8a099]">{item.detail}</span>)}</div>
                         <ScoreBadge score={item.score} />
                       </div>
@@ -722,12 +722,12 @@ const DressAssessment = (props) => {
             </div>
             
             {/* TIMELINE - Page 2 (Forced Break) */}
-            <div className="print:break-before-page">
+            <div className="">
               <RevisedTimeline drugs={drugs} labs={labs} onsetDate={onsetDate} />
             </div>
             
             {/* DRUG ANALYSIS - Page 3 (Forced Break) */}
-            <div className="print:break-before-page">
+            <div className="">
               <DrugAnalysisSection drugs={drugs} onsetDate={onsetDate} labs={labs} />
             </div>
           </div>

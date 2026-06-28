@@ -187,12 +187,12 @@ const WeissmanScoreRow = ({ q, value, onChange }) => {
         : { text: '#a8a099', bg: '#f4f2ee', border: '#ebe8e2' };
 
     return (
-        <tr className={`border-b border-[#f4f2ee] last:border-0 ${q.required ? 'bg-[#fef9f5]' : ''}`}>
-            <td className="py-3 pl-4 align-middle text-left">
-                <div className="font-medium text-[#2d2926] text-sm leading-snug">{q.text}</div>
+        <tr className={`border-b border-[#f4f2ee] last:border-0 print:border-[#d6d0c8] ${q.required ? 'bg-[#fef9f5] print:bg-transparent' : ''}`}>
+            <td className="py-3 pl-4 align-middle text-left print:py-1">
+                <div className="font-medium text-[#2d2926] text-sm leading-snug print:text-[11px] print:leading-tight">{q.text}</div>
                 <div className="flex gap-2 mt-1">
-                    {q.auto && <span className="text-[9px] font-semibold text-[#1a6b62] bg-[#e6f4f1] border border-[#b2ddd7] px-1.5 py-0.5 rounded uppercase tracking-wide">Auto</span>}
-                    {q.required && <span className="text-[9px] font-semibold text-[#c4620a] bg-[#fff0e4] border border-[#f5cfa8] px-1.5 py-0.5 rounded uppercase tracking-wide">Required</span>}
+                    {q.auto && <span className="text-[9px] font-semibold text-[#1a6b62] bg-[#e6f4f1] border border-[#b2ddd7] px-1.5 py-0.5 rounded uppercase tracking-wide print:hidden">Auto</span>}
+                    {q.required && <span className="text-[9px] font-semibold text-[#c4620a] bg-[#fff0e4] border border-[#f5cfa8] px-1.5 py-0.5 rounded uppercase tracking-wide print:hidden">Required</span>}
                 </div>
             </td>
             <td className="py-3 px-3 align-middle w-[38%] print:hidden">
@@ -218,26 +218,26 @@ const WeissmanScoreRow = ({ q, value, onChange }) => {
 
 // UPDATED TO WEISSMAN INTERPRETATION
 const WeissmanScoreCard = ({ group, scoreMap, total, onScoreChange }) => {
-    let interp = 'Doubtful'; let color = 'bg-[#faf9f7]0'; let border = 'border-slate-500';
+    let interp = 'Doubtful'; let color = 'bg-[#6b6360]'; let border = 'border-[#6b6360]';
 
     if (total > 9) { interp = 'Highly Probable'; color = 'bg-rose-900'; border = 'border-rose-900'; } 
     else if (total >= 6) { interp = 'Probable'; color = 'bg-rose-600'; border = 'border-rose-600'; }
     else if (total >= 3) { interp = 'Possible'; color = 'bg-rose-400'; border = 'border-rose-400'; }
-    else { interp = 'Doubtful'; color = 'bg-[#faf9f7]0'; border = 'border-slate-500'; }
+    else { interp = 'Doubtful'; color = 'bg-[#faf9f7]'; border = 'border-slate-500'; }
 
     return (
-        <div className={`print-section border-2 ${border} rounded-[10px] overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.05)] bg-white mb-6 break-inside-avoid page-break-inside-avoid print:break-before-page`}>
-            <div className={`${color} text-white px-5 py-3 flex justify-between items-center print:text-black print:border-b-2 print:border-black print:py-2`} style={{WebkitPrintColorAdjust: 'exact'}}>
+        <div className={`print-section border-2 ${border} rounded-[10px] overflow-hidden bg-white mb-4 break-inside-avoid print:mb-3`}>
+            <div className={`${color} text-white px-4 py-2 flex justify-between items-center print:text-black print:border-b-2 print:border-black print:py-1`} style={{WebkitPrintColorAdjust: 'exact'}}>
                 <div>
-                    <h3 className="text-xl font-bold print:text-lg">{group.name}</h3>
+                    <h3 className="text-base font-bold print:text-sm">{group.name}</h3>
                     <div className="text-xs opacity-90 mt-1"><span className="bg-white/20 px-2 py-0.5 rounded border border-white/20 print:border-black print:text-black">Start: {group.periods[0]?.startDate || '-'}</span></div>
                 </div>
                 <div className="text-right">
-                    <div className="text-3xl font-bold print:text-2xl">{total}</div>
+                    <div className="text-2xl font-bold print:text-xl">{total}</div>
                     <div className="text-sm font-bold uppercase bg-black/20 px-2 py-1 rounded inline-block mt-1 print:bg-transparent print:border print:border-black">{interp}</div>
                 </div>
             </div>
-            <div className="bg-white p-2 print:p-1">
+            <div className="bg-white p-1 print:p-0">
                 <table className="w-full table-fixed border-collapse">
                     <tbody>
                         {QUESTIONS.map(q => (
@@ -565,7 +565,7 @@ const PancreatitisAssessment = (props) => {
             {/* RESULTS & TIMELINE */}
             {isAnalyzed && timelineData && (
                 <div className="animate-fade-in space-y-8">
-                    <div className="bg-white rounded-[10px] border border-[#ebe8e2] shadow-[0_1px_4px_rgba(0,0,0,0.05)] p-6 overflow-hidden break-inside-avoid page-break-inside-avoid print:break-before-page print:border-black print:shadow-none relative flex flex-col">
+                    <div className="bg-white rounded-[10px] border border-[#ebe8e2] shadow-[0_1px_4px_rgba(0,0,0,0.05)] p-6 overflow-hidden break-inside-avoid page-break-inside-avoid print:border-black print:shadow-none relative flex flex-col">
                         <div className="text-xs font-bold text-[#a8a099] uppercase mb-4 tracking-wider flex items-center gap-2 print:text-black"><span className="w-2 h-4 bg-rose-500 rounded-sm print:bg-black"></span> Timeline Visualization</div>
                         <div className="relative w-full pb-8 mt-8">
                             {/* Grid Lines */}
@@ -609,9 +609,9 @@ const PancreatitisAssessment = (props) => {
                                                     const e = p.stopDate ? timelineData.getPos(p.stopDate) : 100; 
                                                     const width = Math.max(0.5, e - s); 
                                                     return (
-                                                        <div key={i} className="absolute h-1 top-2.5 bg-[#faf9f7]0 print:bg-black opacity-80" style={{left:`${s}%`, width:`${width}%`, WebkitPrintColorAdjust:'exact'}}>
-                                                            <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-[#faf9f7]0 print:bg-black" style={{left: '0%'}}></div>
-                                                            {p.stopDate && <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-[#faf9f7]0 print:bg-black" style={{left: '100%'}}></div>}
+                                                        <div key={i} className="absolute h-1.5 top-2.5 bg-[#2a9d8f] rounded-full opacity-80 print:bg-black" style={{left:`${s}%`, width:`${width}%`, WebkitPrintColorAdjust:'exact'}}>
+                                                            <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-[#1a6b62] border-2 border-white shadow-sm print:bg-black" style={{left: '0%'}}></div>
+                                                            {p.stopDate && <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-[#e07060] border-2 border-white shadow-sm print:bg-black" style={{left: '100%'}}></div>}
                                                         </div>
                                                     )
                                                 })}
